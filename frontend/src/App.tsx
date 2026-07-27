@@ -14,8 +14,8 @@ import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
 import Layout from '@/pages/Layout'
 import Dashboard from '@/pages/Dashboard'
+import DeepSearchPage from '@/features/deepsearch/DeepSearchPage'
 import {
-  DeepSearchPage,
   ProjectsPage,
   ClustersPage,
   WorkspacesPage,

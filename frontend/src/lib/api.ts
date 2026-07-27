@@ -60,6 +60,8 @@ export const deepSearchApi = {
     api.post('/deepsearch', data),
   getResults: (projectId: string) =>
     api.get(`/deepsearch/results/${projectId}`),
+  getHistory: () =>
+    api.get('/deepsearch/history'),
 }
 
 /** Dashboard */
@@ -73,3 +75,20 @@ export const authApi = {
   updateProfile: (data: Record<string, unknown>) =>
     api.patch('/auth/me', data),
 }
+
+// ============================================
+// WebSocket Helpers
+// ============================================
+
+/**
+ * Create a WebSocket connection for DeepSearch streaming.
+ * Returns the WebSocket instance — caller manages lifecycle.
+ */
+export function createDeepSearchStream(): WebSocket {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  const host = import.meta.env.VITE_API_URL
+    ? new URL(import.meta.env.VITE_API_URL).host
+    : `${window.location.hostname}:8000`
+  return new WebSocket(`${protocol}://${host}/api/deepsearch/stream`)
+}
+

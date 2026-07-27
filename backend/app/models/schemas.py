@@ -141,6 +141,29 @@ class DashboardResponse(BaseModel):
 
 
 # ============================================
+# WebSocket Streaming (DeepSearch)
+# ============================================
+
+class SearchProgress(BaseModel):
+    """Progress event sent over WebSocket during a deep search."""
+    event: str  # "step" | "source_found" | "source_error" | "sub_queries" | "summary_complete" | "complete"
+    step: Optional[str] = None
+    message: Optional[str] = None
+    source: Optional[str] = None
+    count: Optional[int] = None
+    error: Optional[str] = None
+    queries: Optional[dict] = None
+    summary_length: Optional[int] = None
+
+
+class StreamToken(BaseModel):
+    """Individual token from AI summarization stream."""
+    event: str = "token"
+    token: str
+    done: bool = False
+
+
+# ============================================
 # Common
 # ============================================
 
