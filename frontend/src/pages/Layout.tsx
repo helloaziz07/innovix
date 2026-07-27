@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import {
   LayoutDashboard, Search, Rocket, Brain, BookOpen, Bot, Globe,
-  LogOut, Sparkles, ChevronLeft, ChevronRight, Settings,
+  LogOut, Sparkles, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
