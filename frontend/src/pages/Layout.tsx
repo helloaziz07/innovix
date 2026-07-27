@@ -1,0 +1,120 @@
+/**
+ * Innovix — App Shell Layout
+ *
+ * Sidebar navigation + main content area.
+ * Wraps all authenticated pages.
+ */
+
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '@/stores/authStore'
+import { Button } from '@/components/ui/button'
+import {
+  LayoutDashboard, Search, Rocket, Brain, BookOpen, Bot, Globe,
+  LogOut, Sparkles, ChevronLeft, ChevronRight, Settings,
+} from 'lucide-react'
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
+
+const navItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/deepsearch', icon: Search, label: 'DeepSearch' },
+  { to: '/projects', icon: Rocket, label: 'Project HUB' },
+  { to: '/clusters', icon: Brain, label: 'Knowledge Clusters' },
+  { to: '/workspaces', icon: BookOpen, label: 'Workspaces' },
+  { to: '/intelligence', icon: Globe, label: 'Web Intelligence' },
+  { to: '/agents', icon: Bot, label: 'AI Agents' },
+]
+
+export default function Layout() {
+  const { user, signOut } = useAuthStore()
+  const navigate = useNavigate()
+  const [collapsed, setCollapsed] = useState(false)
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/login')
+  }
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          'flex flex-col border-r border-border bg-card/50 backdrop-blur-sm transition-all duration-300',
+          collapsed ? 'w-16' : 'w-64'
+        )}
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center gap-2 px-4 border-b border-border shrink-0">
+          <Sparkles className="w-6 h-6 text-violet-400 shrink-0" />
+          {!collapsed && (
+            <span className="text-lg font-bold gradient-text">Innovix</span>
+          )}
+        </div>
+
+        {/* Nav Links */}
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {navItems.map((navItem) => (
+            <NavLink
+              key={navItem.to}
+              to={navItem.to}
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                  isActive
+                    ? 'bg-primary/10 text-primary border border-primary/20'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                )
+              }
+            >
+              <navItem.icon className="w-5 h-5 shrink-0" />
+              {!collapsed && <span>{navItem.label}</span>}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* User Section */}
+        <div className="p-3 border-t border-border space-y-2 shrink-0">
+          {!collapsed && user && (
+            <div className="flex items-center gap-3 px-3 py-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                {user.user_metadata?.full_name?.[0] || user.email?.[0]?.toUpperCase() || '?'}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium truncate">
+                  {user.user_metadata?.full_name || 'User'}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3 text-muted-foreground"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            {!collapsed && 'Sign Out'}
+          </Button>
+        </div>
+
+        {/* Collapse Toggle */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="h-10 flex items-center justify-center border-t border-border text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-y-auto">
+        <Outlet />
+      </main>
+    </div>
+  )
+}
