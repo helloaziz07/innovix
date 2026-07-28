@@ -5,7 +5,7 @@
  * and Annotations. Users can create/manage workspaces per project.
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   BookOpen,
@@ -14,8 +14,6 @@ import {
   Bookmark,
   Highlighter,
   Download,
-  Loader2,
-  FolderOpen,
   Trash2,
 } from 'lucide-react'
 import { api, projectsApi } from '@/lib/api'
@@ -47,7 +45,7 @@ export default function WorkspacePage() {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>('notes')
-  const [isLoading, setIsLoading] = useState(true)
+  const [_isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [showNoteEditor, setShowNoteEditor] = useState(false)
   const [showExport, setShowExport] = useState(false)

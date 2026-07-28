@@ -14,7 +14,6 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
 } from 'lucide-react'
 
 interface Trend {

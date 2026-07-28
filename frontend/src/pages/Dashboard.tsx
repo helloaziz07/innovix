@@ -10,12 +10,12 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuthStore } from '@/stores/authStore'
-import { dashboardApi, projectsApi } from '@/lib/api'
+import { dashboardApi } from '@/lib/api'
 import {
-  Search, Rocket, Plus, TrendingUp, FolderOpen,
+  Search, Rocket, Plus, FolderOpen,
   Lightbulb, ArrowRight, Sparkles, BarChart3,
   Brain, BookOpen, Globe, Bot,
-  Clock, Activity, FileText, Loader2,
+  Clock, Activity, FileText,
 } from 'lucide-react'
 
 // ─── Sub-Components ────────────────────────────────

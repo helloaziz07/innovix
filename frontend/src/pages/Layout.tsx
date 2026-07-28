@@ -3,11 +3,15 @@
  *
  * Sidebar navigation + main content area.
  * Wraps all authenticated pages.
+ * Includes ThemeToggle, LanguageSwitcher, and i18n-translated labels.
  */
 
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
+import ThemeToggle from '@/components/ThemeToggle'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import {
   LayoutDashboard, Search, Rocket, Brain, BookOpen, Bot, Globe,
   LogOut, Sparkles, ChevronLeft, ChevronRight,
@@ -16,18 +20,19 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/deepsearch', icon: Search, label: 'DeepSearch' },
-  { to: '/projects', icon: Rocket, label: 'Project HUB' },
-  { to: '/clusters', icon: Brain, label: 'Knowledge Clusters' },
-  { to: '/workspaces', icon: BookOpen, label: 'Workspaces' },
-  { to: '/intelligence', icon: Globe, label: 'Web Intelligence' },
-  { to: '/agents', icon: Bot, label: 'AI Agents' },
+  { to: '/dashboard', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
+  { to: '/deepsearch', icon: Search, labelKey: 'nav.deepsearch' },
+  { to: '/projects', icon: Rocket, labelKey: 'nav.projects' },
+  { to: '/clusters', icon: Brain, labelKey: 'nav.clusters' },
+  { to: '/workspaces', icon: BookOpen, labelKey: 'nav.workspaces' },
+  { to: '/intelligence', icon: Globe, labelKey: 'nav.intelligence' },
+  { to: '/agents', icon: Bot, labelKey: 'nav.agents' },
 ]
 
 export default function Layout() {
   const { user, signOut } = useAuthStore()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [collapsed, setCollapsed] = useState(false)
 
   const handleSignOut = async () => {
@@ -68,13 +73,19 @@ export default function Layout() {
               }
             >
               <navItem.icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span>{navItem.label}</span>}
+              {!collapsed && <span>{t(navItem.labelKey)}</span>}
             </NavLink>
           ))}
         </nav>
 
-        {/* User Section */}
+        {/* Theme + Language + User Section */}
         <div className="p-3 border-t border-border space-y-2 shrink-0">
+          {/* Theme Toggle */}
+          <ThemeToggle collapsed={collapsed} />
+
+          {/* Language Switcher */}
+          <LanguageSwitcher collapsed={collapsed} />
+
           {!collapsed && user && (
             <div className="flex items-center gap-3 px-3 py-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
@@ -98,7 +109,7 @@ export default function Layout() {
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            {!collapsed && 'Sign Out'}
+            {!collapsed && t('nav.signout')}
           </Button>
         </div>
 

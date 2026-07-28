@@ -43,7 +43,7 @@ export default function AnnotationOverlay({ annotations, onAdd, onDelete }: Anno
   const [isAdding, setIsAdding] = useState(false)
   const [newText, setNewText] = useState('')
   const [newNote, setNewNote] = useState('')
-  const [selectedColor, setSelectedColor] = useState(HIGHLIGHT_COLORS[0].value)
+  const [selectedColor, setSelectedColor] = useState(HIGHLIGHT_COLORS[0]!.value)
 
   const handleSave = () => {
     if (!newText.trim()) return

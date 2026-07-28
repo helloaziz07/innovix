@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Trash2,
   Search,
-  FileText,
   Clock,
 } from 'lucide-react'
 

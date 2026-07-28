@@ -75,7 +75,7 @@ export default function ProjectDetail() {
     setGeneratingPlan(true)
     setError('')
     try {
-      const _res = await projectsApi.generatePlan(id)
+      await projectsApi.generatePlan(id)
       // Refresh project to get the updated plan
       const updated = await projectsApi.get(id)
       setActiveProject(updated.data)

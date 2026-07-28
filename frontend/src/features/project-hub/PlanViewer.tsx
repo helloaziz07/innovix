@@ -23,7 +23,7 @@ import {
 } from 'lucide-react'
 
 interface PlanViewerProps {
-  plan: Record<string, unknown>
+  plan: Record<string, any>
 }
 
 interface SectionProps {
@@ -69,13 +69,13 @@ function CollapsibleSection({ title, icon, defaultOpen = false, children }: Sect
 }
 
 export default function PlanViewer({ plan }: PlanViewerProps) {
-  const pv = plan.problem_validation as Record<string, unknown> | undefined
-  const solutions = plan.existing_solutions as Record<string, unknown>[] | undefined
-  const innovations = plan.innovation_opportunities as Record<string, unknown>[] | undefined
-  const apis = plan.api_datasets as Record<string, unknown>[] | undefined
-  const repos = plan.github_repos as Record<string, unknown>[] | undefined
-  const risks = plan.risks as Record<string, unknown>[] | undefined
-  const docs = plan.documentation as Record<string, unknown> | undefined
+  const pv = plan.problem_validation as Record<string, any> | undefined
+  const solutions = plan.existing_solutions as Record<string, any>[] | undefined
+  const innovations = plan.innovation_opportunities as Record<string, any>[] | undefined
+  const apis = plan.api_datasets as Record<string, any>[] | undefined
+  const repos = plan.github_repos as Record<string, any>[] | undefined
+  const risks = plan.risks as Record<string, any>[] | undefined
+  const docs = plan.documentation as Record<string, any> | undefined
 
   return (
     <div className="space-y-3">

@@ -46,7 +46,7 @@ export default function ThemeToggle({ collapsed = false }: { collapsed?: boolean
     { value: 'system', icon: Monitor, label: 'System' },
   ]
 
-  const current = options.find((o) => o.value === theme) || options[1]
+  const current = options.find((o) => o.value === theme) ?? options[1]!
 
   if (collapsed) {
     return (

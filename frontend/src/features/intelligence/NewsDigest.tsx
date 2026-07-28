@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Newspaper,
   Clock,
-  Tag,
 } from 'lucide-react'
 
 interface NewsItem {

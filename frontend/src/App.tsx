@@ -8,12 +8,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/authStore'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 // Pages
 import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
 import Layout from '@/pages/Layout'
 import Dashboard from '@/pages/Dashboard'
+import ResetPassword from '@/pages/ResetPassword'
 import DeepSearchPage from '@/features/deepsearch/DeepSearchPage'
 import ProjectHubPage from '@/features/project-hub/ProjectHubPage'
 import ProjectDetail from '@/features/project-hub/ProjectDetail'
@@ -61,35 +63,38 @@ export default function App() {
   }, [initialize])
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Protected Routes — wrapped in Layout */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/deepsearch" element={<DeepSearchPage />} />
-            <Route path="/projects" element={<ProjectHubPage />} />
-            <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/clusters" element={<ClustersPage />} />
-            <Route path="/workspaces" element={<WorkspacePage />} />
-            <Route path="/intelligence" element={<IntelligencePage />} />
-            <Route path="/agents" element={<AgentsPage />} />
-          </Route>
+            {/* Protected Routes — wrapped in Layout */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/deepsearch" element={<DeepSearchPage />} />
+              <Route path="/projects" element={<ProjectHubPage />} />
+              <Route path="/projects/:id" element={<ProjectDetail />} />
+              <Route path="/clusters" element={<ClustersPage />} />
+              <Route path="/workspaces" element={<WorkspacePage />} />
+              <Route path="/intelligence" element={<IntelligencePage />} />
+              <Route path="/agents" element={<AgentsPage />} />
+            </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </QueryClientProvider>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }

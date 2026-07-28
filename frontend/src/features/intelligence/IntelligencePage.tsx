@@ -49,7 +49,7 @@ export default function IntelligencePage() {
   // Data states
   const [trends, setTrends] = useState<any[]>([])
   const [news, setNews] = useState<any[]>([])
-  const [freshness, setFreshness] = useState<any>({ bands: [], total: 0 })
+  const [freshness, _setFreshness] = useState<any>({ bands: [], total: 0 })
 
   const handleSearch = useCallback(async (searchDomain?: string) => {
     const query = searchDomain || domain

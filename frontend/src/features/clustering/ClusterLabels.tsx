@@ -60,7 +60,6 @@ export default function ClusterLabels({
               isSelected
                 ? {
                     borderColor: cluster.color + '60',
-                    ringColor: cluster.color + '40',
                     boxShadow: `0 4px 20px ${cluster.color}15`,
                   }
                 : undefined

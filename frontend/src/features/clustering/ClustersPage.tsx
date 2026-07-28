@@ -12,8 +12,6 @@ import {
   Brain,
   Sparkles,
   Loader2,
-  FolderOpen,
-  RefreshCw,
 } from 'lucide-react'
 import { projectsApi, clustersApi } from '@/lib/api'
 import ClusterMap from './ClusterMap'
@@ -30,7 +28,7 @@ interface Project {
 export default function ClustersPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true)
+  const [_isLoadingProjects, setIsLoadingProjects] = useState(true)
   const [isGenerating, setIsGenerating] = useState(false)
 
   // Cluster data
@@ -102,8 +100,6 @@ export default function ClustersPage() {
       setClusterResults([])
     }
   }
-
-  const selectedProject = projects.find((p) => p.id === selectedProjectId)
 
   return (
     <div className="min-h-full p-6 lg:p-8">

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   Bot,
   Send,
@@ -16,7 +16,7 @@ import {
   ExternalLink,
   Copy,
   Check,
-  ChevronRight,
+
 } from 'lucide-react'
 import { api } from '@/lib/api'
 
