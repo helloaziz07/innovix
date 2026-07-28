@@ -1,0 +1,285 @@
+"""
+Innovix — AI Project Plan Generator
+
+The core engine for Phase 3 (Project HUB). Takes a project's idea + DeepSearch
+results and uses Gemini to generate a fully structured plan via chained prompts:
+
+  1. Main Plan  → problem_validation, existing_solutions, innovation_opportunities,
+                   tech_stack, api_datasets, github_repos, documentation
+  2. Architecture → Mermaid diagram + component breakdown + design patterns
+  3. Roadmap     → Phased milestones + weekly timeline + risks
+
+Results are stored in the project's JSONB columns (project_plan, tech_stack,
+architecture, timeline) and the project status is updated.
+"""
+
+import asyncio
+import json
+import logging
+from typing import Optional, List, Dict, Any
+
+from google import genai
+from google.genai import types
+
+from app.core.config import settings
+from app.core.database import supabase_admin
+from app.services.project_hub.templates.project_plan_prompt import get_project_plan_prompt
+from app.services.project_hub.templates.architecture_prompt import get_architecture_prompt
+from app.services.project_hub.templates.roadmap_prompt import get_roadmap_prompt
+
+logger = logging.getLogger(__name__)
+
+# Gemini client — same singleton pattern as deep_search.py
+gemini_client = genai.Client(api_key=settings.gemini_api_key)
+GEMINI_MODEL = "gemini-2.0-flash"
+
+
+async def generate_project_plan(
+    project_id: str,
+    user_id: str,
+    progress_callback=None,
+) -> Dict[str, Any]:
+    """
+    Generate a complete project plan for the given project.
+
+    Fetches the project's idea and any DeepSearch results, then chains
+    three Gemini calls to build the full plan.
+
+    Args:
+        project_id: The project UUID.
+        user_id: The authenticated user's UUID (for ownership verification).
+        progress_callback: Optional async callback for progress events.
+
+    Returns:
+        The complete plan dict with all sections.
+
+    Raises:
+        ValueError: If the project isn't found or doesn't belong to the user.
+    """
+    # ─── Fetch project ──────────────────────────────────────
+    project = await _get_project(project_id, user_id)
+    idea = project["idea_text"]
+
+    # ─── Fetch research results (if any) ────────────────────
+    research_summary, sources_text, gap_analysis = await _get_research_context(project_id)
+
+    if progress_callback:
+        await progress_callback({"event": "step", "step": "planning", "message": "Generating project plan..."})
+
+    # Update project status → researching
+    await _update_project_status(project_id, "researching")
+
+    # ─── Step 1: Main Plan ──────────────────────────────────
+    if progress_callback:
+        await progress_callback({"event": "step", "step": "main_plan", "message": "Analyzing idea and generating plan structure..."})
+
+    main_plan = await _generate_main_plan(idea, research_summary, sources_text, gap_analysis)
+    logger.info(f"[ProjectHub] Main plan generated for project {project_id}")
+
+    # ─── Step 2: Architecture ───────────────────────────────
+    if progress_callback:
+        await progress_callback({"event": "step", "step": "architecture", "message": "Designing system architecture..."})
+
+    tech_stack_json = json.dumps(main_plan.get("tech_stack", []), indent=2)
+    architecture = await _generate_architecture(idea, tech_stack_json)
+    logger.info(f"[ProjectHub] Architecture generated for project {project_id}")
+
+    # ─── Step 3: Roadmap ────────────────────────────────────
+    if progress_callback:
+        await progress_callback({"event": "step", "step": "roadmap", "message": "Building development roadmap..."})
+
+    architecture_json = json.dumps(architecture.get("components", []), indent=2)
+    roadmap = await _generate_roadmap(idea, tech_stack_json, architecture_json)
+    logger.info(f"[ProjectHub] Roadmap generated for project {project_id}")
+
+    # ─── Combine and persist ────────────────────────────────
+    full_plan = {
+        **main_plan,
+        "architecture": architecture,
+        "roadmap": roadmap.get("roadmap", []),
+        "timeline": roadmap.get("timeline", []),
+        "total_weeks": roadmap.get("total_weeks", 8),
+        "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
+        "risks": roadmap.get("risks", []),
+    }
+
+    await _persist_plan(project_id, full_plan)
+
+    if progress_callback:
+        await progress_callback({"event": "step", "step": "complete", "message": "Project plan generated successfully!"})
+
+    return full_plan
+
+
+# ════════════════════════════════════════════════
+# Internal helpers
+# ════════════════════════════════════════════════
+
+async def _get_project(project_id: str, user_id: str) -> dict:
+    """Fetch and validate project ownership."""
+    try:
+        result = (
+            supabase_admin.table("projects")
+            .select("*")
+            .eq("id", project_id)
+            .eq("user_id", user_id)
+            .single()
+            .execute()
+        )
+        if not result.data:
+            raise ValueError(f"Project {project_id} not found or access denied")
+        return result.data
+    except Exception as e:
+        if "not found" in str(e).lower() or "access denied" in str(e).lower():
+            raise ValueError(f"Project {project_id} not found or access denied")
+        raise
+
+
+async def _get_research_context(project_id: str) -> tuple[str, str, str]:
+    """
+    Fetch DeepSearch results for this project and format them
+    as context for the plan generator.
+
+    Returns (research_summary, sources_text, gap_analysis).
+    """
+    try:
+        result = (
+            supabase_admin.table("search_results")
+            .select("query, summary, sources, citations")
+            .eq("project_id", project_id)
+            .order("created_at", desc=True)
+            .limit(5)
+            .execute()
+        )
+        searches = result.data or []
+    except Exception:
+        searches = []
+
+    if not searches:
+        return (
+            "No prior research available. Generate plan based on the idea alone.",
+            "No sources available.",
+            "No gap analysis available — identify gaps from general knowledge.",
+        )
+
+    # Combine summaries from all searches
+    summaries = []
+    all_sources = []
+    for search in searches:
+        if search.get("summary"):
+            summaries.append(f"### Search: \"{search.get('query', 'Unknown')}\"\n{search['summary']}")
+        sources = search.get("sources", [])
+        if isinstance(sources, list):
+            for s in sources[:10]:
+                if isinstance(s, dict):
+                    all_sources.append(
+                        f"- [{s.get('source_type', 'web')}] {s.get('title', 'Untitled')} — {s.get('snippet', '')[:120]}"
+                    )
+
+    research_summary = "\n\n".join(summaries) if summaries else "No summaries available."
+    sources_text = "\n".join(all_sources[:30]) if all_sources else "No sources available."
+    gap_analysis = "Derive gaps from the research summary and sources provided."
+
+    return research_summary, sources_text, gap_analysis
+
+
+async def _generate_main_plan(
+    idea: str, research_summary: str, sources_text: str, gap_analysis: str
+) -> Dict[str, Any]:
+    """Generate the main plan via Gemini (Step 1)."""
+    prompt = get_project_plan_prompt(idea, research_summary, sources_text, gap_analysis)
+    return await _call_gemini_json(prompt, max_tokens=4000, temperature=0.4)
+
+
+async def _generate_architecture(idea: str, tech_stack_json: str) -> Dict[str, Any]:
+    """Generate architecture via Gemini (Step 2)."""
+    prompt = get_architecture_prompt(idea, tech_stack_json)
+    return await _call_gemini_json(prompt, max_tokens=3000, temperature=0.3)
+
+
+async def _generate_roadmap(idea: str, tech_stack_json: str, architecture_json: str) -> Dict[str, Any]:
+    """Generate roadmap via Gemini (Step 3)."""
+    prompt = get_roadmap_prompt(idea, tech_stack_json, architecture_json)
+    return await _call_gemini_json(prompt, max_tokens=3000, temperature=0.3)
+
+
+async def _call_gemini_json(prompt: str, max_tokens: int = 3000, temperature: float = 0.4) -> Dict[str, Any]:
+    """
+    Call Gemini and parse the response as JSON.
+    Handles markdown code fences and common formatting issues.
+    """
+    try:
+        response = await asyncio.to_thread(
+            gemini_client.models.generate_content,
+            model=GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            ),
+        )
+        text = response.text.strip()
+
+        # Strip markdown code fences if present
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        text = text.strip()
+        if text.startswith("json"):
+            text = text[4:].strip()
+
+        return json.loads(text)
+
+    except json.JSONDecodeError as e:
+        logger.error(f"[ProjectHub] Failed to parse Gemini JSON response: {e}")
+        logger.debug(f"[ProjectHub] Raw response: {text[:500]}")
+        return {"error": "Failed to parse AI response", "raw_text": text[:1000]}
+    except Exception as e:
+        logger.error(f"[ProjectHub] Gemini call failed: {e}")
+        return {"error": f"AI generation failed: {str(e)}"}
+
+
+async def _update_project_status(project_id: str, status: str) -> None:
+    """Update the project's status field."""
+    try:
+        await asyncio.to_thread(
+            lambda: supabase_admin.table("projects")
+            .update({"status": status})
+            .eq("id", project_id)
+            .execute()
+        )
+    except Exception as e:
+        logger.warning(f"[ProjectHub] Failed to update status: {e}")
+
+
+async def _persist_plan(project_id: str, plan: Dict[str, Any]) -> None:
+    """
+    Store the generated plan in the project's JSONB columns
+    and update status to 'planning'.
+    """
+    try:
+        update_data = {
+            "project_plan": plan,
+            "tech_stack": plan.get("tech_stack", []),
+            "architecture": plan.get("architecture", {}),
+            "timeline": {
+                "roadmap": plan.get("roadmap", []),
+                "timeline": plan.get("timeline", []),
+                "total_weeks": plan.get("total_weeks", 8),
+                "mvp_ready_by_week": plan.get("mvp_ready_by_week", 4),
+                "risks": plan.get("risks", []),
+            },
+            "status": "planning",
+        }
+
+        await asyncio.to_thread(
+            lambda: supabase_admin.table("projects")
+            .update(update_data)
+            .eq("id", project_id)
+            .execute()
+        )
+        logger.info(f"[ProjectHub] Plan persisted for project {project_id}")
+
+    except Exception as e:
+        logger.error(f"[ProjectHub] Failed to persist plan: {e}")

@@ -15,13 +15,12 @@ import Login from '@/pages/Login'
 import Layout from '@/pages/Layout'
 import Dashboard from '@/pages/Dashboard'
 import DeepSearchPage from '@/features/deepsearch/DeepSearchPage'
-import {
-  ProjectsPage,
-  ClustersPage,
-  WorkspacesPage,
-  IntelligencePage,
-  AgentsPage,
-} from '@/pages/Placeholders'
+import ProjectHubPage from '@/features/project-hub/ProjectHubPage'
+import ProjectDetail from '@/features/project-hub/ProjectDetail'
+import ClustersPage from '@/features/clustering/ClustersPage'
+import IntelligencePage from '@/features/intelligence/IntelligencePage'
+import WorkspacePage from '@/features/workspace/WorkspacePage'
+import AgentsPage from '@/features/agents/AgentsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,9 +78,10 @@ export default function App() {
           >
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/deepsearch" element={<DeepSearchPage />} />
-            <Route path="/projects" element={<ProjectsPage />} />
+            <Route path="/projects" element={<ProjectHubPage />} />
+            <Route path="/projects/:id" element={<ProjectDetail />} />
             <Route path="/clusters" element={<ClustersPage />} />
-            <Route path="/workspaces" element={<WorkspacesPage />} />
+            <Route path="/workspaces" element={<WorkspacePage />} />
             <Route path="/intelligence" element={<IntelligencePage />} />
             <Route path="/agents" element={<AgentsPage />} />
           </Route>

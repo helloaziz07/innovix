@@ -1,11 +1,15 @@
 """
 Innovix API — Project HUB Routes
 
-Endpoints for project CRUD and AI plan generation.
-Plan generation logic implemented in Phase 3.
+Endpoints for project CRUD, AI plan generation, export, and TTS narration.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+import logging
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import Response
+
 from app.core.security import get_current_user
 from app.core.database import supabase_admin
 from app.models.schemas import (
@@ -14,6 +18,15 @@ from app.models.schemas import (
     ProjectResponse,
     MessageResponse,
 )
+from app.services.project_hub.generator import generate_project_plan
+from app.services.project_hub.export_service import (
+    export_to_markdown,
+    export_to_pdf,
+    get_narration_text,
+)
+from app.services.sarvam.tts_service import synthesize_speech, is_available as sarvam_available
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/projects", tags=["Project HUB"])
 
@@ -100,17 +113,166 @@ async def delete_project(
     return MessageResponse(message="Project deleted successfully")
 
 
+# ============================================
+# Phase 3 — Plan Generation, Export, Narration
+# ============================================
+
+
 @router.post("/{project_id}/generate-plan", response_model=MessageResponse)
-async def generate_project_plan(
+async def generate_plan(
     project_id: str,
     user: dict = Depends(get_current_user),
 ):
     """
-    Generate a complete project plan from research results.
+    Generate a complete AI-powered project plan.
 
-    [Phase 3 Implementation]
+    Chains three Gemini calls to produce:
+    - Problem validation, existing solutions, innovation opportunities
+    - System architecture with Mermaid diagram
+    - Development roadmap with weekly timeline
+
+    The plan is persisted in the project's JSONB columns and the
+    project status progresses through researching → planning.
     """
-    return MessageResponse(
-        message="Plan generation endpoint ready — full implementation in Phase 3",
-        data={"project_id": project_id},
+    try:
+        plan = await generate_project_plan(
+            project_id=project_id,
+            user_id=user["id"],
+        )
+
+        if plan.get("error"):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=plan["error"],
+            )
+
+        return MessageResponse(
+            message="Project plan generated successfully",
+            data=plan,
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"[ProjectHub] Plan generation failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Plan generation failed: {str(e)}",
+        )
+
+
+@router.get("/{project_id}/export")
+async def export_project(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+    format: str = Query(default="md", regex="^(md|pdf)$"),
+):
+    """
+    Export project plan as Markdown or PDF.
+
+    Query params:
+        format: "md" (default) or "pdf"
+    """
+    # Fetch the full project
+    result = (
+        supabase_admin.table("projects")
+        .select("*")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .single()
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = result.data
+
+    if not project.get("project_plan"):
+        raise HTTPException(
+            status_code=400,
+            detail="No plan generated yet. Run /generate-plan first.",
+        )
+
+    if format == "pdf":
+        try:
+            pdf_bytes = export_to_pdf(project)
+            filename = f"{project.get('title', 'project').replace(' ', '_')}_plan.pdf"
+            return Response(
+                content=pdf_bytes,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{filename}"',
+                },
+            )
+        except Exception as e:
+            logger.error(f"[Export] PDF generation failed: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"PDF export failed: {str(e)}. Try markdown format instead.",
+            )
+    else:
+        md_content = export_to_markdown(project)
+        filename = f"{project.get('title', 'project').replace(' ', '_')}_plan.md"
+        return Response(
+            content=md_content,
+            media_type="text/markdown",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+            },
+        )
+
+
+@router.post("/{project_id}/narrate")
+async def narrate_project(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+    language: str = Query(default="en", description="Language code (en, hi, ta, te, etc.)"),
+):
+    """
+    Generate TTS audio narration of the project plan using Sarvam AI.
+
+    Returns WAV audio bytes. Requires SARVAM_API_KEY to be configured.
+    Gracefully returns an error message if Sarvam is not available.
+    """
+    if not sarvam_available():
+        raise HTTPException(
+            status_code=501,
+            detail="Sarvam AI TTS is not configured. Set SARVAM_API_KEY to enable narration.",
+        )
+
+    # Fetch project
+    result = (
+        supabase_admin.table("projects")
+        .select("*")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .single()
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = result.data
+    if not project.get("project_plan"):
+        raise HTTPException(status_code=400, detail="No plan generated yet.")
+
+    # Get narration text
+    narration_text = get_narration_text(project)
+
+    # Synthesize speech
+    audio_bytes = await synthesize_speech(narration_text, language=language)
+
+    if not audio_bytes:
+        raise HTTPException(
+            status_code=500,
+            detail="Speech synthesis failed. Check Sarvam API key and try again.",
+        )
+
+    filename = f"{project.get('title', 'project').replace(' ', '_')}_narration.wav"
+    return Response(
+        content=audio_bytes,
+        media_type="audio/wav",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
     )

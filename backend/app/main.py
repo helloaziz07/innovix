@@ -18,6 +18,8 @@ from app.api.projects import router as projects_router
 from app.api.workspaces import router as workspaces_router
 from app.api.agents import router as agents_router
 from app.api.dashboard import router as dashboard_router
+from app.api.intelligence import router as intelligence_router
+from app.api.clusters import router as clusters_router
 
 
 @asynccontextmanager
@@ -58,6 +60,8 @@ app.include_router(projects_router, prefix="/api")
 app.include_router(workspaces_router, prefix="/api")
 app.include_router(agents_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
+app.include_router(intelligence_router, prefix="/api")
+app.include_router(clusters_router, prefix="/api")
 
 
 # --- Health Check ---

@@ -302,7 +302,7 @@ REST + WebSocket endpoints:
 
 ---
 
-### 🚀 Phase 3 — Project HUB (Days 6–8)
+### 🚀 Phase 3 — Project HUB (Days 6–8) ✅ COMPLETE
 
 > Auto-generate a complete project plan from research results, including architecture, tech stack, milestones, APIs, datasets, and timeline.
 
@@ -345,16 +345,18 @@ Takes DeepSearch results + user idea as input, generates:
 - `ExportButton.tsx` — Export plan to PDF/Markdown
 
 #### Verification
-- [ ] Full project plan generated from a sample idea
-- [ ] Architecture diagram renders correctly
-- [ ] Timeline and milestones are actionable
-- [ ] Export to PDF produces clean document
+- [x] Full project plan generated from a sample idea
+- [x] Architecture diagram renders correctly
+- [x] Timeline and milestones are actionable
+- [x] Export to PDF produces clean document
 
 ---
 
-### 🌐 Phase 4 — Real-time Web Intelligence + Knowledge Clustering (Days 9–11)
+### 🌐 Phase 4 — Real-time Web Intelligence + Knowledge Clustering (Days 9–11) ✅ COMPLETE (~95%)
 
 > Add live web monitoring, trending topic detection, and automatic clustering of research results.
+>
+> **Note:** `POST /intelligence/monitor` was replaced with `GET /intelligence/news` and `GET /intelligence/competitors/{id}` for practical on-demand intelligence.
 
 #### [NEW] `backend/app/services/web_intel/`
 **Real-time Web Intelligence:**
@@ -390,16 +392,18 @@ Takes DeepSearch results + user idea as input, generates:
 - `ClusterLabels.tsx` — AI-generated thematic labels for each cluster
 
 #### Verification
-- [ ] Trending topics load for a given domain
-- [ ] Knowledge clusters form visually distinct groups
-- [ ] Clicking a cluster shows relevant grouped results
-- [ ] Embeddings are stored and queryable in pgvector
+- [x] Trending topics load for a given domain
+- [x] Knowledge clusters form visually distinct groups
+- [x] Clicking a cluster shows relevant grouped results
+- [x] Embeddings are stored and queryable in pgvector
 
 ---
 
-### 📚 Phase 5 — Research Workspaces + Personalized Dashboard (Days 12–14)
+### 📚 Phase 5 — Research Workspaces + Personalized Dashboard (Days 12–14) ✅ COMPLETE
 
 > Build collaborative research workspaces and the main personalized dashboard.
+>
+> **Status:** Backend API fully built. Frontend workspace (5 components) + Dashboard (with embedded sub-components) fully implemented.
 
 #### [NEW] `backend/app/services/workspaces/`
 - `workspace_manager.py` — CRUD for workspaces, notes, annotations
@@ -443,16 +447,18 @@ Takes DeepSearch results + user idea as input, generates:
 - `Layout.tsx` — App shell with sidebar navigation
 
 #### Verification
-- [ ] Dashboard loads with real data from all modules
-- [ ] Workspace notes can be created, edited, deleted
-- [ ] Export produces clean PDF/Markdown
-- [ ] Charts and progress metrics update correctly
+- [x] Dashboard loads with real data from all modules
+- [x] Workspace notes can be created, edited, deleted
+- [x] Export produces clean PDF/Markdown
+- [x] Charts and progress metrics update correctly
 
 ---
 
-### 🤖 Phase 6 — AI Agents (Telegram + WhatsApp) (Days 15–17)
+### 🤖 Phase 6 — AI Agents (Telegram + WhatsApp) (Days 15–17) ✅ COMPLETE
 
 > Deploy conversational AI agents on Telegram and WhatsApp for reminders, progress tracking, and intelligent Q&A.
+>
+> **Status:** Backend services (orchestrator + notification), bots (Telegram + WhatsApp), full API, and frontend AgentsPage with in-app chat all implemented.
 
 #### [NEW] `bots/telegram_bot.py`
 Using `python-telegram-bot`:
@@ -485,10 +491,10 @@ Using Twilio WhatsApp API:
 - `POST /api/agents/link` — Link messaging account to profile
 
 #### Verification
-- [ ] Telegram bot responds to all commands
-- [ ] WhatsApp bot handles messages via Twilio
-- [ ] Reminder notifications fire on schedule
-- [ ] Agents can access project data and answer questions
+- [x] Telegram bot responds to all commands
+- [x] WhatsApp bot handles messages via Twilio
+- [x] Reminder notifications fire on schedule
+- [x] Agents can access project data and answer questions
 
 ---
 

@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     twilio_auth_token: Optional[str] = None
     twilio_whatsapp_number: Optional[str] = None
 
+    # --- Sarvam AI (Multilingual TTS/STT) ---
+    sarvam_api_key: Optional[str] = None
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

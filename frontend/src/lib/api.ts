@@ -52,6 +52,16 @@ export const projectsApi = {
   delete: (id: string) => api.delete(`/projects/${id}`),
   generatePlan: (id: string) =>
     api.post(`/projects/${id}/generate-plan`),
+  export: (id: string, format: 'md' | 'pdf' = 'md') =>
+    api.get(`/projects/${id}/export`, {
+      params: { format },
+      responseType: format === 'pdf' ? 'blob' : 'text',
+    }),
+  narrate: (id: string, language: string = 'en') =>
+    api.post(`/projects/${id}/narrate`, null, {
+      params: { language },
+      responseType: 'blob',
+    }),
 }
 
 /** DeepSearch */
@@ -67,6 +77,29 @@ export const deepSearchApi = {
 /** Dashboard */
 export const dashboardApi = {
   get: () => api.get('/dashboard'),
+  getActivity: () => api.get('/dashboard/activity'),
+}
+
+/** Web Intelligence */
+export const intelligenceApi = {
+  getTrending: (domain: string, maxResults: number = 10) =>
+    api.get('/intelligence/trending', { params: { domain, max_results: maxResults } }),
+  getNews: (domain: string, maxResults: number = 15) =>
+    api.get('/intelligence/news', { params: { domain, max_results: maxResults } }),
+  getFreshness: (projectId: string) =>
+    api.get(`/intelligence/freshness/${projectId}`),
+  getCompetitors: (projectId: string) =>
+    api.get(`/intelligence/competitors/${projectId}`),
+}
+
+/** Knowledge Clustering */
+export const clustersApi = {
+  generate: (projectId: string, k?: number) =>
+    api.post(`/clusters/${projectId}/generate`, null, {
+      params: k ? { k } : undefined,
+    }),
+  get: (projectId: string) =>
+    api.get(`/clusters/${projectId}`),
 }
 
 /** Auth */

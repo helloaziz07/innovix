@@ -1,0 +1,84 @@
+/**
+ * Innovix — Project Store (Zustand)
+ *
+ * Manages project state: active project, plan generation status,
+ * export state, and project list caching.
+ */
+
+import { create } from 'zustand'
+
+export interface Project {
+  id: string
+  user_id: string
+  title: string
+  idea_text: string
+  status: 'ideation' | 'researching' | 'planning' | 'building' | 'completed'
+  project_plan: Record<string, unknown> | null
+  tech_stack: Record<string, unknown>[] | null
+  architecture: Record<string, unknown> | null
+  timeline: Record<string, unknown> | null
+  created_at: string
+  updated_at: string
+}
+
+interface ProjectState {
+  // Data
+  projects: Project[]
+  activeProject: Project | null
+  
+  // UI state
+  isLoading: boolean
+  isGeneratingPlan: boolean
+  isExporting: boolean
+  
+  // Actions
+  setProjects: (projects: Project[]) => void
+  setActiveProject: (project: Project | null) => void
+  updateProject: (id: string, updates: Partial<Project>) => void
+  setLoading: (loading: boolean) => void
+  setGeneratingPlan: (generating: boolean) => void
+  setExporting: (exporting: boolean) => void
+  addProject: (project: Project) => void
+  removeProject: (id: string) => void
+}
+
+export const useProjectStore = create<ProjectState>((set) => ({
+  projects: [],
+  activeProject: null,
+  isLoading: false,
+  isGeneratingPlan: false,
+  isExporting: false,
+
+  setProjects: (projects) => set({ projects }),
+
+  setActiveProject: (project) => set({ activeProject: project }),
+
+  updateProject: (id, updates) =>
+    set((state) => ({
+      projects: state.projects.map((p) =>
+        p.id === id ? { ...p, ...updates } : p
+      ),
+      activeProject:
+        state.activeProject?.id === id
+          ? { ...state.activeProject, ...updates }
+          : state.activeProject,
+    })),
+
+  setLoading: (isLoading) => set({ isLoading }),
+
+  setGeneratingPlan: (isGeneratingPlan) => set({ isGeneratingPlan }),
+
+  setExporting: (isExporting) => set({ isExporting }),
+
+  addProject: (project) =>
+    set((state) => ({
+      projects: [project, ...state.projects],
+    })),
+
+  removeProject: (id) =>
+    set((state) => ({
+      projects: state.projects.filter((p) => p.id !== id),
+      activeProject:
+        state.activeProject?.id === id ? null : state.activeProject,
+    })),
+}))
