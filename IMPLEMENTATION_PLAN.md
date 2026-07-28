@@ -502,12 +502,14 @@ Using Twilio WhatsApp API:
 
 > Add multilingual capability and polish the entire application for production.
 
-#### Multilingual Support
-- `backend/app/services/translation.py` — Gemini-based translation service
-- Frontend i18n using `react-i18next`
-- Support for: English, Hindi, Spanish, French, German, Chinese, Japanese
-- Language detection on user input → auto-translate search queries
-- Results translated back to user's preferred language
+#### Multilingual Support (Sarvam AI)
+- `backend/app/services/translation.py` — Sarvam AI Translate API (mayura:v1)
+- `backend/app/api/translation.py` — Translation REST endpoints (detect, translate, batch)
+- Frontend i18n using `react-i18next` with browser language detection
+- Support for: English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, Gujarati, Malayalam, Punjabi
+- Unicode script-based language detection for Indic scripts
+- Results translated back to user's preferred language via Sarvam API
+- `LanguageSwitcher` component in sidebar with flag indicators
 
 #### UI/UX Polish
 - Dark mode / Light mode toggle with system preference detection
