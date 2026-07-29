@@ -6,10 +6,13 @@ Verifies Supabase JWT tokens and extracts user info for protected routes.
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from supabase import create_client
 from app.core.config import settings
+from app.core.database import get_supabase_client
 
 security = HTTPBearer()
+
+# Shared anon client for token verification (created once, reused)
+_supabase_anon = get_supabase_client()
 
 
 async def get_current_user(
@@ -24,13 +27,8 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        # Create a temporary client with the user's token
-        supabase = create_client(
-            settings.supabase_url,
-            settings.supabase_anon_key,
-        )
-        # Verify the JWT and get user info
-        user_response = supabase.auth.get_user(token)
+        # Verify the JWT and get user info using the shared client
+        user_response = _supabase_anon.auth.get_user(token)
 
         if not user_response or not user_response.user:
             raise HTTPException(
@@ -47,8 +45,9 @@ async def get_current_user(
 
     except HTTPException:
         raise
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {str(e)}",
+            detail="Authentication failed. Please sign in again.",
         )
+

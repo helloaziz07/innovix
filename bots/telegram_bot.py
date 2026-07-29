@@ -46,6 +46,24 @@ class InnovixTelegramBot:
             self._orchestrator = orchestrator
         return self._orchestrator
 
+    def _resolve_user_id(self, chat_id: str) -> str:
+        """Look up the real Innovix user_id from a Telegram chat_id."""
+        try:
+            from app.core.database import supabase_admin
+            result = (
+                supabase_admin.table("agent_sessions")
+                .select("user_id")
+                .eq("platform", "telegram")
+                .eq("chat_id", chat_id)
+                .limit(1)
+                .execute()
+            )
+            if result.data and result.data[0].get("user_id"):
+                return result.data[0]["user_id"]
+        except Exception:
+            pass
+        return f"telegram_{chat_id}"
+
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command — link account and show welcome."""
         user = update.effective_user
@@ -98,7 +116,7 @@ class InnovixTelegramBot:
 
         orchestrator = self._get_orchestrator()
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=self._resolve_user_id(str(update.effective_chat.id)),
             message=f"/search {query}",
             platform="telegram",
             chat_id=str(update.effective_chat.id),
@@ -121,7 +139,7 @@ class InnovixTelegramBot:
         query = " ".join(context.args) if context.args else ""
         orchestrator = self._get_orchestrator()
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=self._resolve_user_id(str(update.effective_chat.id)),
             message=f"/status {query}",
             platform="telegram",
             chat_id=str(update.effective_chat.id),
@@ -133,7 +151,7 @@ class InnovixTelegramBot:
         text = " ".join(context.args) if context.args else ""
         orchestrator = self._get_orchestrator()
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=self._resolve_user_id(str(update.effective_chat.id)),
             message=f"/remind {text}",
             platform="telegram",
             chat_id=str(update.effective_chat.id),
@@ -145,7 +163,7 @@ class InnovixTelegramBot:
         question = " ".join(context.args) if context.args else ""
         orchestrator = self._get_orchestrator()
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=self._resolve_user_id(str(update.effective_chat.id)),
             message=f"/ask {question}",
             platform="telegram",
             chat_id=str(update.effective_chat.id),
@@ -160,7 +178,7 @@ class InnovixTelegramBot:
 
         orchestrator = self._get_orchestrator()
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=self._resolve_user_id(str(update.effective_chat.id)),
             message=text,
             platform="telegram",
             chat_id=str(update.effective_chat.id),

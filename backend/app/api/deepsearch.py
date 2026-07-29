@@ -50,6 +50,8 @@ async def stream_deep_search(websocket: WebSocket):
     """
     WebSocket endpoint for streaming DeepSearch progress in real-time.
 
+    Authentication: Pass JWT token as query param: /api/deepsearch/stream?token=xxx
+
     Client sends a JSON message to start the search:
         {"query": "...", "project_id": "...", "sources": ["arxiv", "github", ...]}
 
@@ -60,6 +62,19 @@ async def stream_deep_search(websocket: WebSocket):
         {"event": "result", "data": { ...full DeepSearchResponse... }}
         {"event": "error", "message": "..."}
     """
+    # Authenticate via query param token
+    token = websocket.query_params.get("token")
+    user_id = None
+    if token:
+        try:
+            from app.core.database import get_supabase_client
+            _client = get_supabase_client()
+            user_response = _client.auth.get_user(token)
+            if user_response and user_response.user:
+                user_id = str(user_response.user.id)
+        except Exception:
+            pass
+
     await websocket.accept()
 
     try:
@@ -89,7 +104,7 @@ async def stream_deep_search(websocket: WebSocket):
             query=query,
             project_id=project_id,
             sources_to_search=sources,
-            user_id=None,  # WebSocket auth can be added later
+            user_id=user_id,
             progress_callback=send_progress,
         )
 
@@ -106,7 +121,7 @@ async def stream_deep_search(websocket: WebSocket):
         try:
             await websocket.send_json({
                 "event": "error",
-                "message": str(e),
+                "message": "An error occurred during search. Please try again.",
             })
         except Exception:
             pass

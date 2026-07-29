@@ -26,6 +26,12 @@ from app.api.translation import router as translation_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
+    # Validate critical config
+    if settings.is_production and settings.secret_key == "change-this-to-a-random-secret-key":
+        raise RuntimeError(
+            "FATAL: SECRET_KEY is set to the default value. "
+            "Generate a new one: python -c \"import secrets; print(secrets.token_hex(32))\""
+        )
     print(f"[START] {settings.app_name} starting in {settings.app_env} mode...")
     yield
     print(f"[STOP] {settings.app_name} shutting down...")
@@ -42,16 +48,16 @@ app = FastAPI(
 )
 
 # --- CORS Middleware ---
+_allowed_origins = [settings.frontend_url]
+if not settings.is_production:
+    _allowed_origins.extend(["http://localhost:5173", "http://localhost:3000"])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.frontend_url,
-        "http://localhost:5173",
-        "http://localhost:3000",
-    ],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # --- Register Routers ---

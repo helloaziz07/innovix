@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   signUpWithEmail: async (email: string, password: string, fullName: string, captchaToken?: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { error, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -119,16 +119,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       return { error: error.message }
     }
 
-    // Auto sign-in after successful sign-up
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (signInError) {
-      return { error: signInError.message }
+    // If email confirmation is enabled, user.identities will be empty until confirmed
+    const needsVerification = !data.session
+    if (needsVerification) {
+      return { needsVerification: true }
     }
 
+    // If Supabase has email confirmation disabled, session is returned immediately
     return {}
   },
 

@@ -33,6 +33,24 @@ class InnovixWhatsAppBot:
             self._orchestrator = orchestrator
         return self._orchestrator
 
+    def _resolve_user_id(self, chat_id: str) -> str:
+        """Look up the real Innovix user_id from a WhatsApp number."""
+        try:
+            from app.core.database import supabase_admin
+            result = (
+                supabase_admin.table("agent_sessions")
+                .select("user_id")
+                .eq("platform", "whatsapp")
+                .eq("chat_id", chat_id)
+                .limit(1)
+                .execute()
+            )
+            if result.data and result.data[0].get("user_id"):
+                return result.data[0]["user_id"]
+        except Exception:
+            pass
+        return f"whatsapp_{chat_id}"
+
     async def handle_incoming(
         self,
         from_number: str,
@@ -71,7 +89,7 @@ class InnovixWhatsAppBot:
 
         # Process message through orchestrator
         result = await orchestrator.process_message(
-            user_id="whatsapp_user",
+            user_id=self._resolve_user_id(from_number),
             message=body,
             platform="whatsapp",
             chat_id=from_number,

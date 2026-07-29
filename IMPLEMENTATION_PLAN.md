@@ -498,6 +498,37 @@ Using Twilio WhatsApp API:
 
 ---
 
+### 🔒 Security & Production Hardening ✅ COMPLETE
+
+> Production readiness audit and fixes applied across the full stack.
+> See `CHANGELOG.md` for the full list of changes with file references.
+
+#### Critical Fixes (All Resolved)
+- [x] **Supabase client leak** — shared singleton replaces per-request client creation (`security.py`)
+- [x] **WebSocket zero-auth** — JWT token passed via `?token=` query param and validated server-side (`deepsearch.py`, `api.ts`)
+- [x] **SECRET_KEY default** — app crashes on startup in production if key is unchanged (`main.py`)
+- [x] **Agent identity** — bots resolve real `user_id` from `agent_sessions` table instead of hardcoded string (`telegram_bot.py`, `whatsapp_bot.py`)
+- [x] **Database migrations** — complete SQL schema with RLS policies, indexes, and triggers (`migrations/001_create_tables.sql`)
+
+#### High Fixes (Resolved)
+- [x] **CORS hardened** — environment-aware, strict in production (`main.py`)
+- [x] **Error sanitization** — generic messages to clients, full errors logged server-side
+- [x] **`.env.example` updated** — both search APIs, Sarvam required, SECRET_KEY generation docs
+
+#### Medium Fixes (Resolved)
+- [x] **Gemini timeouts** — all calls wrapped with `asyncio.wait_for()` (30s/45s/60s)
+- [x] **Gemini JSON parsing** — uses `response_mime_type="application/json"` instead of fragile stripping
+- [x] **WebSocket auth frontend** — `createDeepSearchStream()` now async with token
+- [x] **Signup email bypass** — returns `needsVerification` flag instead of auto-signing in
+
+#### Remaining (Deferred to Phase 8)
+- [ ] Rate limiting (`slowapi` — needs dependency + testing)
+- [ ] Prompt injection sanitization (needs design decisions)
+- [ ] Retry logic on external APIs (`tenacity` — needs dependency)
+- [ ] Pagination on list endpoints (needs frontend changes)
+
+---
+
 ### 🌍 Phase 7 — Multilingual Support + Polish (Days 18–19)
 
 > Add multilingual capability and polish the entire application for production.

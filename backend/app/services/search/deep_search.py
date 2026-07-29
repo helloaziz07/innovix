@@ -154,26 +154,29 @@ Keep each query concise (5-15 words), focused, and use appropriate terminology f
 Return ONLY the JSON object, no markdown formatting or code blocks."""
 
     try:
-        response = await asyncio.to_thread(
-            gemini_client.models.generate_content,
-            model=GEMINI_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.3,
-                max_output_tokens=500,
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                gemini_client.models.generate_content,
+                model=GEMINI_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.3,
+                    max_output_tokens=500,
+                    response_mime_type="application/json",
+                ),
             ),
+            timeout=30.0,
         )
         text = response.text.strip()
-        # Strip markdown code fences if present
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
-        if text.startswith("json"):
-            text = text[4:].strip()
-
         return json.loads(text)
+    except asyncio.TimeoutError:
+        logger.warning("[DeepSearch] Sub-query generation timed out, using original query")
+        return {
+            "arxiv": query,
+            "github": query,
+            "scholar": query,
+            "web": query,
+        }
     except Exception as e:
         logger.warning(f"[DeepSearch] Sub-query generation failed, using original query: {e}")
         return {
@@ -298,14 +301,17 @@ async def _generate_summary(query: str, sources: List[SearchSource]) -> tuple[st
 5. Do NOT start with "Here is..." or similar meta-text. Start directly with the content."""
 
     try:
-        response = await asyncio.to_thread(
-            gemini_client.models.generate_content,
-            model=GEMINI_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.4,
-                max_output_tokens=2000,
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                gemini_client.models.generate_content,
+                model=GEMINI_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.4,
+                    max_output_tokens=2000,
+                ),
             ),
+            timeout=60.0,
         )
         summary = response.text.strip()
 
@@ -353,14 +359,17 @@ Format using markdown with headers and bullet points. Be specific and actionable
 Do NOT start with "Here is..." or similar meta-text. Start directly with the analysis."""
 
     try:
-        response = await asyncio.to_thread(
-            gemini_client.models.generate_content,
-            model=GEMINI_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.5,
-                max_output_tokens=1000,
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                gemini_client.models.generate_content,
+                model=GEMINI_MODEL,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.5,
+                    max_output_tokens=1000,
+                ),
             ),
+            timeout=45.0,
         )
         return response.text.strip()
 
