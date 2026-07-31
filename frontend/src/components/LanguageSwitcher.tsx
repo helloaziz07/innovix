@@ -18,7 +18,7 @@ export default function LanguageSwitcher({ collapsed = false }: { collapsed?: bo
   const currentLang = LANGUAGE_OPTIONS.find((l) => l.code === i18n.language) || LANGUAGE_OPTIONS[0]
 
   return (
-    <div className="relative">
+    <div className="relative no-translate">
       <button
         onClick={() => setOpen(!open)}
         className={cn(

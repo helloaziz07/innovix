@@ -20,6 +20,7 @@ import {
   ExternalLink,
   ThumbsUp,
   ThumbsDown,
+  Briefcase,
 } from 'lucide-react'
 
 interface PlanViewerProps {
@@ -124,6 +125,21 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
                 </ul>
               </div>
             )}
+          </div>
+        </CollapsibleSection>
+      )}
+
+      {/* Business Perspective */}
+      {pv?.business_perspective && (
+        <CollapsibleSection
+          title="Business Perspective"
+          icon={<Briefcase className="w-4 h-4 text-emerald-400" />}
+          defaultOpen={true}
+        >
+          <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              {String(pv.business_perspective)}
+            </p>
           </div>
         </CollapsibleSection>
       )}

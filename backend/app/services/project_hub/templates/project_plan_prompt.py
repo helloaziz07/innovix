@@ -44,6 +44,7 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
     "problem_validation": {{
         "is_worth_solving": true/false,
         "market_size": "Description of market size and potential",
+        "business_perspective": "Analyze monetization potential (subscriptions, selling, etc.). ONLY provide a Business POV if the idea can actually make money. If there is absolutely no business perspective or monetization potential, output EXACTLY: 'No business perspective exists'.",
         "target_users": ["User type 1", "User type 2", ...],
         "pain_points": ["Pain point 1", "Pain point 2", ...],
         "summary": "2-3 sentence validation summary"

@@ -20,8 +20,8 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
-  { to: '/projects', icon: FolderKanban, labelKey: 'nav.projects' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/projects', icon: FolderKanban, label: 'My Projects' },
 ]
 
 export default function Layout() {
@@ -68,7 +68,7 @@ export default function Layout() {
               }
             >
               <navItem.icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span>{t(navItem.labelKey)}</span>}
+              {!collapsed && <span>{navItem.label}</span>}
             </NavLink>
           ))}
         </nav>
@@ -104,7 +104,7 @@ export default function Layout() {
             onClick={handleSignOut}
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            {!collapsed && t('nav.signout')}
+            {!collapsed && 'Sign Out'}
           </Button>
         </div>
 
