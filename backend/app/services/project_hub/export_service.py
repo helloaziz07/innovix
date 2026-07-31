@@ -215,7 +215,8 @@ def export_to_pdf(project: Dict[str, Any]) -> bytes:
         PDF content as bytes.
     """
     import markdown as md
-    from weasyprint import HTML
+    from xhtml2pdf import pisa
+    import io
 
     # First generate markdown, then convert to HTML, then to PDF
     md_content = export_to_markdown(project)
@@ -322,12 +323,15 @@ def export_to_pdf(project: Dict[str, Any]) -> bytes:
 </head>
 <body>
 {html_body}
-</body>
-</html>"""
-
-    # Generate PDF
-    pdf_bytes = HTML(string=html_doc).write_pdf()
-    return pdf_bytes
+    </body>
+    </html>
+    """
+    
+    result = io.BytesIO()
+    pdf = pisa.pisaDocument(io.BytesIO(html_doc.encode("UTF-8")), result)
+    if pdf.err:
+        raise Exception("Failed to generate PDF document.")
+    return result.getvalue()
 
 
 def get_narration_text(project: Dict[str, Any]) -> str:

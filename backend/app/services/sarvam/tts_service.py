@@ -28,16 +28,16 @@ SARVAM_TTS_URL = "https://api.sarvam.ai/text-to-speech"
 
 # Supported languages and default voices
 SARVAM_LANGUAGES = {
-    "en": {"code": "en-IN", "voice": "meera"},
-    "hi": {"code": "hi-IN", "voice": "meera"},
-    "ta": {"code": "ta-IN", "voice": "meera"},
-    "te": {"code": "te-IN", "voice": "meera"},
-    "bn": {"code": "bn-IN", "voice": "meera"},
-    "mr": {"code": "mr-IN", "voice": "meera"},
-    "kn": {"code": "kn-IN", "voice": "meera"},
-    "gu": {"code": "gu-IN", "voice": "meera"},
-    "ml": {"code": "ml-IN", "voice": "meera"},
-    "pa": {"code": "pa-IN", "voice": "meera"},
+    "en": {"code": "en-IN", "voice": "anushka"},
+    "hi": {"code": "hi-IN", "voice": "anushka"},
+    "ta": {"code": "ta-IN", "voice": "anushka"},
+    "te": {"code": "te-IN", "voice": "anushka"},
+    "bn": {"code": "bn-IN", "voice": "anushka"},
+    "mr": {"code": "mr-IN", "voice": "anushka"},
+    "kn": {"code": "kn-IN", "voice": "anushka"},
+    "gu": {"code": "gu-IN", "voice": "anushka"},
+    "ml": {"code": "ml-IN", "voice": "anushka"},
+    "pa": {"code": "pa-IN", "voice": "anushka"},
 }
 
 
@@ -90,7 +90,7 @@ async def synthesize_speech(
                     "inputs": [text],
                     "target_language_code": target_language_code,
                     "speaker": target_voice,
-                    "model": "bulbul:v1",
+                    "model": "bulbul:v3",
                     "enable_preprocessing": True,
                 },
             )

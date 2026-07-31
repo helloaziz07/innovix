@@ -8,8 +8,8 @@
  */
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Layers, AlertTriangle, Copy, Check, Cpu } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Layers, AlertTriangle, Copy, Check, Cpu, ZoomIn, ZoomOut, Download, Maximize2, X } from 'lucide-react'
 
 interface ArchitectureDiagramProps {
   architecture?: Record<string, unknown>
@@ -52,6 +52,8 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
   const [renderError, setRenderError] = useState(false)
   const [copied, setCopied] = useState(false)
   const [mermaidLoaded, setMermaidLoaded] = useState(false)
+  const [zoom, setZoom] = useState(1)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const mermaidCode = architecture?.mermaid_diagram as string | undefined
   const components = architecture?.components as Record<string, unknown>[] | undefined
@@ -134,6 +136,42 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
     }
   }
 
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setZoom((z) => Math.min(z + 0.25, 3))
+  }
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setZoom((z) => Math.max(z - 0.25, 0.5))
+  }
+
+  const downloadImage = (format: 'png' | 'jpeg', e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    if (!svgContent) return
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(svgBlob)
+    img.onload = () => {
+      canvas.width = img.width * 2 // High res
+      canvas.height = img.height * 2
+      if (ctx) {
+        ctx.fillStyle = '#1e1e3f' // Match Mermaid dark theme background
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.scale(2, 2)
+        ctx.drawImage(img, 0, 0)
+        const a = document.createElement('a')
+        a.download = `architecture.${format}`
+        a.href = canvas.toDataURL(`image/${format}`)
+        a.click()
+      }
+      URL.revokeObjectURL(url)
+    }
+    img.src = url
+  }
+
   if (!architecture) {
     return (
       <div className="glass-card rounded-xl p-8 text-center">
@@ -159,40 +197,78 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
               <Layers className="w-4 h-4 text-violet-400" />
               System Architecture Diagram
             </span>
-            <button
-              onClick={copyMermaid}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs
-                         bg-white/5 text-muted-foreground hover:text-foreground
-                         hover:bg-white/10 transition-colors"
-              title="Copy Mermaid code"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3 h-3 text-green-400" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3 h-3" />
-                  Copy
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs
+                           bg-white/5 text-muted-foreground hover:text-foreground
+                           hover:bg-white/10 transition-colors"
+                title="View Fullscreen"
+              >
+                <Maximize2 className="w-3 h-3" />
+              </button>
+              <button
+                onClick={copyMermaid}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs
+                           bg-white/5 text-muted-foreground hover:text-foreground
+                           hover:bg-white/10 transition-colors"
+                title="Copy Mermaid code"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3 h-3 text-green-400" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           {!renderError ? (
-            <div
-              className="p-6 flex justify-center overflow-x-auto min-h-[200px]
-                         [&_svg]:max-w-full [&_svg]:h-auto"
-            >
-              {mermaidLoaded && svgContent ? (
-                <div dangerouslySetInnerHTML={{ __html: svgContent }} />
-              ) : (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="w-4 h-4 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
-                  Rendering diagram...
+            <div className="relative">
+              {/* Zoom & Download Controls */}
+              <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                <div className="flex flex-col bg-black/40 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden">
+                  <button onClick={handleZoomIn} className="p-2 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10" title="Zoom In">
+                    <ZoomIn className="w-4 h-4" />
+                  </button>
+                  <button onClick={handleZoomOut} className="p-2 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors" title="Zoom Out">
+                    <ZoomOut className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
+                <div className="flex flex-col bg-black/40 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden">
+                  <button onClick={(e) => downloadImage('png', e)} className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10" title="Download PNG">
+                    PNG
+                  </button>
+                  <button onClick={(e) => downloadImage('jpeg', e)} className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors" title="Download JPEG">
+                    JPEG
+                  </button>
+                </div>
+              </div>
+              <div
+                onClick={() => setIsModalOpen(true)}
+                className="p-6 flex justify-center overflow-x-auto min-h-[200px] cursor-pointer
+                           [&_svg]:max-w-full [&_svg]:h-auto hover:bg-white/[0.02] transition-colors"
+              >
+                {mermaidLoaded && svgContent ? (
+                  <motion.div
+                    animate={{ scale: zoom }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    style={{ transformOrigin: 'center center' }}
+                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                  />
+                ) : (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="w-4 h-4 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+                    Rendering diagram...
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="p-6">
@@ -300,6 +376,69 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
           {deployNotes}
         </motion.div>
       )}
+
+      {/* Fullscreen Modal */}
+      <AnimatePresence>
+        {isModalOpen && svgContent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-5xl max-h-[90vh] glass-card rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-violet-400" />
+                  System Architecture
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div className="flex bg-black/40 rounded-lg overflow-hidden border border-white/10">
+                    <button onClick={handleZoomIn} className="p-2 hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Zoom In">
+                      <ZoomIn className="w-4 h-4" />
+                    </button>
+                    <div className="w-px bg-white/10" />
+                    <button onClick={handleZoomOut} className="p-2 hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Zoom Out">
+                      <ZoomOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex bg-black/40 rounded-lg overflow-hidden border border-white/10">
+                    <button onClick={(e) => downloadImage('png', e)} className="px-3 py-1.5 text-xs font-medium hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Download PNG">
+                      PNG
+                    </button>
+                    <div className="w-px bg-white/10" />
+                    <button onClick={(e) => downloadImage('jpeg', e)} className="px-3 py-1.5 text-xs font-medium hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Download JPEG">
+                      JPEG
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="p-8 flex-1 overflow-auto flex items-center justify-center bg-black/20">
+                <motion.div
+                  animate={{ scale: zoom }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  style={{ transformOrigin: 'center center' }}
+                  className="[&_svg]:max-w-none [&_svg]:h-auto"
+                  dangerouslySetInnerHTML={{ __html: svgContent }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

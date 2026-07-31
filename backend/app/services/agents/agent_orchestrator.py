@@ -179,7 +179,15 @@ Topic: {query}""",
 
     async def _planning_agent_status(self, user_id: str, message: str) -> str:
         """Get detailed status for a specific project."""
-        query = message.lower().replace("/status ", "").replace("status ", "", 1).strip()
+        import re
+        # Handle both command format and natural language
+        if message.lower().startswith("/status"):
+            query = message[7:].strip()
+        else:
+            # Extract everything after the word "status" (ignoring common prepositions)
+            query = re.sub(r'(?i).*\bstatus\b\s*(of|for|on)?\s*', '', message).strip()
+            
+        query = query.lower()
         if not query:
             return "Please specify a project. Example: `/status AI Waste Management`"
 

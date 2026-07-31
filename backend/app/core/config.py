@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     # --- Sarvam AI (Multilingual TTS/STT) ---
     sarvam_api_key: Optional[str] = None
 
+    # --- Meta WhatsApp ---
+    meta_access_token: Optional[str] = None
+    meta_phone_number_id: Optional[str] = None
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

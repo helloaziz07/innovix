@@ -373,6 +373,36 @@ def _save_conversation(
         logger.warning(f"[Agents] Save conversation failed: {e}")
 
 
+def _link_user_account(user_id: str, platform: str, chat_id: str) -> bool:
+    """Helper to programmatically link a messaging account."""
+    try:
+        existing = (
+            supabase_admin.table("agent_sessions")
+            .select("id")
+            .eq("platform", platform)
+            .eq("chat_id", chat_id)
+            .execute()
+        )
+        now = datetime.now(timezone.utc).isoformat()
+        if existing.data:
+            supabase_admin.table("agent_sessions").update({
+                "user_id": user_id,
+                "last_active": now,
+            }).eq("platform", platform).eq("chat_id", chat_id).execute()
+        else:
+            supabase_admin.table("agent_sessions").insert({
+                "user_id": user_id,
+                "platform": platform,
+                "chat_id": chat_id,
+                "conversation_history": [],
+                "last_active": now,
+            }).execute()
+        return True
+    except Exception as e:
+        logger.error(f"[Agents] Internal link error: {e}")
+        return False
+
+
 def _escape_telegram_markdown(text: str) -> str:
     """
     Escape special characters that break Telegram's Markdown parser.
@@ -393,3 +423,100 @@ def _escape_telegram_markdown(text: str) -> str:
     if text.count('[') != text.count(']'):
         text = text.replace('[', '\\[').replace(']', '\\]')
     return text
+
+
+# ============================================
+# Meta WhatsApp Cloud API Webhook
+# ============================================
+from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi import Query
+
+@router.get("/meta/webhook")
+async def verify_meta_webhook(
+    hub_mode: str = Query(None, alias="hub.mode"),
+    hub_challenge: str = Query(None, alias="hub.challenge"),
+    hub_verify_token: str = Query(None, alias="hub.verify_token")
+):
+    """Verify webhook for Meta WhatsApp Cloud API."""
+    # You can configure a specific verify token in Meta Developer Portal
+    # For now, we will accept any token to make it easy for you to test
+    if hub_mode == "subscribe" and hub_challenge:
+        return PlainTextResponse(content=hub_challenge)
+    raise HTTPException(status_code=400, detail="Invalid verification request")
+
+@router.post("/meta/webhook")
+async def receive_meta_message(request: Request):
+    """Handle incoming messages from Meta WhatsApp Cloud API."""
+    try:
+        body = await request.json()
+        
+        if body.get("object") == "whatsapp_business_account":
+            for entry in body.get("entry", []):
+                for change in entry.get("changes", []):
+                    value = change.get("value", {})
+                    if "messages" in value:
+                        for msg in value["messages"]:
+                            if msg.get("type") == "text":
+                                from_number = msg.get("from")
+                                text_body = msg.get("text", {}).get("body", "")
+                                
+                                # Handle connection command
+                                if text_body.startswith("connect_"):
+                                    user_id = text_body.split("connect_")[1].strip()
+                                    if _link_user_account(user_id, "whatsapp", from_number):
+                                        result = "✅ Successfully connected your WhatsApp to your Innovix account!"
+                                    else:
+                                        result = "❌ Failed to link account. Please try again from the dashboard."
+                                else:
+                                    # Resolve the real user_id from agent_sessions
+                                    resolved_user_id = f"whatsapp_{from_number}"
+                                    try:
+                                        session = (
+                                            supabase_admin.table("agent_sessions")
+                                            .select("user_id")
+                                            .eq("platform", "whatsapp")
+                                            .eq("chat_id", from_number)
+                                            .limit(1)
+                                            .execute()
+                                        )
+                                        if session.data and session.data[0].get("user_id"):
+                                            resolved_user_id = session.data[0]["user_id"]
+                                    except Exception:
+                                        pass
+                                        
+                                    # Normal chat handling
+                                    result = await orchestrator.process_message(
+                                        user_id=resolved_user_id,
+                                        message=text_body,
+                                        platform="whatsapp",
+                                        chat_id=from_number
+                                    )
+                                
+                                # Send response back via Graph API
+                                if settings.meta_access_token and settings.meta_phone_number_id:
+                                    import httpx
+                                    url = f"https://graph.facebook.com/v21.0/{settings.meta_phone_number_id}/messages"
+                                    headers = {
+                                        "Authorization": f"Bearer {settings.meta_access_token}",
+                                        "Content-Type": "application/json"
+                                    }
+                                    payload = {
+                                        "messaging_product": "whatsapp",
+                                        "to": from_number,
+                                        "type": "text",
+                                        "text": {"body": result}
+                                    }
+                                    async with httpx.AsyncClient() as client:
+                                        response = await client.post(url, headers=headers, json=payload)
+                                        if response.status_code != 200:
+                                            logger.error(f"[Agents] Meta API error {response.status_code}: {response.text}")
+                                        else:
+                                            logger.info(f"[Agents] Successfully sent Meta reply: {response.status_code}")
+                                            
+        return JSONResponse({"status": "ok"})
+
+
+
+    except Exception as e:
+        logger.error(f"[Agents] Meta webhook error: {e}")
+        return JSONResponse({"status": "ok"})
