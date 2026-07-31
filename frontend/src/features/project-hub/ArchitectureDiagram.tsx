@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Layers, AlertTriangle, Copy, Check, Cpu, ZoomIn, ZoomOut, Download, Maximize2, X } from 'lucide-react'
+import { Layers, AlertTriangle, Cpu, ZoomIn, ZoomOut, Maximize2, X, Download } from 'lucide-react'
 
 interface ArchitectureDiagramProps {
   architecture?: Record<string, unknown>
@@ -50,10 +50,12 @@ function sanitizeMermaid(raw: string): string {
 
 export default function ArchitectureDiagram({ architecture }: ArchitectureDiagramProps) {
   const [renderError, setRenderError] = useState(false)
-  const [copied, setCopied] = useState(false)
+
   const [mermaidLoaded, setMermaidLoaded] = useState(false)
   const [zoom, setZoom] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false)
+  const [showModalDownloadMenu, setShowModalDownloadMenu] = useState(false)
 
   const mermaidCode = architecture?.mermaid_diagram as string | undefined
   const components = architecture?.components as Record<string, unknown>[] | undefined
@@ -128,13 +130,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
     return () => { cancelled = true }
   }, [mermaidCode])
 
-  const copyMermaid = () => {
-    if (mermaidCode) {
-      navigator.clipboard.writeText(mermaidCode.replace(/\\n/g, '\n'))
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
+
 
   const handleZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -149,27 +145,79 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
   const downloadImage = (format: 'png' | 'jpeg', e?: React.MouseEvent) => {
     if (e) e.stopPropagation()
     if (!svgContent) return
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    const img = new Image()
-    const svgBlob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(svgBlob)
-    img.onload = () => {
-      canvas.width = img.width * 2 // High res
-      canvas.height = img.height * 2
-      if (ctx) {
-        ctx.fillStyle = '#1e1e3f' // Match Mermaid dark theme background
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.scale(2, 2)
-        ctx.drawImage(img, 0, 0)
-        const a = document.createElement('a')
-        a.download = `architecture.${format}`
-        a.href = canvas.toDataURL(`image/${format}`)
-        a.click()
+    
+    try {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(svgContent, 'image/svg+xml')
+      const svgEl = doc.querySelector('svg')
+      
+      if (!svgEl) {
+        console.error('No SVG found')
+        return
       }
-      URL.revokeObjectURL(url)
+
+      // Ensure SVG has explicit width/height
+      const viewBox = svgEl.getAttribute('viewBox')
+      let w = 800
+      let h = 600
+      if (viewBox) {
+        const parts = viewBox.split(' ')
+        if (parts.length === 4) {
+          w = parseFloat(parts[2]!) || w
+          h = parseFloat(parts[3]!) || h
+        }
+      }
+      svgEl.setAttribute('width', String(w))
+      svgEl.setAttribute('height', String(h))
+      
+      // Ensure namespace is present
+      if (!svgEl.getAttribute('xmlns')) {
+        svgEl.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+      }
+
+      const finalSvg = new XMLSerializer().serializeToString(svgEl)
+      
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+      
+      // Convert to base64 to avoid characters breaking the image loading
+      const svgBase64 = btoa(unescape(encodeURIComponent(finalSvg)))
+      const svgUrl = `data:image/svg+xml;base64,${svgBase64}`
+      
+      img.onload = () => {
+        canvas.width = w * 2
+        canvas.height = h * 2
+        if (ctx) {
+          ctx.fillStyle = '#1e1e3f' // Match Mermaid dark theme background
+          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          ctx.scale(2, 2)
+          ctx.drawImage(img, 0, 0)
+          
+          try {
+            const dataUrl = canvas.toDataURL(`image/${format}`, 0.95)
+            const a = document.createElement('a')
+            a.download = `architecture.${format}`
+            a.href = dataUrl
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+          } catch (err) {
+            console.error('Canvas export error:', err)
+            alert('Could not export image due to browser security restrictions.')
+          }
+        }
+      }
+      
+      img.onerror = () => {
+        console.error('Image load error: The SVG might contain invalid tags.')
+        alert('Failed to process diagram image.')
+      }
+      
+      img.src = svgUrl
+    } catch (err) {
+      console.error('Download setup error:', err)
     }
-    img.src = url
   }
 
   if (!architecture) {
@@ -207,25 +255,6 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
               >
                 <Maximize2 className="w-3 h-3" />
               </button>
-              <button
-                onClick={copyMermaid}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs
-                           bg-white/5 text-muted-foreground hover:text-foreground
-                           hover:bg-white/10 transition-colors"
-                title="Copy Mermaid code"
-              >
-                {copied ? (
-                  <>
-                    <Check className="w-3 h-3 text-green-400" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3" />
-                    Copy
-                  </>
-                )}
-              </button>
             </div>
           </div>
 
@@ -241,13 +270,39 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                     <ZoomOut className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="flex flex-col bg-black/40 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden">
-                  <button onClick={(e) => downloadImage('png', e)} className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10" title="Download PNG">
-                    PNG
+                <div className="relative">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowDownloadMenu(!showDownloadMenu)
+                    }} 
+                    className="flex items-center justify-center p-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors" 
+                    title="Download Image"
+                  >
+                    <Download className="w-4 h-4" />
                   </button>
-                  <button onClick={(e) => downloadImage('jpeg', e)} className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors" title="Download JPEG">
-                    JPEG
-                  </button>
+                  {showDownloadMenu && (
+                    <div className="absolute top-0 right-10 flex flex-col bg-black/80 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
+                      <button 
+                        onClick={(e) => {
+                          downloadImage('png', e)
+                          setShowDownloadMenu(false)
+                        }} 
+                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10 text-left"
+                      >
+                        Download PNG
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          downloadImage('jpeg', e)
+                          setShowDownloadMenu(false)
+                        }} 
+                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors text-left"
+                      >
+                        Download JPEG
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div
@@ -409,14 +464,39 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                       <ZoomOut className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex bg-black/40 rounded-lg overflow-hidden border border-white/10">
-                    <button onClick={(e) => downloadImage('png', e)} className="px-3 py-1.5 text-xs font-medium hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Download PNG">
-                      PNG
+                  <div className="relative">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowModalDownloadMenu(!showModalDownloadMenu)
+                      }}
+                      className="p-2 flex items-center bg-black/40 rounded-lg border border-white/10 hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" 
+                      title="Download Image"
+                    >
+                      <Download className="w-4 h-4" />
                     </button>
-                    <div className="w-px bg-white/10" />
-                    <button onClick={(e) => downloadImage('jpeg', e)} className="px-3 py-1.5 text-xs font-medium hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Download JPEG">
-                      JPEG
-                    </button>
+                    {showModalDownloadMenu && (
+                      <div className="absolute top-10 right-0 flex flex-col bg-black/80 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl mt-1">
+                        <button 
+                          onClick={(e) => {
+                            downloadImage('png', e)
+                            setShowModalDownloadMenu(false)
+                          }} 
+                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10 text-left"
+                        >
+                          Download PNG
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            downloadImage('jpeg', e)
+                            setShowModalDownloadMenu(false)
+                          }} 
+                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors text-left"
+                        >
+                          Download JPEG
+                        </button>
+                      </div>
+                    )}
                   </div>
                   <button
                     onClick={() => setIsModalOpen(false)}

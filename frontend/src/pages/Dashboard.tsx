@@ -161,7 +161,7 @@ function MobileCompanion() {
       // Creates the connection deep link
       url = `https://wa.me/${WHATSAPP_NUMBER}?text=connect_${user.id}`
     } else {
-      url = 'https://t.me/InnovixAIBot'
+      url = `https://t.me/Innooovixx_bot?start=connect_${user.id}`
     }
     window.open(url, '_blank')
     setShowModal(false)
@@ -240,7 +240,7 @@ function MobileCompanion() {
                     </div>
                     <div>
                       <span className="text-sm font-medium block text-foreground">Telegram</span>
-                      <span className="text-[10px] text-muted-foreground">Open @InnovixAIBot</span>
+                      <span className="text-[10px] text-muted-foreground">Open @Innooovixx_bot</span>
                     </div>
                   </div>
                   <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 transition-colors" />

@@ -52,10 +52,10 @@ export const projectsApi = {
   delete: (id: string) => api.delete(`/projects/${id}`),
   generatePlan: (id: string) =>
     api.post(`/projects/${id}/generate-plan`),
-  export: (id: string, format: 'md' | 'pdf' = 'md') =>
+  export: (id: string, format: 'md' | 'pdf' | 'pptx' = 'md') =>
     api.get(`/projects/${id}/export`, {
       params: { format },
-      responseType: format === 'pdf' ? 'blob' : 'text',
+      responseType: format === 'md' ? 'text' : 'blob',
     }),
   narrate: (id: string, language: string = 'en') =>
     api.post(`/projects/${id}/narrate`, null, {

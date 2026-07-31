@@ -7,9 +7,15 @@ Also provides a narration-ready text format for Sarvam AI TTS.
 Uses WeasyPrint for PDF generation (already in requirements.txt).
 """
 
-import io
+import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Optional, List, Dict, Any
+
+from google import genai
+from pydantic import BaseModel, Field
+from pptx import Presentation as PPTXPresentation
+import io
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -397,3 +403,84 @@ def get_narration_text(project: Dict[str, Any]) -> str:
             parts.append(f"  {r.get('risk', '')}. Mitigation: {r.get('mitigation', '')}")
 
     return "\n".join(parts)
+
+
+class Slide(BaseModel):
+    title: str = Field(description="The title of the slide")
+    bullet_points: List[str] = Field(description="A list of bullet points for the slide content")
+
+class Presentation(BaseModel):
+    slides: List[Slide] = Field(description="List of slides in the presentation")
+
+async def export_to_pptx(data: Dict[str, Any]) -> bytes:
+    """
+    Export project or workspace data to PPTX using Gemini to structure it.
+    """
+    client = genai.Client(api_key=settings.gemini_api_key)
+    
+    # Extract important parts instead of dumping entire data
+    plan = data.get("project_plan", {}) if "project_plan" in data else data
+    title = data.get("title", data.get("name", "Untitled Presentation"))
+    
+    summary = {
+        "title": title,
+        "idea": data.get("idea_text", ""),
+        "problem_validation": plan.get("problem_validation", {}),
+        "existing_solutions": plan.get("existing_solutions", []),
+        "tech_stack": plan.get("tech_stack", []),
+        "roadmap": plan.get("roadmap", []),
+        "risks": plan.get("risks", [])
+    }
+    
+    json_data = json.dumps(summary, indent=2, default=str)
+    
+    prompt = f"""
+    You are an expert presentation creator. Summarize the following project/workspace data into a structured presentation format.
+    Create a compelling narrative flow. Keep the bullet points concise and professional. Aim for 5-10 slides.
+    Always include a Title slide and an Agenda slide at the beginning.
+    
+    Data:
+    {json_data[:20000]}
+    """
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-3.5-flash-lite",
+            contents=prompt,
+            config=genai.types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=Presentation,
+            )
+        )
+        presentation_data = response.parsed
+    except Exception as e:
+        logger.error(f"Gemini generation failed: {e}")
+        # Fallback to a basic structure if AI fails
+        presentation_data = Presentation(slides=[
+            Slide(title=title, bullet_points=["Project Overview", "Auto-generated slides"]),
+            Slide(title="Error", bullet_points=["Failed to generate AI slides", str(e)])
+        ])
+    
+    # Now generate PPTX
+    prs = PPTXPresentation()
+    for slide_data in presentation_data.slides:
+        slide_layout = prs.slide_layouts[1] # Title and Content
+        slide = prs.slides.add_slide(slide_layout)
+        title_shape = slide.shapes.title
+        if title_shape:
+            title_shape.text = slide_data.title
+        
+        body_shape = slide.shapes.placeholders[1]
+        tf = body_shape.text_frame
+        
+        for i, bp in enumerate(slide_data.bullet_points):
+            if i == 0:
+                tf.text = bp
+            else:
+                p = tf.add_paragraph()
+                p.text = bp
+                
+    # Return as bytes
+    result = io.BytesIO()
+    prs.save(result)
+    return result.getvalue()

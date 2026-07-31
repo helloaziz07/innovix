@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from app.core.security import get_current_user
 from app.core.database import supabase_admin
 from app.models.schemas import WorkspaceCreate, NoteCreate, MessageResponse
+from app.services.project_hub.export_service import export_to_pptx
 
 logger = logging.getLogger(__name__)
 
@@ -456,16 +457,18 @@ async def add_annotation(
 # Export
 # ============================================
 
-@router.post("/{workspace_id}/export")
+@router.get("/{workspace_id}/export")
 async def export_workspace(
     workspace_id: str,
-    format: str = Query(default="md", regex="^(md|pdf)$"),
+    format: str = Query(default="md", regex="^(md|pdf|pptx)$"),
     user: dict = Depends(get_current_user),
 ):
-    """Export workspace contents (notes, annotations, saved results) to Markdown or PDF."""
+    """
+    Export all workspace contents (notes, annotations, research links).
+    Format can be 'md', 'pdf', or 'pptx'.
+    """
     from fastapi.responses import StreamingResponse
     import io
-
     try:
         ws = (
             supabase_admin.table("workspaces")
@@ -549,6 +552,17 @@ async def export_workspace(
                 )
             except ImportError:
                 raise HTTPException(status_code=500, detail="PDF export requires weasyprint")
+                
+        elif format == "pptx":
+            try:
+                pptx_bytes = await export_to_pptx(workspace)
+                return StreamingResponse(
+                    io.BytesIO(pptx_bytes),
+                    media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    headers={"Content-Disposition": f'attachment; filename="{workspace.get("name", "workspace")}.pptx"'},
+                )
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"PPTX export failed: {str(e)}")
 
         # Default: Markdown
         return StreamingResponse(

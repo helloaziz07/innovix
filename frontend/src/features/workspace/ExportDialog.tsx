@@ -11,6 +11,7 @@ import {
   Download,
   FileText,
   File,
+  Presentation,
   X,
   Loader2,
   Check,
@@ -30,34 +31,85 @@ export default function ExportDialog({
   workspaceId,
   workspaceName,
 }: ExportDialogProps) {
-  const [format, setFormat] = useState<'md' | 'pdf'>('md')
+  const [format, setFormat] = useState<'md' | 'pdf' | 'pptx'>('md')
   const [isExporting, setIsExporting] = useState(false)
   const [exported, setExported] = useState(false)
 
   const handleExport = async () => {
     setIsExporting(true)
     try {
-      const response = await api.post(
-        `/workspaces/${workspaceId}/export`,
-        null,
-        {
-          params: { format },
-          responseType: 'blob',
-        }
-      )
+      if (format === 'pdf') {
+        const { marked } = await import('marked')
+        // @ts-ignore
+        const html2pdf = (await import('html2pdf.js')).default
 
-      // Create download link
-      const blob = new Blob([response.data], {
-        type: format === 'pdf' ? 'application/pdf' : 'text/markdown',
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${workspaceName}.${format}`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+        // Fetch markdown content
+        const response = await api.post(
+          `/workspaces/${workspaceId}/export`,
+          null,
+          {
+            params: { format: 'md' },
+            responseType: 'text',
+          }
+        )
+        const mdContent = response.data
+        const parsedHtml = await marked.parse(mdContent)
+
+        const printContent = `
+          <div style="font-family: 'Inter', -apple-system, sans-serif; padding: 20px; color: #1a1a2e; max-width: 800px; margin: 0 auto; line-height: 1.6;">
+            <style>
+              h1 { color: #6d28d9; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-top: 0; font-size: 28px; }
+              h2 { color: #7c3aed; margin-top: 24px; font-size: 22px; }
+              h3 { color: #4c1d95; margin-top: 20px; font-size: 18px; }
+              p { margin-bottom: 12px; }
+              ul, ol { margin-bottom: 16px; padding-left: 24px; }
+              li { margin-bottom: 6px; }
+              pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 16px 0; border: 1px solid #e5e7eb; }
+              code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.9em; }
+              pre code { background: transparent; padding: 0; border-radius: 0; }
+              blockquote { border-left: 4px solid #8b5cf6; padding-left: 16px; color: #4b5563; font-style: italic; margin: 16px 0; background: #f5f3ff; padding: 12px 16px; border-radius: 0 8px 8px 0; }
+              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; }
+              th { background-color: #f9fafb; font-weight: 600; color: #374151; }
+              hr { border: 0; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+              strong { color: #111827; }
+            </style>
+            ${parsedHtml}
+          </div>
+        `
+
+        const opt = {
+          margin: 15,
+          filename: `${workspaceName.replace(/\s+/g, '_')}.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        }
+
+        await html2pdf().set(opt).from(printContent).save()
+      } else {
+        const response = await api.post(
+          `/workspaces/${workspaceId}/export`,
+          null,
+          {
+            params: { format },
+            responseType: format === 'pptx' ? 'blob' : 'text',
+          }
+        )
+        const type = format === 'pptx' 
+          ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+          : 'text/markdown'
+          
+        const blob = new Blob([response.data], { type })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${workspaceName.replace(/\s+/g, '_')}.${format}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
 
       setExported(true)
       setTimeout(() => {
@@ -66,6 +118,7 @@ export default function ExportDialog({
       }, 1500)
     } catch (err) {
       console.error('Export failed:', err)
+      alert('Export failed. Please try again.')
     } finally {
       setIsExporting(false)
     }
@@ -145,6 +198,20 @@ export default function ExportDialog({
                 <div>
                   <p className="text-xs font-medium">PDF</p>
                   <p className="text-[10px] opacity-60">.pdf file</p>
+                </div>
+              </button>
+              <button
+                onClick={() => setFormat('pptx')}
+                className={`flex items-center gap-2 p-3 rounded-xl border transition-all text-left col-span-2
+                  ${format === 'pptx'
+                    ? 'bg-violet-500/10 border-violet-500/30 text-foreground'
+                    : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                  }`}
+              >
+                <Presentation className="w-5 h-5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs font-medium">PowerPoint (PPTX)</p>
+                  <p className="text-[10px] opacity-60">AI-generated presentation slides</p>
                 </div>
               </button>
             </div>

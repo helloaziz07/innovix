@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, FileText, FileDown, Loader2, X } from 'lucide-react'
+import { Download, FileText, FileDown, Presentation, Loader2, X } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 
 interface ExportButtonProps {
@@ -18,28 +18,70 @@ interface ExportButtonProps {
 export default function ExportButton({ projectId, projectTitle }: ExportButtonProps) {
   const [showDialog, setShowDialog] = useState(false)
   const [exporting, setExporting] = useState(false)
-  const [exportFormat, setExportFormat] = useState<'md' | 'pdf'>('md')
+  const [exportFormat, setExportFormat] = useState<'md' | 'pdf' | 'pptx'>('md')
 
   const handleExport = async () => {
     setExporting(true)
     try {
-      const response = await projectsApi.export(projectId, exportFormat)
+      if (exportFormat === 'pdf') {
+        const { marked } = await import('marked')
+        // @ts-ignore
+        const html2pdf = (await import('html2pdf.js')).default
 
-      // Create blob and trigger download
-      const blob = new Blob(
-        [response.data],
-        {
-          type: exportFormat === 'pdf' ? 'application/pdf' : 'text/markdown',
+        // Fetch markdown content
+        const response = await projectsApi.export(projectId, 'md')
+        const mdContent = response.data
+        const parsedHtml = await marked.parse(mdContent)
+
+        // Create a beautiful wrapper for the PDF
+        const printContent = `
+          <div style="font-family: 'Inter', -apple-system, sans-serif; padding: 20px; color: #1a1a2e; max-width: 800px; margin: 0 auto; line-height: 1.6;">
+            <style>
+              h1 { color: #6d28d9; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-top: 0; font-size: 28px; }
+              h2 { color: #7c3aed; margin-top: 24px; font-size: 22px; }
+              h3 { color: #4c1d95; margin-top: 20px; font-size: 18px; }
+              p { margin-bottom: 12px; }
+              ul, ol { margin-bottom: 16px; padding-left: 24px; }
+              li { margin-bottom: 6px; }
+              pre { background: #f3f4f6; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 16px 0; border: 1px solid #e5e7eb; }
+              code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 0.9em; }
+              pre code { background: transparent; padding: 0; border-radius: 0; }
+              blockquote { border-left: 4px solid #8b5cf6; padding-left: 16px; color: #4b5563; font-style: italic; margin: 16px 0; background: #f5f3ff; padding: 12px 16px; border-radius: 0 8px 8px 0; }
+              table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+              th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; }
+              th { background-color: #f9fafb; font-weight: 600; color: #374151; }
+              hr { border: 0; border-top: 1px solid #e5e7eb; margin: 24px 0; }
+              strong { color: #111827; }
+            </style>
+            ${parsedHtml}
+          </div>
+        `
+
+        const opt = {
+          margin: 15,
+          filename: `${projectTitle.replace(/\s+/g, '_')}_plan.pdf`,
+          image: { type: 'jpeg' as const, quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
         }
-      )
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${projectTitle.replace(/\s+/g, '_')}_plan.${exportFormat}`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+
+        await html2pdf().set(opt).from(printContent).save()
+      } else {
+        const response = await projectsApi.export(projectId, exportFormat)
+        const type = exportFormat === 'pptx' 
+          ? 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+          : 'text/markdown'
+        
+        const blob = new Blob([response.data], { type })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${projectTitle.replace(/\s+/g, '_')}_plan.${exportFormat}`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
 
       setShowDialog(false)
     } catch (err) {
@@ -134,6 +176,24 @@ export default function ExportButton({ projectId, projectTitle }: ExportButtonPr
                     <span className="text-sm font-medium block">PDF</span>
                     <span className="text-[10px] text-muted-foreground">
                       Styled document — great for presentations and submissions
+                    </span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setExportFormat('pptx')}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left
+                    ${
+                      exportFormat === 'pptx'
+                        ? 'bg-violet-500/10 border-violet-500/30'
+                        : 'bg-white/5 border-white/10 hover:border-white/20'
+                    }`}
+                >
+                  <Presentation className={`w-5 h-5 ${exportFormat === 'pptx' ? 'text-violet-400' : 'text-muted-foreground'}`} />
+                  <div>
+                    <span className="text-sm font-medium block">PowerPoint (PPTX)</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      AI-generated presentation slides based on project plan
                     </span>
                   </div>
                 </button>

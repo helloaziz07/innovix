@@ -48,6 +48,13 @@ async def telegram_webhook(request: Request):
         if not text or not chat_id:
             return {"ok": True}
 
+        # Check for connection deep link (e.g., /start connect_uuid)
+        if text.startswith("/start connect_"):
+            connect_user_id = text.replace("/start connect_", "").strip()
+            _link_user_account(connect_user_id, "telegram", chat_id)
+            text = "/start"  # Rewrite message for orchestrator
+
+
         # Resolve the real user_id from agent_sessions
         resolved_user_id = f"telegram_{chat_id}"
         try:

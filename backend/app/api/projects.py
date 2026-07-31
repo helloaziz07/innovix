@@ -22,6 +22,7 @@ from app.services.project_hub.generator import generate_project_plan
 from app.services.project_hub.export_service import (
     export_to_markdown,
     export_to_pdf,
+    export_to_pptx,
     get_narration_text,
 )
 from app.services.sarvam.tts_service import synthesize_speech, is_available as sarvam_available
@@ -227,13 +228,13 @@ async def generate_plan(
 async def export_project(
     project_id: str,
     user: dict = Depends(get_current_user),
-    format: str = Query(default="md", regex="^(md|pdf)$"),
+    format: str = Query(default="md", regex="^(md|pdf|pptx)$"),
 ):
     """
-    Export project plan as Markdown or PDF.
+    Export project plan as Markdown, PDF, or PPTX.
 
     Query params:
-        format: "md" (default) or "pdf"
+        format: "md" (default), "pdf", or "pptx"
     """
     # Fetch the full project
     result = (
@@ -272,6 +273,23 @@ async def export_project(
                 status_code=500,
                 detail=f"PDF export failed: {str(e)}. Try markdown format instead.",
             )
+    elif format == "pptx":
+        try:
+            pptx_bytes = await export_to_pptx(project)
+            filename = f"{project.get('title', 'project').replace(' ', '_')}_plan.pptx"
+            return Response(
+                content=pptx_bytes,
+                media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{filename}"',
+                },
+            )
+        except Exception as e:
+            logger.error(f"[Export] PPTX generation failed: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"PPTX export failed: {str(e)}. Try markdown format instead.",
+            )
     else:
         md_content = export_to_markdown(project)
         filename = f"{project.get('title', 'project').replace(' ', '_')}_plan.md"
@@ -282,7 +300,6 @@ async def export_project(
                 "Content-Disposition": f'attachment; filename="{filename}"',
             },
         )
-
 
 @router.post("/{project_id}/narrate")
 async def narrate_project(
