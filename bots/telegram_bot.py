@@ -64,6 +64,24 @@ class InnovixTelegramBot:
             pass
         return f"telegram_{chat_id}"
 
+    async def _safe_reply(self, update: Update, text: str):
+        """Send a reply with Markdown, falling back to plain text if parsing fails."""
+        try:
+            # Fix unmatched Markdown characters from AI responses
+            safe = text
+            if safe.count('_') % 2 != 0:
+                idx = safe.rfind('_')
+                safe = safe[:idx] + '\\_' + safe[idx + 1:]
+            if safe.count('*') % 2 != 0:
+                idx = safe.rfind('*')
+                safe = safe[:idx] + '\\*' + safe[idx + 1:]
+            if safe.count('[') != safe.count(']'):
+                safe = safe.replace('[', '\\[').replace(']', '\\]')
+            await update.message.reply_text(safe, parse_mode="Markdown")
+        except Exception:
+            # Fallback: send as plain text if Markdown still fails
+            await update.message.reply_text(text)
+
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command — link account and show welcome."""
         user = update.effective_user
@@ -121,54 +139,58 @@ class InnovixTelegramBot:
             platform="telegram",
             chat_id=str(update.effective_chat.id),
         )
-        await update.message.reply_text(result, parse_mode="Markdown")
+        await self._safe_reply(update, result)
 
     async def projects_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /projects command."""
         orchestrator = self._get_orchestrator()
+        chat_id = str(update.effective_chat.id)
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=self._resolve_user_id(chat_id),
             message="/projects",
             platform="telegram",
-            chat_id=str(update.effective_chat.id),
+            chat_id=chat_id,
         )
-        await update.message.reply_text(result, parse_mode="Markdown")
+        await self._safe_reply(update, result)
 
     async def status_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /status command."""
         query = " ".join(context.args) if context.args else ""
         orchestrator = self._get_orchestrator()
+        chat_id = str(update.effective_chat.id)
         result = await orchestrator.process_message(
-            user_id=self._resolve_user_id(str(update.effective_chat.id)),
+            user_id=self._resolve_user_id(chat_id),
             message=f"/status {query}",
             platform="telegram",
-            chat_id=str(update.effective_chat.id),
+            chat_id=chat_id,
         )
-        await update.message.reply_text(result, parse_mode="Markdown")
+        await self._safe_reply(update, result)
 
     async def remind_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /remind command."""
         text = " ".join(context.args) if context.args else ""
         orchestrator = self._get_orchestrator()
+        chat_id = str(update.effective_chat.id)
         result = await orchestrator.process_message(
-            user_id=self._resolve_user_id(str(update.effective_chat.id)),
+            user_id=self._resolve_user_id(chat_id),
             message=f"/remind {text}",
             platform="telegram",
-            chat_id=str(update.effective_chat.id),
+            chat_id=chat_id,
         )
-        await update.message.reply_text(result, parse_mode="Markdown")
+        await self._safe_reply(update, result)
 
     async def ask_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /ask command."""
         question = " ".join(context.args) if context.args else ""
         orchestrator = self._get_orchestrator()
+        chat_id = str(update.effective_chat.id)
         result = await orchestrator.process_message(
-            user_id=self._resolve_user_id(str(update.effective_chat.id)),
+            user_id=self._resolve_user_id(chat_id),
             message=f"/ask {question}",
             platform="telegram",
-            chat_id=str(update.effective_chat.id),
+            chat_id=chat_id,
         )
-        await update.message.reply_text(result, parse_mode="Markdown")
+        await self._safe_reply(update, result)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle free-form text messages."""
@@ -177,13 +199,14 @@ class InnovixTelegramBot:
             return
 
         orchestrator = self._get_orchestrator()
+        chat_id = str(update.effective_chat.id)
         result = await orchestrator.process_message(
-            user_id=self._resolve_user_id(str(update.effective_chat.id)),
+            user_id=self._resolve_user_id(chat_id),
             message=text,
             platform="telegram",
-            chat_id=str(update.effective_chat.id),
+            chat_id=chat_id,
         )
-        await update.message.reply_text(result, parse_mode="Markdown")
+        await self._safe_reply(update, result)
 
     def build(self) -> Application:
         """Build the Telegram bot application with all handlers."""

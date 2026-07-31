@@ -48,9 +48,25 @@ async def telegram_webhook(request: Request):
         if not text or not chat_id:
             return {"ok": True}
 
+        # Resolve the real user_id from agent_sessions
+        resolved_user_id = f"telegram_{chat_id}"
+        try:
+            session = (
+                supabase_admin.table("agent_sessions")
+                .select("user_id")
+                .eq("platform", "telegram")
+                .eq("chat_id", chat_id)
+                .limit(1)
+                .execute()
+            )
+            if session.data and session.data[0].get("user_id"):
+                resolved_user_id = session.data[0]["user_id"]
+        except Exception:
+            pass
+
         # Process through orchestrator
         result = await orchestrator.process_message(
-            user_id="telegram_user",
+            user_id=resolved_user_id,
             message=text,
             platform="telegram",
             chat_id=chat_id,
@@ -60,10 +76,12 @@ async def telegram_webhook(request: Request):
         if settings.telegram_bot_token:
             import httpx
             url = f"https://api.telegram.org/bot{settings.telegram_bot_token}/sendMessage"
+            # Escape special chars to prevent Telegram Markdown parse errors
+            safe_result = _escape_telegram_markdown(result)
             async with httpx.AsyncClient() as client:
                 await client.post(url, json={
                     "chat_id": chat_id,
-                    "text": result,
+                    "text": safe_result,
                     "parse_mode": "Markdown",
                 })
 
@@ -353,3 +371,25 @@ def _save_conversation(
 
     except Exception as e:
         logger.warning(f"[Agents] Save conversation failed: {e}")
+
+
+def _escape_telegram_markdown(text: str) -> str:
+    """
+    Escape special characters that break Telegram's Markdown parser.
+    Preserves intentional formatting like *bold* and _italic_ but
+    escapes stray underscores, brackets, etc. from AI responses.
+    """
+    import re
+    # Count underscores — if odd number, escape the last one
+    if text.count('_') % 2 != 0:
+        # Find the last _ and escape it
+        idx = text.rfind('_')
+        text = text[:idx] + '\\_' + text[idx + 1:]
+    # Same for asterisks
+    if text.count('*') % 2 != 0:
+        idx = text.rfind('*')
+        text = text[:idx] + '\\*' + text[idx + 1:]
+    # Escape unmatched square brackets
+    if text.count('[') != text.count(']'):
+        text = text.replace('[', '\\[').replace(']', '\\]')
+    return text

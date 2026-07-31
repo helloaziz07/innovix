@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import {
-  LayoutDashboard, Search, Rocket, Brain, BookOpen, Bot, Globe,
+  LayoutDashboard, FolderKanban,
   LogOut, Sparkles, ChevronLeft, ChevronRight,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -21,12 +21,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
-  { to: '/deepsearch', icon: Search, labelKey: 'nav.deepsearch' },
-  { to: '/projects', icon: Rocket, labelKey: 'nav.projects' },
-  { to: '/clusters', icon: Brain, labelKey: 'nav.clusters' },
-  { to: '/workspaces', icon: BookOpen, labelKey: 'nav.workspaces' },
-  { to: '/intelligence', icon: Globe, labelKey: 'nav.intelligence' },
-  { to: '/agents', icon: Bot, labelKey: 'nav.agents' },
+  { to: '/projects', icon: FolderKanban, labelKey: 'nav.projects' },
 ]
 
 export default function Layout() {

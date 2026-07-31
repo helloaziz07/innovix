@@ -27,7 +27,7 @@ class AgentOrchestrator:
 
     def __init__(self):
         self.client = genai.Client(api_key=settings.gemini_api_key)
-        self.model = "gemini-2.0-flash"
+        self.model = "gemini-3.5-flash-lite"
 
     async def process_message(
         self,
@@ -127,7 +127,6 @@ Topic: {query}""",
             # Save to search history
             try:
                 supabase_admin.table("search_results").insert({
-                    "user_id": user_id,
                     "query": query,
                     "summary": result[:1000],
                     "sources": [],
@@ -206,7 +205,7 @@ Topic: {query}""",
                 return f"🔎 Couldn't find a project matching '{query}'.\n\nYour projects:\n" + "\n".join(f"• {t}" for t in titles)
 
             # Build status summary
-            plan = matched.get("plan", {})
+            plan = matched.get("project_plan", {}) or {}
             status_emoji = {"ideation": "💡", "researching": "🔍", "planning": "📋", "building": "🔨", "completed": "✅"}
 
             lines = [

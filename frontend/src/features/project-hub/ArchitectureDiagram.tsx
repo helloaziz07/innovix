@@ -7,7 +7,7 @@
  * Uses mermaid.js for client-side rendering (loaded dynamically).
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Layers, AlertTriangle, Copy, Check, Cpu } from 'lucide-react'
 
@@ -15,8 +15,40 @@ interface ArchitectureDiagramProps {
   architecture?: Record<string, unknown>
 }
 
+/**
+ * Sanitize AI-generated Mermaid code to fix common syntax issues.
+ * The AI often generates labels with special characters (&, quotes, parentheses)
+ * that break the Mermaid parser.
+ */
+function sanitizeMermaid(raw: string): string {
+  let code = raw.replace(/\\n/g, '\n')
+
+  // Fix labels that contain special chars but aren't quoted
+  // Match node definitions like: NodeId[Label with & or (parentheses)]
+  // and wrap inner content in quotes if it contains problematic chars
+  code = code.replace(
+    /(\w+)\[([^\]"]*[&()][^\]"]*)\]/g,
+    (_match, id, label) => `${id}["${label.replace(/"/g, "'")}"]`
+  )
+  code = code.replace(
+    /(\w+)\(([^)"]*[&\[\]"][^)"]*)\)/g,
+    (_match, id, label) => `${id}("${label.replace(/"/g, "'")}")`
+  )
+
+  // Fix double-quoted labels that have internal quotes
+  code = code.replace(
+    /(\w+)\["([^"]*)"([^"]*)"([^"]*)"\]/g,
+    (_match, id, a, b, c) => `${id}["${a}'${b}'${c}"]`
+  )
+
+  // Remove any HTML tags that might sneak in
+  code = code.replace(/<br\s*\/?>/gi, '\\n')
+  code = code.replace(/<[^>]+>/g, '')
+
+  return code
+}
+
 export default function ArchitectureDiagram({ architecture }: ArchitectureDiagramProps) {
-  const mermaidRef = useRef<HTMLDivElement>(null)
   const [renderError, setRenderError] = useState(false)
   const [copied, setCopied] = useState(false)
   const [mermaidLoaded, setMermaidLoaded] = useState(false)
@@ -26,9 +58,11 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
   const patterns = architecture?.design_patterns as Record<string, unknown>[] | undefined
   const deployNotes = architecture?.deployment_notes as string | undefined
 
-  // Load and render mermaid diagram
+  // Load and render mermaid diagram — stores SVG string in state to avoid DOM conflicts
+  const [svgContent, setSvgContent] = useState<string | null>(null)
+
   useEffect(() => {
-    if (!mermaidCode || !mermaidRef.current) return
+    if (!mermaidCode) return
 
     let cancelled = false
 
@@ -54,16 +88,31 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
           },
         })
 
-        if (cancelled || !mermaidRef.current) return
+        if (cancelled) return
 
-        // Mermaid needs unescaped newlines
-        const cleanCode = mermaidCode.replace(/\\n/g, '\n')
-        const id = `mermaid-${Date.now()}`
+        const cleanCode = sanitizeMermaid(mermaidCode)
+        const id = `mermaid-offscreen-${Date.now()}`
 
-        const { svg } = await mermaid.default.render(id, cleanCode)
-        if (!cancelled && mermaidRef.current) {
-          mermaidRef.current.innerHTML = svg
-          setMermaidLoaded(true)
+        // Render in a completely detached off-screen element
+        const offscreen = document.createElement('div')
+        offscreen.id = id
+        offscreen.style.position = 'absolute'
+        offscreen.style.left = '-9999px'
+        offscreen.style.top = '-9999px'
+        document.body.appendChild(offscreen)
+
+        try {
+          const { svg } = await mermaid.default.render(id, cleanCode)
+          if (!cancelled) {
+            setSvgContent(svg)
+            setMermaidLoaded(true)
+          }
+        } finally {
+          // Remove the off-screen element
+          try { offscreen.remove() } catch { /* ignore */ }
+          // Also remove any leftover mermaid temp elements
+          const leftover = document.getElementById('d' + id)
+          if (leftover) try { leftover.remove() } catch { /* ignore */ }
         }
       } catch (err) {
         console.warn('Mermaid render failed:', err)
@@ -133,11 +182,12 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
 
           {!renderError ? (
             <div
-              ref={mermaidRef}
               className="p-6 flex justify-center overflow-x-auto min-h-[200px]
                          [&_svg]:max-w-full [&_svg]:h-auto"
             >
-              {!mermaidLoaded && (
+              {mermaidLoaded && svgContent ? (
+                <div dangerouslySetInnerHTML={{ __html: svgContent }} />
+              ) : (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="w-4 h-4 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
                   Rendering diagram...

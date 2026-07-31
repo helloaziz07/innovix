@@ -19,9 +19,6 @@ import ResetPassword from '@/pages/ResetPassword'
 import DeepSearchPage from '@/features/deepsearch/DeepSearchPage'
 import ProjectHubPage from '@/features/project-hub/ProjectHubPage'
 import ProjectDetail from '@/features/project-hub/ProjectDetail'
-import ClustersPage from '@/features/clustering/ClustersPage'
-import IntelligencePage from '@/features/intelligence/IntelligencePage'
-import WorkspacePage from '@/features/workspace/WorkspacePage'
 import AgentsPage from '@/features/agents/AgentsPage'
 
 const queryClient = new QueryClient({
@@ -84,9 +81,6 @@ export default function App() {
               <Route path="/deepsearch" element={<DeepSearchPage />} />
               <Route path="/projects" element={<ProjectHubPage />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
-              <Route path="/clusters" element={<ClustersPage />} />
-              <Route path="/workspaces" element={<WorkspacePage />} />
-              <Route path="/intelligence" element={<IntelligencePage />} />
               <Route path="/agents" element={<AgentsPage />} />
             </Route>
 

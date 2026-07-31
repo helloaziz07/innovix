@@ -16,7 +16,7 @@ const resources = {
       // Navigation
       'nav.dashboard': 'Dashboard',
       'nav.deepsearch': 'DeepSearch',
-      'nav.projects': 'Project HUB',
+      'nav.projects': 'My Projects',
       'nav.clusters': 'Knowledge Clusters',
       'nav.workspaces': 'Workspaces',
       'nav.intelligence': 'Web Intelligence',

@@ -109,18 +109,19 @@ export const authApi = {
     api.patch('/auth/me', data),
 }
 
+// ============================================
+// WebSocket Helpers
+// ============================================
+
 /**
  * Create a WebSocket connection for DeepSearch streaming.
- * Passes auth token as query param for server-side verification.
  * Returns the WebSocket instance — caller manages lifecycle.
  */
-export async function createDeepSearchStream(): Promise<WebSocket> {
-  const { data: { session } } = await supabase.auth.getSession()
-  const token = session?.access_token || ''
+export function createDeepSearchStream(): WebSocket {
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
   const host = import.meta.env.VITE_API_URL
     ? new URL(import.meta.env.VITE_API_URL).host
     : `${window.location.hostname}:8000`
-  return new WebSocket(`${protocol}://${host}/api/deepsearch/stream?token=${token}`)
+  return new WebSocket(`${protocol}://${host}/api/deepsearch/stream`)
 }
 

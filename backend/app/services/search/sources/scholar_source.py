@@ -14,6 +14,7 @@ import httpx
 
 from app.core.config import settings
 from app.models.schemas import SearchSource
+from app.services.search.sources.retry_utils import retry_on_http_error
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ BASE_URL = "https://api.semanticscholar.org/graph/v1"
 MAX_RESULTS = 10
 
 
+@retry_on_http_error
 async def search_scholar(query: str, max_results: int = MAX_RESULTS) -> List[SearchSource]:
     """
     Search Semantic Scholar for papers matching the query.

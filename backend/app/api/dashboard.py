@@ -47,24 +47,27 @@ async def get_dashboard(user: dict = Depends(get_current_user)):
         # ---- Recent searches ----
         recent_searches = []
         try:
-            searches_result = (
-                supabase_admin.table("search_results")
-                .select("id, query, created_at, project_id, sources")
-                .eq("user_id", user_id)
-                .order("created_at", desc=True)
-                .limit(10)
-                .execute()
-            )
-            for s in (searches_result.data or []):
-                sources = s.get("sources", [])
-                source_count = len(sources) if isinstance(sources, list) else 0
-                recent_searches.append({
-                    "id": s.get("id"),
-                    "query": s.get("query", ""),
-                    "created_at": s.get("created_at", ""),
-                    "project_id": s.get("project_id"),
-                    "source_count": source_count,
-                })
+            # search_results doesn't have user_id — filter by the user's project IDs
+            project_ids = [p.get("id") for p in projects if p.get("id")]
+            if project_ids:
+                searches_result = (
+                    supabase_admin.table("search_results")
+                    .select("id, query, created_at, project_id, sources")
+                    .in_("project_id", project_ids)
+                    .order("created_at", desc=True)
+                    .limit(10)
+                    .execute()
+                )
+                for s in (searches_result.data or []):
+                    sources = s.get("sources", [])
+                    source_count = len(sources) if isinstance(sources, list) else 0
+                    recent_searches.append({
+                        "id": s.get("id"),
+                        "query": s.get("query", ""),
+                        "created_at": s.get("created_at", ""),
+                        "project_id": s.get("project_id"),
+                        "source_count": source_count,
+                    })
         except Exception as e:
             logger.warning(f"[Dashboard] Searches fetch failed: {e}")
 
@@ -87,9 +90,19 @@ async def get_dashboard(user: dict = Depends(get_current_user)):
             status_counts=status_counts,
         )
 
+        # ---- Recent projects (top 4 for quick access) ----
+        recent_projects_list = []
+        for p in projects[:4]:
+            recent_projects_list.append({
+                "id": p.get("id"),
+                "title": p.get("title", ""),
+                "status": p.get("status", "ideation"),
+            })
+
         return DashboardResponse(
             total_projects=len(projects),
             projects_by_status=status_counts,
+            recent_projects=recent_projects_list,
             recent_searches=recent_searches,
             recommendations=recommendations,
             trending_topics=trending,

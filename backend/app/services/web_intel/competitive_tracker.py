@@ -19,7 +19,7 @@ from app.core.database import supabase_admin
 logger = logging.getLogger(__name__)
 
 gemini_client = genai.Client(api_key=settings.gemini_api_key)
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 
 
 async def track_competitors(
@@ -71,8 +71,7 @@ Return ONLY a JSON array. No markdown fences."""
             model=GEMINI_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
-                temperature=0.4,
-                max_output_tokens=3000,
+                max_output_tokens=2000,
             ),
         )
         text = response.text.strip()

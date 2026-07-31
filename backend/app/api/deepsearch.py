@@ -161,33 +161,132 @@ async def get_search_results(
 @router.get("/history")
 async def get_search_history(
     user: dict = Depends(get_current_user),
-    limit: int = Query(default=10, ge=1, le=50),
+    limit: int = Query(default=20, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
 ):
     """
-    Get the user's recent search history across all projects.
+    Get the user's recent search history across all projects AND standalone searches.
     """
     try:
-        # Get user's project IDs first
-        projects = (
-            supabase_admin.table("projects")
-            .select("id")
-            .eq("user_id", user["id"])
-            .execute()
-        )
-        project_ids = [p["id"] for p in projects.data]
-
-        if not project_ids:
-            return {"results": []}
-
         result = (
             supabase_admin.table("search_results")
-            .select("id, query, created_at, project_id")
-            .in_("project_id", project_ids)
+            .select("id, query, created_at, project_id, source")
+            .eq("user_id", user["id"])
             .order("created_at", desc=True)
-            .limit(limit)
+            .range(offset, offset + limit - 1)
             .execute()
         )
         return {"results": result.data}
     except Exception as e:
         logger.error(f"[DeepSearch] Failed to fetch history: {e}")
         return {"results": []}
+
+
+@router.get("/standalone")
+async def get_standalone_searches(
+    user: dict = Depends(get_current_user),
+    limit: int = Query(default=20, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+):
+    """
+    Get all standalone (unlinked) search results for the current user.
+    These are searches done without a project context.
+    """
+    try:
+        result = (
+            supabase_admin.table("search_results")
+            .select("*")
+            .eq("user_id", user["id"])
+            .is_("project_id", "null")
+            .order("created_at", desc=True)
+            .range(offset, offset + limit - 1)
+            .execute()
+        )
+        return {"results": result.data}
+    except Exception as e:
+        logger.error(f"[DeepSearch] Failed to fetch standalone searches: {e}")
+        return {"results": []}
+
+
+@router.get("/by-project/{project_id}")
+async def get_project_searches(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Get all search results linked to a specific project.
+    Used by the Project Detail 'Research' tab.
+    """
+    try:
+        # Verify project belongs to user
+        project = (
+            supabase_admin.table("projects")
+            .select("id")
+            .eq("id", project_id)
+            .eq("user_id", user["id"])
+            .single()
+            .execute()
+        )
+        if not project.data:
+            return {"results": []}
+
+        result = (
+            supabase_admin.table("search_results")
+            .select("*")
+            .eq("project_id", project_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return {"results": result.data}
+    except Exception as e:
+        logger.error(f"[DeepSearch] Failed to fetch project searches: {e}")
+        return {"results": []}
+
+
+@router.patch("/{search_id}/link", response_model=MessageResponse)
+async def link_search_to_project(
+    search_id: str,
+    body: dict,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Link a standalone search result to a project.
+    Updates the search_results row to set the project_id.
+    """
+    from fastapi import HTTPException, status
+
+    project_id = body.get("project_id")
+    if not project_id:
+        raise HTTPException(status_code=400, detail="project_id is required")
+
+    # Verify project belongs to user
+    project = (
+        supabase_admin.table("projects")
+        .select("id")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .single()
+        .execute()
+    )
+    if not project.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Verify search result belongs to user
+    search = (
+        supabase_admin.table("search_results")
+        .select("id")
+        .eq("id", search_id)
+        .eq("user_id", user["id"])
+        .single()
+        .execute()
+    )
+    if not search.data:
+        raise HTTPException(status_code=404, detail="Search result not found")
+
+    # Update the search result to link it to the project
+    supabase_admin.table("search_results").update(
+        {"project_id": project_id}
+    ).eq("id", search_id).execute()
+
+    return MessageResponse(message="Search linked to project successfully")
+

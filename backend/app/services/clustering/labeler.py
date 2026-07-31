@@ -19,7 +19,7 @@ from app.core.database import supabase_admin
 logger = logging.getLogger(__name__)
 
 gemini_client = genai.Client(api_key=settings.gemini_api_key)
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 
 
 async def label_clusters(
@@ -69,7 +69,6 @@ Return ONLY a JSON array with one object per cluster (same order). No markdown f
             model=GEMINI_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
-                temperature=0.3,
                 max_output_tokens=1500,
             ),
         )

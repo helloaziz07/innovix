@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 # Gemini client — same singleton pattern as deep_search.py
 gemini_client = genai.Client(api_key=settings.gemini_api_key)
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 
 
 async def generate_project_plan(
@@ -188,22 +188,22 @@ async def _generate_main_plan(
 ) -> Dict[str, Any]:
     """Generate the main plan via Gemini (Step 1)."""
     prompt = get_project_plan_prompt(idea, research_summary, sources_text, gap_analysis)
-    return await _call_gemini_json(prompt, max_tokens=4000, temperature=0.4)
+    return await _call_gemini_json(prompt, max_tokens=4000)
 
 
 async def _generate_architecture(idea: str, tech_stack_json: str) -> Dict[str, Any]:
     """Generate architecture via Gemini (Step 2)."""
     prompt = get_architecture_prompt(idea, tech_stack_json)
-    return await _call_gemini_json(prompt, max_tokens=3000, temperature=0.3)
+    return await _call_gemini_json(prompt, max_tokens=3000)
 
 
 async def _generate_roadmap(idea: str, tech_stack_json: str, architecture_json: str) -> Dict[str, Any]:
     """Generate roadmap via Gemini (Step 3)."""
     prompt = get_roadmap_prompt(idea, tech_stack_json, architecture_json)
-    return await _call_gemini_json(prompt, max_tokens=3000, temperature=0.3)
+    return await _call_gemini_json(prompt, max_tokens=3000)
 
 
-async def _call_gemini_json(prompt: str, max_tokens: int = 3000, temperature: float = 0.4) -> Dict[str, Any]:
+async def _call_gemini_json(prompt: str, max_tokens: int = 3000) -> Dict[str, Any]:
     """
     Call Gemini and parse the response as JSON.
     Handles markdown code fences and common formatting issues.
@@ -214,7 +214,6 @@ async def _call_gemini_json(prompt: str, max_tokens: int = 3000, temperature: fl
             model=GEMINI_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
-                temperature=temperature,
                 max_output_tokens=max_tokens,
             ),
         )

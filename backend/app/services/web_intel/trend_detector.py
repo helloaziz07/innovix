@@ -20,7 +20,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 gemini_client = genai.Client(api_key=settings.gemini_api_key)
-GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemini-3.5-flash-lite"
 
 
 async def detect_trends(
@@ -137,8 +137,7 @@ Return ONLY a JSON array of objects. No markdown fences, no explanation."""
             model=GEMINI_MODEL,
             contents=prompt,
             config=types.GenerateContentConfig(
-                temperature=0.5,
-                max_output_tokens=2000,
+                max_output_tokens=1500,
             ),
         )
         text = response.text.strip()

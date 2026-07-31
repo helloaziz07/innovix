@@ -5,7 +5,7 @@
  * Timeline, Export. Shows "Generate Plan" button and "Listen" (TTS).
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Component, type ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -26,6 +26,50 @@ import ArchitectureDiagram from './ArchitectureDiagram'
 import TechStackCards from './TechStackCards'
 import TimelineView from './TimelineView'
 import ExportButton from './ExportButton'
+
+/**
+ * Error boundary for Mermaid diagram rendering.
+ * Catches DOM conflicts (removeChild errors) and shows a graceful fallback.
+ */
+class MermaidErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error) {
+    console.warn('[MermaidErrorBoundary] Caught render error:', error.message)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="glass-card rounded-xl p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold mb-2">Architecture Diagram</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            The diagram couldn't be rendered in the browser.
+            The component breakdown and design patterns are still shown below.
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="px-3 py-1.5 rounded-lg bg-violet-600/20 text-violet-300 text-xs hover:bg-violet-600/30 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 type TabKey = 'overview' | 'architecture' | 'techstack' | 'timeline'
 
@@ -70,6 +114,20 @@ export default function ProjectDetail() {
     return () => setActiveProject(null)
   }, [fetchProject, setActiveProject])
 
+  // Auto-trigger pipeline for newly created projects (status = 'ideation', no plan yet)
+  useEffect(() => {
+    if (
+      activeProject &&
+      activeProject.status === 'ideation' &&
+      !activeProject.project_plan &&
+      !isGeneratingPlan &&
+      id
+    ) {
+      handleGeneratePlan()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeProject?.id, activeProject?.status])
+
   const handleGeneratePlan = async () => {
     if (!id || isGeneratingPlan) return
     setGeneratingPlan(true)
@@ -81,9 +139,10 @@ export default function ProjectDetail() {
       setActiveProject(updated.data)
       updateProject(id, updated.data)
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Plan generation failed'
+      const axiosErr = err as any
+      const msg = axiosErr?.response?.data?.detail || axiosErr?.message || 'Plan generation failed'
       setError(msg)
-      console.error('Plan generation failed:', err)
+      console.error('Plan generation failed:', msg, err)
     } finally {
       setGeneratingPlan(false)
     }
@@ -136,7 +195,37 @@ export default function ProjectDetail() {
   const hasPlan = plan && !plan.error
 
   return (
-    <div className="min-h-full p-6 lg:p-8">
+    <div className="min-h-full p-6 lg:p-8 relative">
+      {/* Pipeline Loading Overlay */}
+      {isGeneratingPlan && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm
+                     flex items-center justify-center"
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="glass-card rounded-2xl p-8 max-w-md text-center shadow-2xl"
+          >
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl
+                            bg-gradient-to-br from-violet-500 to-purple-600
+                            flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            </div>
+            <h3 className="text-lg font-bold mb-2">Generating Your Project Plan</h3>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+              Our AI is researching your idea, analyzing gaps, and building
+              a complete project plan with architecture and timeline.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-violet-400">
+              <Rocket className="w-3.5 h-3.5 animate-pulse" />
+              This usually takes 30-60 seconds...
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
       {/* Back + Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -275,10 +364,9 @@ export default function ProjectDetail() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all
-                  ${
-                    activeTab === tab.key
-                      ? 'bg-violet-600/20 text-violet-300 font-medium border border-violet-500/20'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                  ${activeTab === tab.key
+                    ? 'bg-violet-600/20 text-violet-300 font-medium border border-violet-500/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                   }`}
               >
                 {tab.icon}
@@ -291,9 +379,11 @@ export default function ProjectDetail() {
           <div className="min-h-[400px]">
             {activeTab === 'overview' && <PlanViewer plan={plan as Record<string, unknown>} />}
             {activeTab === 'architecture' && (
-              <ArchitectureDiagram
-                architecture={(plan as Record<string, unknown>).architecture as Record<string, unknown> | undefined}
-              />
+              <MermaidErrorBoundary>
+                <ArchitectureDiagram
+                  architecture={(plan as Record<string, unknown>).architecture as Record<string, unknown> | undefined}
+                />
+              </MermaidErrorBoundary>
             )}
             {activeTab === 'techstack' && (
               <TechStackCards

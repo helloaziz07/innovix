@@ -51,13 +51,18 @@ async def create_project(
 
 
 @router.get("/", response_model=list[ProjectResponse])
-async def list_projects(user: dict = Depends(get_current_user)):
-    """List all projects for the current user."""
+async def list_projects(
+    user: dict = Depends(get_current_user),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+):
+    """List all projects for the current user with pagination."""
     result = (
         supabase_admin.table("projects")
         .select("*")
         .eq("user_id", user["id"])
         .order("updated_at", desc=True)
+        .range(offset, offset + limit - 1)
         .execute()
     )
     return result.data
@@ -111,6 +116,63 @@ async def delete_project(
     ).eq("user_id", user["id"]).execute()
 
     return MessageResponse(message="Project deleted successfully")
+
+
+@router.get("/{project_id}/suggest-links")
+async def suggest_search_links(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Suggest standalone searches that might be related to this project.
+    Uses simple keyword overlap between the project's idea_text and search queries.
+    """
+    # Get the project's idea text
+    project = (
+        supabase_admin.table("projects")
+        .select("idea_text")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .single()
+        .execute()
+    )
+    if not project.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Get all standalone searches for this user
+    searches = (
+        supabase_admin.table("search_results")
+        .select("id, query, created_at, source")
+        .eq("user_id", user["id"])
+        .is_("project_id", "null")
+        .order("created_at", desc=True)
+        .limit(50)
+        .execute()
+    )
+
+    if not searches.data:
+        return {"suggestions": []}
+
+    # Simple keyword matching: find searches with 2+ common words
+    idea_words = set(
+        w.lower().strip(".,!?\"'()[]{}") for w in project.data["idea_text"].split()
+        if len(w) > 3  # Skip short words (a, an, the, for, etc.)
+    )
+
+    suggestions = []
+    for search in searches.data:
+        query_words = set(
+            w.lower().strip(".,!?\"'()[]{}") for w in search["query"].split()
+            if len(w) > 3
+        )
+        overlap = len(idea_words & query_words)
+        if overlap >= 2:
+            suggestions.append({**search, "relevance": overlap})
+
+    # Sort by relevance (most overlap first)
+    suggestions.sort(key=lambda x: x["relevance"], reverse=True)
+
+    return {"suggestions": suggestions[:10]}
 
 
 # ============================================

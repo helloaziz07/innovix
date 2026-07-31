@@ -1,8 +1,9 @@
 /**
- * Innovix — Dashboard Page (Enhanced)
+ * Innovix — Dashboard Page
  *
- * Personalized homepage with live data from the dashboard API:
- * project stats, activity feed, quick actions, and AI suggestions.
+ * The single entry point for the platform. Users type their idea in the
+ * main search bar, which creates a project and redirects to Project Detail
+ * where the full pipeline (DeepSearch → Plan → Architecture) runs automatically.
  */
 
 import { useState, useEffect } from 'react'
@@ -10,12 +11,12 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuthStore } from '@/stores/authStore'
-import { dashboardApi } from '@/lib/api'
+import { dashboardApi, projectsApi } from '@/lib/api'
 import {
-  Search, Rocket, Plus, FolderOpen,
+  Search, Rocket, FolderOpen,
   Lightbulb, ArrowRight, Sparkles, BarChart3,
-  Brain, BookOpen, Globe, Bot,
-  Clock, Activity, FileText,
+  Clock, Activity, FileText, Loader2,
+  MessageSquare, Send,
 } from 'lucide-react'
 
 // ─── Sub-Components ────────────────────────────────
@@ -86,7 +87,6 @@ function ActivityFeed({ activities }: { activities: any[] }) {
             className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors cursor-pointer"
             onClick={() => {
               if (act.type === 'project') navigate(`/projects/${act.entity_id}`)
-              else if (act.type === 'search') navigate('/deepsearch')
             }}
           >
             <div className={`w-7 h-7 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
@@ -128,63 +128,20 @@ function ProgressChart({ statusCounts }: { statusCounts: Record<string, number> 
         const pct = (count / total) * 100
         return (
           <div key={s.key} className="flex items-center gap-2.5">
-            <span className="text-[11px] text-muted-foreground w-20 text-right">{s.label}</span>
-            <div className="flex-1 h-5 bg-white/5 rounded-full overflow-hidden">
+            <span className="text-[10px] text-muted-foreground w-20">{s.label}</span>
+            <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.max(count > 0 ? 8 : 0, pct)}%` }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="h-full rounded-full flex items-center justify-end pr-2"
-                style={{ backgroundColor: s.color + '40' }}
-              >
-                {count > 0 && (
-                  <span className="text-[10px] font-bold" style={{ color: s.color }}>{count}</span>
-                )}
-              </motion.div>
+                animate={{ width: `${pct}%` }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: s.color }}
+              />
             </div>
+            <span className="text-[10px] font-mono text-muted-foreground w-6 text-right">{count}</span>
           </div>
         )
       })}
-    </div>
-  )
-}
-
-/** Quick action cards */
-function QuickActions() {
-  const navigate = useNavigate()
-
-  const actions = [
-    { icon: Search, title: 'New DeepSearch', desc: 'Research any idea', to: '/deepsearch', color: 'from-violet-500 to-purple-600' },
-    { icon: Plus, title: 'New Project', desc: 'Start a project', to: '/projects', color: 'from-blue-500 to-cyan-500' },
-    { icon: Globe, title: 'Trending', desc: 'Domain trends', to: '/intelligence', color: 'from-orange-500 to-amber-500' },
-    { icon: Brain, title: 'Clusters', desc: 'Knowledge map', to: '/clusters', color: 'from-indigo-500 to-violet-500' },
-    { icon: BookOpen, title: 'Workspace', desc: 'Research notes', to: '/workspaces', color: 'from-emerald-500 to-teal-500' },
-    { icon: Bot, title: 'AI Agents', desc: 'Bot assistants', to: '/agents', color: 'from-pink-500 to-rose-500' },
-  ]
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-      {actions.map((action, idx) => (
-        <motion.div
-          key={action.title}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 + idx * 0.05 }}
-        >
-          <Card
-            className="glass-card cursor-pointer group h-full"
-            onClick={() => navigate(action.to)}
-          >
-            <CardContent className="p-3.5">
-              <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
-                <action.icon className="w-4 h-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-xs mb-0.5">{action.title}</h3>
-              <p className="text-[10px] text-muted-foreground">{action.desc}</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
     </div>
   )
 }
@@ -213,6 +170,10 @@ export default function Dashboard() {
   const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // Search bar state — this is the main entry point
+  const [ideaText, setIdeaText] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
@@ -231,46 +192,130 @@ export default function Dashboard() {
     fetchDashboard()
   }, [])
 
+  /** Main action: Create project from idea and redirect */
+  const handleStartResearch = async () => {
+    const trimmed = ideaText.trim()
+    if (!trimmed || isCreating) return
+
+    setIsCreating(true)
+    try {
+      // Generate a title from the idea (first 60 chars)
+      const title = trimmed.length > 60
+        ? trimmed.slice(0, 57) + '...'
+        : trimmed
+
+      const res = await projectsApi.create({ title, idea_text: trimmed })
+      // Backend returns MessageResponse: { message, success, data: { id, ... } }
+      // Axios wraps it: res.data = { message, success, data: { id, ... } }
+      const projectId = res.data?.data?.id || res.data?.id
+      if (projectId) {
+        navigate(`/projects/${projectId}`)
+      } else {
+        console.error('No project ID in response:', res.data)
+        setIsCreating(false)
+      }
+    } catch (err) {
+      console.error('Failed to create project:', err)
+      setIsCreating(false)
+    }
+  }
+
+  const exampleIdeas = [
+    'Build an AI solution to reduce food waste in college hostels',
+    'Create a smart attendance system using face recognition',
+    'Develop a mental health chatbot for university students',
+  ]
+
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
+        className="mb-8"
       >
         <h1 className="text-3xl font-bold mb-1">
           Welcome back, <span className="gradient-text">{firstName}</span> 👋
         </h1>
         <p className="text-muted-foreground">
-          What would you like to research today?
+          Enter your idea below and we'll handle everything — research, analysis, and planning.
         </p>
       </motion.div>
 
-      {/* Search bar */}
+      {/* ── Main Search Bar (Entry Point) ── */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08 }}
         className="mb-8"
       >
-        <div
-          onClick={() => navigate('/deepsearch')}
-          className="glass-card p-4 flex items-center gap-4 cursor-pointer group glow-purple hover:glow-blue transition-all duration-500"
-        >
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-            <Search className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <p className="text-muted-foreground text-sm">
-              Enter an idea like{' '}
-              <span className="text-foreground font-medium">
-                "Build an AI solution to reduce food waste in college hostels"
-              </span>
-            </p>
-          </div>
-          <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-        </div>
+        <Card className="glass-card glow-purple overflow-hidden">
+          <CardContent className="p-0">
+            <div className="p-5 pb-3">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-semibold">Start Your Research</h2>
+                  <p className="text-xs text-muted-foreground">Describe your idea — we'll research, analyze, and plan it for you</p>
+                </div>
+              </div>
+
+              <div className="relative">
+                <textarea
+                  value={ideaText}
+                  onChange={(e) => setIdeaText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleStartResearch()
+                    }
+                  }}
+                  placeholder='e.g. "Build an AI solution to reduce food waste in college hostels"'
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-14
+                             text-sm placeholder:text-muted-foreground/50 resize-none
+                             focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/30
+                             transition-all min-h-[56px] max-h-[120px]"
+                  rows={2}
+                  disabled={isCreating}
+                />
+                <button
+                  onClick={handleStartResearch}
+                  disabled={!ideaText.trim() || isCreating}
+                  className="absolute right-3 bottom-3 w-9 h-9 rounded-lg
+                             bg-gradient-to-br from-violet-500 to-indigo-500
+                             flex items-center justify-center
+                             hover:scale-105 active:scale-95 transition-transform
+                             disabled:opacity-40 disabled:hover:scale-100"
+                >
+                  {isCreating ? (
+                    <Loader2 className="w-4 h-4 text-white animate-spin" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4 text-white" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Example ideas */}
+            <div className="px-5 pb-4 flex flex-wrap gap-2">
+              <span className="text-[10px] text-muted-foreground/50 self-center mr-1">Try:</span>
+              {exampleIdeas.map((idea, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIdeaText(idea)}
+                  className="text-[11px] px-2.5 py-1 rounded-full
+                             bg-violet-500/10 text-violet-300/80
+                             hover:bg-violet-500/20 hover:text-violet-200
+                             transition-colors border border-violet-500/10"
+                >
+                  {idea.length > 45 ? idea.slice(0, 42) + '...' : idea}
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Stats */}
@@ -294,20 +339,58 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Main grid: Quick Actions + Activity + Progress + Recommendations */}
+      {/* Main grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Quick actions — full width on mobile, 2 cols on desktop */}
+        {/* Left column — Recent Projects + Progress */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
           className="lg:col-span-2 space-y-4"
         >
+          {/* Recent Projects Quick Access */}
           <h2 className="text-sm font-semibold flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-violet-400" />
-            Quick Actions
+            <FolderOpen className="w-4 h-4 text-violet-400" />
+            Recent Projects
           </h2>
-          <QuickActions />
+          {stats.recent_projects?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {stats.recent_projects.slice(0, 4).map((proj: any, idx: number) => (
+                <motion.div
+                  key={proj.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 + idx * 0.05 }}
+                >
+                  <Card
+                    className="glass-card cursor-pointer group h-full hover:scale-[1.01] transition-transform"
+                    onClick={() => navigate(`/projects/${proj.id}`)}
+                  >
+                    <CardContent className="p-3.5">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
+                          <Rocket className="w-4 h-4 text-violet-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-xs mb-0.5 truncate">{proj.title}</h3>
+                          <p className="text-[10px] text-muted-foreground capitalize">{proj.status || 'ideation'}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <Card className="glass-card">
+              <CardContent className="p-6 text-center">
+                <Sparkles className="w-8 h-8 text-violet-400/50 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">
+                  No projects yet. Enter your idea above to get started!
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Progress chart */}
           {stats.total_projects > 0 && (
@@ -323,6 +406,38 @@ export default function Dashboard() {
               </Card>
             </div>
           )}
+
+          {/* Connect Bots — compact card */}
+          <div className="mt-5">
+            <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
+              <MessageSquare className="w-4 h-4 text-pink-400" />
+              Mobile Companion
+            </h2>
+            <a
+              href="https://t.me/InnovixAIBot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <Card className="glass-card hover:scale-[1.02] transition-transform cursor-pointer">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center shrink-0">
+                      <Send className="w-5 h-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium mb-0.5">Connect Telegram or WhatsApp</p>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        Get project reminders, ask questions, and track progress from your phone.
+                        Click to open the Telegram bot →
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </a>
+          </div>
         </motion.div>
 
         {/* Right column — Activity + Suggestions */}
@@ -354,8 +469,8 @@ export default function Dashboard() {
             <Card className="glass-card">
               <CardContent className="p-3 space-y-2">
                 {(stats.recommendations || [
-                  'Start your first DeepSearch to discover research opportunities',
-                  'Create a project to organize your ideas',
+                  'Enter your project idea above to start the full research pipeline',
+                  'Our AI will research, analyze gaps, and build your project plan automatically',
                 ]).map((rec: string, i: number) => (
                   <div
                     key={i}

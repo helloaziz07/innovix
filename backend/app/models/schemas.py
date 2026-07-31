@@ -45,7 +45,7 @@ class ProjectUpdate(BaseModel):
     title: Optional[str] = None
     status: Optional[str] = None
     project_plan: Optional[dict] = None
-    tech_stack: Optional[dict] = None
+    tech_stack: Optional[Any] = None
     architecture: Optional[dict] = None
     timeline: Optional[dict] = None
 
@@ -58,7 +58,7 @@ class ProjectResponse(BaseModel):
     idea_text: str
     status: str = "ideation"
     project_plan: Optional[dict] = None
-    tech_stack: Optional[dict] = None
+    tech_stack: Optional[Any] = None
     architecture: Optional[dict] = None
     timeline: Optional[dict] = None
     created_at: datetime
@@ -135,6 +135,7 @@ class DashboardResponse(BaseModel):
     """Aggregated dashboard data."""
     total_projects: int = 0
     projects_by_status: dict = Field(default_factory=dict)
+    recent_projects: List[dict] = Field(default_factory=list)
     recent_searches: List[dict] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     trending_topics: List[dict] = Field(default_factory=list)

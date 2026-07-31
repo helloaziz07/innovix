@@ -32,9 +32,8 @@ logger = logging.getLogger(__name__)
 def _create_llm():
     """Create the Gemini LLM instance for the agent."""
     return ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash",
+        model="gemini-3.5-flash-lite",
         google_api_key=settings.gemini_api_key,
-        temperature=0.3,
         max_output_tokens=2000,
     )
 

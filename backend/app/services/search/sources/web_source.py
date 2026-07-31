@@ -14,6 +14,7 @@ import httpx
 
 from app.core.config import settings
 from app.models.schemas import SearchSource
+from app.services.search.sources.retry_utils import retry_on_http_error
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ async def search_web(query: str, max_results: int = MAX_RESULTS) -> List[SearchS
         return []
 
 
+@retry_on_http_error
 async def _search_tavily(query: str, max_results: int) -> List[SearchSource]:
     """Search using Tavily API."""
     try:
@@ -93,6 +95,7 @@ async def _search_tavily(query: str, max_results: int) -> List[SearchSource]:
         return []
 
 
+@retry_on_http_error
 async def _search_serpapi(query: str, max_results: int) -> List[SearchSource]:
     """Search using SerpAPI (Google search)."""
     try:
