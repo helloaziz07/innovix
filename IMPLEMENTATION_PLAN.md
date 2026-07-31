@@ -470,11 +470,13 @@ Using `python-telegram-bot`:
 - `/ask <question>` — Ask any project-related question (Gemini-powered)
 - Proactive notifications: milestone reminders, new trending results
 
-#### [NEW] `bots/whatsapp_bot.py`
-Using Twilio WhatsApp API:
-- Webhook handler for incoming messages
-- Same command set as Telegram (natural language parsed by Gemini)
-- Push notifications for project updates
+#### [NEW] `backend/app/api/agents.py` (WhatsApp Integration)
+Using Meta WhatsApp Cloud API:
+- Direct Webhook integration with Meta Developer Dashboard
+- Secure payload verification (`hub.challenge`)
+- Dynamic phone number ID extraction and response routing
+- Natural language parsing (Regex + Gemini) fixed to correctly extract intents
+- Proactive database lookup to match WhatsApp phone numbers to Innovix `user_id` UUIDs
 
 #### [NEW] `backend/app/services/agents/`
 - `agent_orchestrator.py` — Google ADK multi-agent setup
@@ -492,7 +494,7 @@ Using Twilio WhatsApp API:
 
 #### Verification
 - [x] Telegram bot responds to all commands
-- [x] WhatsApp bot handles messages via Twilio
+- [x] WhatsApp bot handles messages via Meta Cloud API
 - [x] Reminder notifications fire on schedule
 - [x] Agents can access project data and answer questions
 
@@ -507,7 +509,7 @@ Using Twilio WhatsApp API:
 - [x] **Supabase client leak** — shared singleton replaces per-request client creation (`security.py`)
 - [x] **WebSocket zero-auth** — JWT token passed via `?token=` query param and validated server-side (`deepsearch.py`, `api.ts`)
 - [x] **SECRET_KEY default** — app crashes on startup in production if key is unchanged (`main.py`)
-- [x] **Agent identity** — bots resolve real `user_id` from `agent_sessions` table instead of hardcoded string (`telegram_bot.py`, `whatsapp_bot.py`)
+- [x] **Agent identity** — bots resolve real `user_id` from `agent_sessions` table instead of raw phone numbers (`app/api/agents.py`)
 - [x] **Database migrations** — complete SQL schema with RLS policies, indexes, and triggers (`migrations/001_create_tables.sql`)
 
 #### High Fixes (Resolved)
