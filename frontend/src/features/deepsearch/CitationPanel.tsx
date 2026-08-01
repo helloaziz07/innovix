@@ -38,12 +38,12 @@ export default function CitationPanel({ citations }: CitationPanelProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="glass-card rounded-xl overflow-hidden"
+      className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden"
     >
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
         id="citation-panel-toggle"
       >
         <div className="flex items-center gap-2">
@@ -79,12 +79,12 @@ export default function CitationPanel({ citations }: CitationPanelProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-2.5 p-2.5 rounded-lg
-                             hover:bg-white/5 transition-colors group"
+                             hover:bg-slate-50 dark:bg-slate-800/50 transition-colors group"
                   id={`citation-${citation.number}`}
                 >
                   {/* Number badge */}
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-violet-500/20 border border-violet-500/30
-                                   text-violet-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
+                  <span className="shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-500/20 border border-blue-300 dark:border-blue-500/40
+                                   text-blue-500 dark:text-blue-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
                     {citation.number}
                   </span>
 

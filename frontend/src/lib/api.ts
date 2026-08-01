@@ -102,6 +102,12 @@ export const clustersApi = {
     api.get(`/clusters/${projectId}`),
 }
 
+/** Translation */
+export const translationApi = {
+  translate: (data: { text: string; target_lang: string; source_lang?: string }) =>
+    api.post('/translation/translate', data),
+}
+
 /** Auth */
 export const authApi = {
   getProfile: () => api.get('/auth/me'),

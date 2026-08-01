@@ -62,7 +62,7 @@ export default function SearchInput({ onSearch, isSearching }: SearchInputProps)
         {/* Animated gradient border */}
         <div className="absolute -inset-0.5 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 rounded-2xl opacity-30 group-hover:opacity-50 group-focus-within:opacity-70 transition-opacity duration-500 blur-sm" />
 
-        <div className="relative glass-card p-5 rounded-2xl">
+        <div className="relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm p-5 rounded-2xl">
           {/* Search icon and textarea */}
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0 mt-0.5">
@@ -104,7 +104,7 @@ export default function SearchInput({ onSearch, isSearching }: SearchInputProps)
           </div>
 
           {/* Source Toggles & Submit */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs text-muted-foreground mr-1">Sources:</span>
               {SOURCE_OPTIONS.map((source) => {
@@ -118,8 +118,8 @@ export default function SearchInput({ onSearch, isSearching }: SearchInputProps)
                       flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
                       transition-all duration-200 border
                       ${isSelected
-                        ? 'bg-white/10 border-white/20 text-foreground'
-                        : 'bg-transparent border-white/5 text-muted-foreground/60 hover:border-white/10'
+                        ? 'bg-slate-100 dark:bg-slate-800 border-white/20 text-foreground'
+                        : 'bg-transparent border-slate-200 dark:border-slate-800 text-muted-foreground/60 hover:border-slate-200 dark:border-slate-700'
                       }
                     `}
                   >
@@ -171,8 +171,8 @@ export default function SearchInput({ onSearch, isSearching }: SearchInputProps)
                 <button
                   key={prompt}
                   onClick={() => handleExampleClick(prompt)}
-                  className="px-3 py-1.5 rounded-full text-xs bg-white/5 border border-white/10
-                             text-muted-foreground hover:bg-white/10 hover:text-foreground
+                  className="px-3 py-1.5 rounded-full text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
+                             text-muted-foreground hover:bg-slate-100 dark:bg-slate-800 hover:text-foreground
                              hover:border-white/20 transition-all duration-200"
                 >
                   {prompt}

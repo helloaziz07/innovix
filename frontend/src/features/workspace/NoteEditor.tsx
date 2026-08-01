@@ -73,38 +73,38 @@ export default function NoteEditor({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card rounded-xl overflow-hidden"
+      className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden"
     >
       {/* Toolbar */}
-      <div className="flex items-center gap-1 px-3 py-2 border-b border-white/5 bg-white/[0.02]">
+      <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-200 dark:border-slate-800 bg-white/[0.02]">
         <span className="text-xs text-muted-foreground mr-2 font-medium">
           {isEditing ? 'Edit Note' : 'New Note'}
         </span>
         <div className="flex-1" />
         <button
           onClick={() => insertMarkdown('**', '**')}
-          className="p-1.5 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-1.5 rounded hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground transition-colors"
           title="Bold"
         >
           <Bold className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertMarkdown('*', '*')}
-          className="p-1.5 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-1.5 rounded hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground transition-colors"
           title="Italic"
         >
           <Italic className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertMarkdown('- ')}
-          className="p-1.5 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-1.5 rounded hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground transition-colors"
           title="List"
         >
           <List className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={() => insertMarkdown('[', '](url)')}
-          className="p-1.5 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-1.5 rounded hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-foreground transition-colors"
           title="Link"
         >
           <Link2 className="w-3.5 h-3.5" />
@@ -124,14 +124,14 @@ export default function NoteEditor({
       />
 
       {/* Tags section */}
-      <div className="px-4 py-3 border-t border-white/5">
+      <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2 flex-wrap">
           <Tag className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-violet-500/10
-                         text-violet-400 text-[11px] font-medium border border-violet-500/20"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-500/10
+                         text-blue-600 dark:text-blue-400 text-[11px] font-medium border border-blue-200 dark:border-blue-500/30"
             >
               <Hash className="w-2.5 h-2.5" />
               {tag}
@@ -155,7 +155,7 @@ export default function NoteEditor({
             {tagInput.trim() && (
               <button
                 onClick={handleAddTag}
-                className="p-0.5 rounded hover:bg-white/10 text-muted-foreground"
+                className="p-0.5 rounded hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground"
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -165,11 +165,11 @@ export default function NoteEditor({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-white/5 bg-white/[0.02]">
+      <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-slate-200 dark:border-slate-800 bg-white/[0.02]">
         <button
           onClick={onCancel}
           className="px-3 py-1.5 rounded-lg text-xs text-muted-foreground
-                     hover:bg-white/10 transition-colors"
+                     hover:bg-slate-100 dark:bg-slate-800 transition-colors"
         >
           Cancel
         </button>

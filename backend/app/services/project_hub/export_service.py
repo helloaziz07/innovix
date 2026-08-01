@@ -343,66 +343,15 @@ def export_to_pdf(project: Dict[str, Any]) -> bytes:
 def get_narration_text(project: Dict[str, Any]) -> str:
     """
     Generate a concise narration-ready text for TTS (Sarvam AI).
-
-    Produces a spoken summary of the project plan — shorter and more
-    conversational than the full markdown export.
-
-    Args:
-        project: Full project record.
-
-    Returns:
-        Plain text suitable for TTS synthesis.
+    Produces a spoken summary of ONLY the Problem Validation section.
     """
     plan = project.get("project_plan", {})
-    title = project.get("title", "Untitled Project")
-    idea = project.get("idea_text", "")
-
-    parts = []
-    parts.append(f"Project: {title}.")
-    parts.append(f"The idea is: {idea}")
-    parts.append("")
-
-    # Problem validation
     pv = plan.get("problem_validation", {})
+    
     if pv.get("summary"):
-        parts.append(f"Problem Validation: {pv['summary']}")
-        parts.append("")
-
-    # Innovation opportunities (top 2)
-    innovations = plan.get("innovation_opportunities", [])[:2]
-    if innovations:
-        parts.append("Key Innovation Opportunities:")
-        for inn in innovations:
-            parts.append(f"  {inn.get('area', '')}: {inn.get('description', '')}")
-        parts.append("")
-
-    # Tech stack summary
-    tech = plan.get("tech_stack", [])
-    if tech and isinstance(tech, list):
-        tech_names = [t.get("technology", "") for t in tech[:6]]
-        parts.append(f"Recommended Tech Stack: {', '.join(tech_names)}.")
-        parts.append("")
-
-    # Roadmap summary
-    roadmap = plan.get("roadmap", [])
-    total_weeks = plan.get("total_weeks", "")
-    mvp_week = plan.get("mvp_ready_by_week", "")
-    if roadmap:
-        parts.append(f"The project has {len(roadmap)} development phases spanning {total_weeks} weeks.")
-        if mvp_week:
-            parts.append(f"An MVP is expected by week {mvp_week}.")
-        for phase in roadmap[:3]:
-            parts.append(f"  Phase {phase.get('phase', '?')}: {phase.get('name', '')} — {phase.get('description', '')}")
-        parts.append("")
-
-    # Risks (top 2)
-    risks = plan.get("risks", [])[:2]
-    if risks:
-        parts.append("Key Risks:")
-        for r in risks:
-            parts.append(f"  {r.get('risk', '')}. Mitigation: {r.get('mitigation', '')}")
-
-    return "\n".join(parts)
+        return str(pv["summary"])
+        
+    return "No problem validation summary available."
 
 
 class Slide(BaseModel):

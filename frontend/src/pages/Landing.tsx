@@ -5,6 +5,7 @@
  * and call-to-action. First thing users see.
  */
 
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -73,27 +74,28 @@ const item = {
 export default function Landing() {
   const navigate = useNavigate()
 
-  return (
-    <div className="min-h-screen bg-background overflow-hidden">
-      {/* Ambient Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-500/8 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-      </div>
+  // Force light mode on Landing page
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+    return () => {
+      document.documentElement.classList.add('dark')
+    }
+  }, [])
 
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 overflow-hidden">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-violet-400" />
-            <span className="text-xl font-bold gradient-text">Innovix</span>
+            <Sparkles className="w-6 h-6 text-primary" />
+            <span className="text-xl font-bold text-primary">Innovix</span>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+            <Button variant="ghost" size="sm" onClick={() => navigate('/login')} className="text-slate-900">
               Sign In
             </Button>
-            <Button size="sm" onClick={() => navigate('/login')}>
+            <Button size="sm" onClick={() => navigate('/login')} className="bg-primary text-white">
               Get Started <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
@@ -108,18 +110,18 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm mb-8">
+            {/* <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-sm mb-8">
               <Zap className="w-4 h-4" />
-              Powered by iNSIGHTS Layer 2
-            </div>
+              
+            </div> */}
 
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
-              <span className="gradient-text">Search Less.</span>
+              <span className="text-primary">Transform Ideas into Reality</span>
               <br />
-              <span className="text-foreground">Solve More.</span>
+              <span className="text-slate-900">with AI-Driven Precision</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
               Your AI-powered research copilot that transforms raw ideas into
               implementation-ready projects — with deep research, gap analysis,
               and intelligent project planning.
@@ -143,25 +145,25 @@ export default function Landing() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-16 glass-card p-6 rounded-2xl max-w-3xl mx-auto glow-purple"
+            className="mt-16 bg-white border border-slate-200 p-6 rounded-2xl max-w-3xl mx-auto shadow-lg"
           >
-            <div className="bg-background/50 rounded-xl p-4 text-left">
+            <div className="bg-slate-50 rounded-xl p-4 text-left border border-slate-200">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-3 h-3 rounded-full bg-red-500/60" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-                <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                <span className="text-xs text-muted-foreground ml-2">innovix.ai</span>
+                <div className="w-3 h-3 rounded-full bg-red-400/80" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
+                <div className="w-3 h-3 rounded-full bg-green-400/80" />
+                <span className="text-xs text-slate-500 ml-2">innovix.ai</span>
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">💡 Enter your idea:</p>
-                <p className="text-base text-foreground font-medium">
+                <p className="text-sm text-slate-500">💡 Enter your idea:</p>
+                <p className="text-base text-slate-900 font-medium">
                   "Build an AI solution to reduce food waste in college hostels"
                 </p>
-                <div className="h-px bg-border my-3" />
-                <p className="text-sm text-violet-400">🔍 Searching arXiv, GitHub, Semantic Scholar...</p>
-                <p className="text-sm text-emerald-400">✅ Found 47 papers, 23 repos, 12 datasets</p>
-                <p className="text-sm text-blue-400">🚀 Generating project architecture...</p>
-                <p className="text-sm text-amber-400">📊 Building implementation timeline...</p>
+                <div className="h-px bg-slate-200 my-3" />
+                <p className="text-sm text-primary">🔍 Searching arXiv, GitHub, Semantic Scholar...</p>
+                <p className="text-sm text-emerald-600">✅ Found 47 papers, 23 repos, 12 datasets</p>
+                <p className="text-sm text-blue-600">🚀 Generating project architecture...</p>
+                <p className="text-sm text-amber-600">📊 Building implementation timeline...</p>
               </div>
             </div>
           </motion.div>
@@ -178,9 +180,9 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              All 7 <span className="gradient-text">iNSIGHTS Layer 2</span> Capabilities
+              All 7 <span className="text-primary">Innovix AI</span> Capabilities
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-slate-600 text-lg max-w-2xl mx-auto">
               From problem discovery to project execution — everything you need in one platform.
             </p>
           </motion.div>
@@ -194,12 +196,12 @@ export default function Landing() {
           >
             {features.map((feature) => (
               <motion.div key={feature.title} variants={item}>
-                <div className="glass-card p-6 h-full group cursor-pointer">
+                <div className="bg-white border border-slate-200 shadow-sm rounded-xl p-6 h-full group cursor-pointer hover:shadow-md hover:border-primary/20 transition-all duration-300">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="text-lg font-semibold mb-2 text-slate-900">{feature.title}</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -212,12 +214,12 @@ export default function Landing() {
       {/* CTA Footer */}
       <section className="py-20 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="glass-card p-10 rounded-2xl glow-purple">
-            <h2 className="text-3xl font-bold mb-4">Ready to innovate?</h2>
-            <p className="text-muted-foreground mb-8">
+          <div className="bg-primary/5 border border-primary/10 p-10 rounded-2xl">
+            <h2 className="text-3xl font-bold mb-4 text-slate-900">Ready to innovate?</h2>
+            <p className="text-slate-600 mb-8">
               Transform your next idea into a fully-planned, research-backed project in minutes.
             </p>
-            <Button size="xl" onClick={() => navigate('/login')}>
+            <Button size="xl" onClick={() => navigate('/login')} className="bg-primary text-white">
               Get Started Free <ArrowRight className="w-5 h-5" />
             </Button>
           </div>
@@ -225,13 +227,13 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-sm text-muted-foreground">
+      <footer className="border-t border-slate-200 py-8 px-6 bg-white">
+        <div className="max-w-7xl mx-auto flex items-center justify-between text-sm text-slate-500">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-violet-400" />
+            <Sparkles className="w-4 h-4 text-primary" />
             <span>Innovix © 2026</span>
           </div>
-          <p>Built with iNSIGHTS Layer 2</p>
+          <p>Built with Innovix AI</p>
         </div>
       </footer>
     </div>

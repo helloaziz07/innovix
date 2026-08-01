@@ -21,10 +21,12 @@ const getCache = (lang: string) => {
       return JSON.parse(data);
     }
     // Fallback to preloaded dictionary for 0ms delay!
-    const preloaded = (preloadedCache as Record<string, Record<string, string>>)[lang.split('-')[0]] || {};
+    const base = lang.split('-')[0] || 'en';
+    const preloaded = (preloadedCache as Record<string, Record<string, string>>)[base] || {};
     return preloaded;
   } catch {
-    const preloaded = (preloadedCache as Record<string, Record<string, string>>)[lang.split('-')[0]] || {};
+    const base = lang.split('-')[0] || 'en';
+    const preloaded = (preloadedCache as Record<string, Record<string, string>>)[base] || {};
     return preloaded;
   }
 };
@@ -47,7 +49,7 @@ export function AutoTranslator() {
   
   // Pending nodes waiting for API response
   const pendingNodes = useRef<Map<string, Set<Node>>>(new Map());
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // If English, we don't translate the DOM (assuming base UI is English)

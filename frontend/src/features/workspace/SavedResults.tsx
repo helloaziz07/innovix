@@ -37,10 +37,10 @@ export default function SavedResults({ results, onRemove, isLoading }: SavedResu
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="glass-card rounded-xl p-4 animate-pulse space-y-2">
-            <div className="h-4 bg-white/10 rounded w-2/3" />
-            <div className="h-3 bg-white/5 rounded w-full" />
-            <div className="h-3 bg-white/5 rounded w-1/2" />
+          <div key={i} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 animate-pulse space-y-2">
+            <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-2/3" />
+            <div className="h-3 bg-slate-50 dark:bg-slate-800/50 rounded w-full" />
+            <div className="h-3 bg-slate-50 dark:bg-slate-800/50 rounded w-1/2" />
           </div>
         ))}
       </div>
@@ -49,7 +49,7 @@ export default function SavedResults({ results, onRemove, isLoading }: SavedResu
 
   if (!results.length) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <Search className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground mb-1">No saved results yet</p>
         <p className="text-xs text-muted-foreground/70">
@@ -67,12 +67,12 @@ export default function SavedResults({ results, onRemove, isLoading }: SavedResu
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.04 }}
-          className="glass-card rounded-xl p-4 group hover:border-violet-500/20 transition-all"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 group hover:border-blue-200 dark:border-blue-500/30 transition-all"
         >
           {/* Header */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Search className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+              <Search className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <h4 className="text-sm font-medium truncate">{result.query}</h4>
             </div>
             <button
@@ -102,8 +102,8 @@ export default function SavedResults({ results, onRemove, isLoading }: SavedResu
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px]
-                             bg-white/5 text-muted-foreground hover:text-violet-400
-                             hover:bg-violet-500/10 transition-colors border border-white/5"
+                             bg-slate-50 dark:bg-slate-800/50 text-muted-foreground hover:text-blue-600 dark:text-blue-400
+                             hover:bg-blue-50 dark:bg-blue-500/10 transition-colors border border-slate-200 dark:border-slate-800"
                 >
                   <ExternalLink className="w-2.5 h-2.5" />
                   <span className="truncate max-w-[120px]">{src.title || src.source_type}</span>

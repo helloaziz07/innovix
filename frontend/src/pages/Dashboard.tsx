@@ -12,26 +12,41 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuthStore } from '@/stores/authStore'
 import { dashboardApi, projectsApi } from '@/lib/api'
-import {
-  Search, Rocket, FolderOpen,
-  Lightbulb, ArrowRight, Sparkles, BarChart3,
-  Clock, Activity, FileText, Loader2,
-  MessageSquare, Send, X, Smartphone
+import { 
+  Rocket, 
+  Search, 
+  Lightbulb,
+  ArrowRight,
+  Network,
+  Layers,
+  CheckCircle2,
+  MessageSquare,
+  Send,
+  X,
+  Smartphone,
+  Mic,
+  Activity,
+  FolderOpen,
+  Sparkles,
+  Clock,
+  Link,
+  Loader2
 } from 'lucide-react'
 
 // ─── Sub-Components ────────────────────────────────
 
 /** Project overview stat cards with live data */
 function ProjectOverviewCards({ stats }: { stats: any }) {
+  const navigate = useNavigate()
   const cards = [
-    { label: 'Projects', value: stats.total_projects || 0, icon: FolderOpen, color: 'text-violet-400', bg: 'from-violet-500/20 to-purple-500/20' },
-    { label: 'In Planning', value: stats.projects_by_status?.planning || 0, icon: FileText, color: 'text-blue-400', bg: 'from-blue-500/20 to-cyan-500/20' },
-    { label: 'Building', value: stats.projects_by_status?.building || 0, icon: Rocket, color: 'text-emerald-400', bg: 'from-emerald-500/20 to-teal-500/20' },
-    { label: 'Completed', value: stats.projects_by_status?.completed || 0, icon: BarChart3, color: 'text-orange-400', bg: 'from-orange-500/20 to-amber-500/20' },
+    { label: 'Total Projects', value: stats.total_projects || 0, icon: Layers, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-[#3B82F6]/10', status: 'all' },
+    { label: 'Ideation', value: stats.projects_by_status?.ideation || 0, icon: Lightbulb, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-[#A855F7]/10', status: 'ideation' },
+    { label: 'In Planning', value: stats.projects_by_status?.planning || 0, icon: Network, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-[#6366F1]/10', status: 'planning' },
+    { label: 'Completed', value: stats.projects_by_status?.completed || 0, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-[#10B981]/10', status: 'completed' },
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {cards.map((stat, idx) => (
         <motion.div
           key={stat.label}
@@ -39,17 +54,20 @@ function ProjectOverviewCards({ stats }: { stats: any }) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: idx * 0.06 }}
         >
-          <Card className="glass-card hover:scale-[1.02] transition-transform">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.bg} flex items-center justify-center`}>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+          <div 
+            onClick={() => navigate(stat.status === 'all' ? '/projects' : `/projects?status=${stat.status}`)}
+            className="bg-white dark:bg-[#111827] rounded-xl p-5 shadow-sm border border-slate-100 dark:border-[#1F2937] hover:shadow-md hover:border-blue-200 dark:hover:border-blue-500/30 transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center transition-transform group-hover:scale-105`}>
+                <stat.icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stat.value}</p>
-                <p className="text-[11px] text-muted-foreground">{stat.label}</p>
+                <p className="text-3xl font-extrabold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{stat.value}</p>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       ))}
     </div>
@@ -61,21 +79,21 @@ function ActivityFeed({ activities }: { activities: any[] }) {
   const navigate = useNavigate()
 
   const ICONS: Record<string, any> = {
-    project: { icon: Rocket, color: 'text-violet-400', bg: 'bg-violet-500/10' },
-    search: { icon: Search, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    project: { icon: Rocket, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10' },
+    search: { icon: Search, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
   }
 
   if (!activities.length) {
     return (
       <div className="p-6 text-center">
-        <Activity className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
-        <p className="text-xs text-muted-foreground">No recent activity</p>
+        <Activity className="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No recent activity</p>
       </div>
     )
   }
 
   return (
-    <div className="divide-y divide-white/5">
+    <div className="divide-y divide-slate-100 dark:divide-slate-800">
       {activities.slice(0, 8).map((act, idx) => {
         const config = ICONS[act.type] || ICONS.project
         return (
@@ -84,22 +102,21 @@ function ActivityFeed({ activities }: { activities: any[] }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: idx * 0.04 }}
-            className="flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors cursor-pointer"
+            className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-[#1F2937] transition-colors cursor-pointer"
             onClick={() => {
               if (act.type === 'project') navigate(`/projects/${act.entity_id}`)
             }}
           >
-            <div className={`w-7 h-7 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
-              <config.icon className={`w-3.5 h-3.5 ${config.color}`} />
+            <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center flex-shrink-0`}>
+              <config.icon className={`w-5 h-5 ${config.color}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs truncate">
-                <span className="capitalize text-muted-foreground">{act.action}</span>
-                {' '}
-                <span className="font-medium">{act.title}</span>
+              <p className="text-sm truncate text-slate-900 dark:text-white">
+                <span className="capitalize font-medium text-slate-500 dark:text-slate-400 mr-1">{act.action}</span>
+                <span className="font-bold">{act.title}</span>
               </p>
             </div>
-            <span className="text-[10px] text-muted-foreground/50 flex-shrink-0">
+            <span className="text-xs font-medium text-slate-400 flex-shrink-0">
               {act.timestamp ? formatRelativeTime(act.timestamp) : ''}
             </span>
           </motion.div>
@@ -109,42 +126,7 @@ function ActivityFeed({ activities }: { activities: any[] }) {
   )
 }
 
-/** Progress chart showing project status distribution */
-function ProgressChart({ statusCounts }: { statusCounts: Record<string, number> }) {
-  const statuses = [
-    { key: 'ideation', label: 'Ideation', color: '#a78bfa' },
-    { key: 'researching', label: 'Researching', color: '#60a5fa' },
-    { key: 'planning', label: 'Planning', color: '#34d399' },
-    { key: 'building', label: 'Building', color: '#fbbf24' },
-    { key: 'completed', label: 'Completed', color: '#f87171' },
-  ]
 
-  const total = Object.values(statusCounts).reduce((a, b) => a + b, 0) || 1
-
-  return (
-    <div className="space-y-2.5">
-      {statuses.map((s) => {
-        const count = statusCounts[s.key] || 0
-        const pct = (count / total) * 100
-        return (
-          <div key={s.key} className="flex items-center gap-2.5">
-            <span className="text-[10px] text-muted-foreground w-20">{s.label}</span>
-            <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="h-full rounded-full"
-                style={{ backgroundColor: s.color }}
-              />
-            </div>
-            <span className="text-[10px] font-mono text-muted-foreground w-6 text-right">{count}</span>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 /** Mobile connection options for Telegram & WhatsApp */
 function MobileCompanion() {
@@ -169,31 +151,25 @@ function MobileCompanion() {
 
   return (
     <>
-      <div className="mt-5">
-        <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-          <MessageSquare className="w-4 h-4 text-pink-400" />
-          Mobile Companion
-        </h2>
-        <Card
-          onClick={() => setShowModal(true)}
-          className="glass-card hover:scale-[1.02] transition-transform cursor-pointer"
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center shrink-0">
-                <Smartphone className="w-5 h-5 text-blue-400" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-medium mb-0.5">Connect Telegram or WhatsApp</p>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Get project reminders, ask questions, and track progress from your phone.
-                  Click to view options →
-                </p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Mobile Companion Card from STITCH */}
+      <div className="rounded-xl p-4 relative overflow-hidden bg-white dark:bg-[#111827] shadow-md border border-slate-100 dark:border-[#1F2937] group hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+        <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-100 dark:bg-[#3B82F6]/20/50 rounded-full blur-2xl group-hover:bg-blue-200/50 transition-colors duration-500"></div>
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2 text-blue-600 dark:text-blue-400">
+            <Smartphone className="w-6 h-6" />
+            <h3 className="font-bold text-lg">Mobile Companion</h3>
+          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Ideate on the go. Sync instantly with your workspace.</p>
+          <div className="w-full h-32 bg-slate-50 dark:bg-[#0B1120] rounded border border-slate-100 dark:border-[#1F2937] flex items-center justify-center relative overflow-hidden mb-4">
+            <img alt="Mobile App Preview" className="object-cover h-full w-full opacity-90 mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsESfssf30tn2ec17qkc1YWhM-1qj1jCQ8Zqa49sqq4cZctTWXO8Ax5c1d57icIzMYFMDwwXeUpRVCd6_1X5crH1hCwHpwlURRt4tMwy7kg0o2Q7hu_yIUY5doPzhcCo7oE3Q-87u3gIC9sZnEjf1UXo6omirqSD5m2hGS40fK15rzrrTUyNP7aLnSFRo6cRAi0KZPZ2PkJHzRftNy-r6kmNpLSl9zd5ZQ7rJsvH1yQpQvKAEMyWYD"/>
+          </div>
+          <button 
+            onClick={() => setShowModal(true)}
+            className="w-full bg-white dark:bg-[#111827] text-blue-600 dark:text-blue-400 border border-blue-200 py-2 px-3 rounded hover:bg-blue-50 dark:bg-[#3B82F6]/10 hover:border-blue-300 transition-all duration-200 text-sm font-bold flex justify-center items-center gap-2 shadow-sm"
+          >
+            Connect Telegram / WhatsApp <Link className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -202,7 +178,7 @@ function MobileCompanion() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
             onClick={() => setShowModal(false)}
           >
             <motion.div
@@ -210,56 +186,56 @@ function MobileCompanion() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-card rounded-2xl p-6 w-full max-w-sm border border-white/10"
+              className="bg-white dark:bg-[#111827] rounded-2xl p-6 w-full max-w-sm border border-slate-200 dark:border-[#1F2937] shadow-xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center">
-                    <MessageSquare className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-[#3B82F6]/20 flex items-center justify-center">
+                    <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="font-semibold text-sm">Connect Mobile</h3>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg">Connect Mobile</h3>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-1 rounded-lg hover:bg-white/10 text-muted-foreground"
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:bg-[#1F2937] text-slate-500 dark:text-slate-400"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Options */}
-              <div className="space-y-3 mb-5">
+              <div className="space-y-3 mb-2">
                 <button
                   onClick={() => handleConnect('telegram')}
-                  className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:border-blue-500/50 bg-white/5 hover:bg-blue-500/10 transition-all text-left group"
+                  className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-[#1F2937] hover:border-blue-300 bg-slate-50 dark:bg-[#0B1120] hover:bg-blue-50 dark:bg-[#3B82F6]/10 transition-all text-left group shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#0088cc]/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-[#0088cc]/10 flex items-center justify-center">
                       <Send className="w-5 h-5 text-[#0088cc]" />
                     </div>
                     <div>
-                      <span className="text-sm font-medium block text-foreground">Telegram</span>
-                      <span className="text-[10px] text-muted-foreground">Open @Innooovixx_bot</span>
+                      <span className="text-sm font-bold block text-slate-900 dark:text-white">Telegram</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Open @Innooovixx_bot</span>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-400 transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors" />
                 </button>
 
                 <button
                   onClick={() => handleConnect('whatsapp')}
-                  className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:border-emerald-500/50 bg-white/5 hover:bg-emerald-500/10 transition-all text-left group"
+                  className="w-full flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-[#1F2937] hover:border-emerald-300 bg-slate-50 dark:bg-[#0B1120] hover:bg-emerald-50 transition-all text-left group shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#25D366]/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center">
                       <MessageSquare className="w-5 h-5 text-[#25D366]" />
                     </div>
                     <div>
-                      <span className="text-sm font-medium block text-foreground">WhatsApp</span>
-                      <span className="text-[10px] text-muted-foreground">Message our WhatsApp bot</span>
+                      <span className="text-sm font-bold block text-slate-900 dark:text-white">WhatsApp</span>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Message our WhatsApp bot</span>
                     </div>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors" />
                 </button>
               </div>
             </motion.div>
@@ -297,6 +273,42 @@ export default function Dashboard() {
   // Search bar state — this is the main entry point
   const [ideaText, setIdeaText] = useState('')
   const [isCreating, setIsCreating] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+
+  const handleMicClick = () => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Your browser does not support voice input.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    
+    // Map supported app languages to Speech API locales
+    const langMap: Record<string, string> = {
+      'hi': 'hi-IN', 'ta': 'ta-IN', 'te': 'te-IN', 'bn': 'bn-IN', 
+      'mr': 'mr-IN', 'kn': 'kn-IN', 'gu': 'gu-IN', 'ml': 'ml-IN', 'pa': 'pa-IN', 'en': 'en-US'
+    };
+    const currentLang = localStorage.getItem('i18nextLng') || 'en';
+    const baseLang = currentLang.split('-')[0] || 'en'; // handles 'mr', 'mr-IN', etc.
+    recognition.lang = langMap[baseLang] || 'en-US';
+    
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setIdeaText(transcript); // Show raw text exactly as they spoke it
+    };
+    
+    recognition.onerror = (e: any) => {
+      console.error("Speech recognition error:", e);
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => setIsListening(false);
+    
+    recognition.start();
+  }
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -358,8 +370,8 @@ export default function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold mb-1">
-          Welcome back, <span className="gradient-text">{firstName}</span> 👋
+        <h1 className="text-3xl font-bold mb-1 text-slate-900 dark:text-white">
+          Welcome back, <span className="text-blue-600 dark:text-blue-400">{firstName}</span> 👋
         </h1>
         <p className="text-muted-foreground">
           Enter your idea below and we'll handle everything — research, analysis, and planning.
@@ -373,11 +385,11 @@ export default function Dashboard() {
         transition={{ delay: 0.08 }}
         className="mb-8"
       >
-        <Card className="glass-card glow-purple overflow-hidden">
+        <Card className="bg-white dark:bg-[#111827] shadow-lg border border-slate-200 dark:border-[#1F2937] overflow-hidden">
           <CardContent className="p-0">
             <div className="p-5 pb-3">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-blue-600 dark:bg-blue-500 flex items-center justify-center shrink-0 shadow-md">
                   <Sparkles className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -397,18 +409,36 @@ export default function Dashboard() {
                     }
                   }}
                   placeholder='e.g. "Build an AI solution to reduce food waste in college hostels"'
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-14
-                             text-sm placeholder:text-muted-foreground/50 resize-none
-                             focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/30
+                  className="w-full bg-slate-50 dark:bg-[#0B1120] border border-slate-200 dark:border-[#1F2937] rounded-xl px-4 py-3 pr-24
+                             text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none text-slate-900 dark:text-white
+                             focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
                              transition-all min-h-[56px] max-h-[120px]"
                   rows={2}
-                  disabled={isCreating}
+                  disabled={isCreating || isListening}
                 />
                 <button
+                  onClick={handleMicClick}
+                  disabled={isCreating || isListening}
+                  className="absolute right-14 bottom-3 w-9 h-9 rounded-lg
+                             bg-white dark:bg-[#1F2937] border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400
+                             flex items-center justify-center shadow-sm
+                             transition-all"
+                  title="Speak your idea"
+                >
+                  {isListening ? (
+                    <div className="relative flex items-center justify-center">
+                      <Mic className="w-4 h-4 text-blue-500" />
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-30 animate-ping"></span>
+                    </div>
+                  ) : (
+                    <Mic className="w-4 h-4" />
+                  )}
+                </button>
+                <button
                   onClick={handleStartResearch}
-                  disabled={!ideaText.trim() || isCreating}
+                  disabled={!ideaText.trim() || isCreating || isListening}
                   className="absolute right-3 bottom-3 w-9 h-9 rounded-lg
-                             bg-gradient-to-br from-violet-500 to-indigo-500
+                             bg-blue-600 hover:bg-blue-700 shadow-md
                              flex items-center justify-center
                              hover:scale-105 active:scale-95 transition-transform
                              disabled:opacity-40 disabled:hover:scale-100"
@@ -429,10 +459,10 @@ export default function Dashboard() {
                 <button
                   key={i}
                   onClick={() => setIdeaText(idea)}
-                  className="text-[11px] px-2.5 py-1 rounded-full
-                             bg-violet-500/10 text-violet-300/80
-                             hover:bg-violet-500/20 hover:text-violet-200
-                             transition-colors border border-violet-500/10"
+                  className="text-[11px] px-3 py-1.5 rounded-full font-medium
+                             bg-slate-100 dark:bg-[#1F2937] text-slate-600 dark:text-slate-300
+                             hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400
+                             transition-colors border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-500/30"
                 >
                   {idea.length > 45 ? idea.slice(0, 42) + '...' : idea}
                 </button>
@@ -444,14 +474,14 @@ export default function Dashboard() {
 
       {/* Stats */}
       {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="glass-card rounded-xl p-4 animate-pulse">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/10 rounded-xl" />
-                <div className="space-y-1.5">
-                  <div className="h-6 bg-white/10 rounded w-8" />
-                  <div className="h-3 bg-white/5 rounded w-16" />
+            <div key={i} className="bg-white dark:bg-[#111827] border border-slate-100 dark:border-[#1F2937] rounded-xl p-5 shadow-sm animate-pulse">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+                <div className="space-y-2">
+                  <div className="h-6 bg-slate-100 dark:bg-slate-800 rounded w-12" />
+                  <div className="h-4 bg-slate-50 dark:bg-slate-800/50 rounded w-20" />
                 </div>
               </div>
             </div>
@@ -473,31 +503,32 @@ export default function Dashboard() {
           className="lg:col-span-2 space-y-4"
         >
           {/* Recent Projects Quick Access */}
-          <h2 className="text-sm font-semibold flex items-center gap-2">
-            <FolderOpen className="w-4 h-4 text-violet-400" />
+          <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
+            <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Recent Projects
           </h2>
           {stats.recent_projects?.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {stats.recent_projects.slice(0, 4).map((proj: any, idx: number) => (
                 <motion.div
                   key={proj.id}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 + idx * 0.05 }}
+                  className="h-full"
                 >
                   <Card
-                    className="glass-card cursor-pointer group h-full hover:scale-[1.01] transition-transform"
+                    className="bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937] cursor-pointer group h-full hover:shadow-md transition-all"
                     onClick={() => navigate(`/projects/${proj.id}`)}
                   >
-                    <CardContent className="p-3.5">
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center shrink-0">
-                          <Rocket className="w-4 h-4 text-violet-400" />
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                          <Rocket className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
                         <div className="min-w-0">
-                          <h3 className="font-semibold text-xs mb-0.5 truncate">{proj.title}</h3>
-                          <p className="text-[10px] text-muted-foreground capitalize">{proj.status || 'ideation'}</p>
+                          <h3 className="font-semibold text-sm mb-0.5 truncate text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.title}</h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{proj.status || 'ideation'}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -506,30 +537,16 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <Card className="glass-card">
-              <CardContent className="p-6 text-center">
-                <Sparkles className="w-8 h-8 text-violet-400/50 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">
+            <Card className="bg-white dark:bg-[#111827] border-dashed border-2 border-slate-200 dark:border-slate-800 shadow-none">
+              <CardContent className="p-8 text-center">
+                <Sparkles className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   No projects yet. Enter your idea above to get started!
                 </p>
               </CardContent>
             </Card>
           )}
 
-          {/* Progress chart */}
-          {stats.total_projects > 0 && (
-            <div className="mt-5">
-              <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-                <BarChart3 className="w-4 h-4 text-emerald-400" />
-                Research Progress
-              </h2>
-              <Card className="glass-card">
-                <CardContent className="p-4">
-                  <ProgressChart statusCounts={stats.projects_by_status || {}} />
-                </CardContent>
-              </Card>
-            </div>
-          )}
 
           {/* Connect Bots — compact card */}
           <MobileCompanion />
@@ -544,11 +561,11 @@ export default function Dashboard() {
         >
           {/* Activity Feed */}
           <div>
-            <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Clock className="w-4 h-4 text-blue-400" />
+            <h2 className="text-sm font-semibold flex items-center gap-2 mb-3 text-slate-900 dark:text-white">
+              <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               Recent Activity
             </h2>
-            <Card className="glass-card">
+            <Card className="bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937]">
               <CardContent className="p-0">
                 <ActivityFeed activities={activities} />
               </CardContent>
@@ -557,11 +574,11 @@ export default function Dashboard() {
 
           {/* AI Suggestions */}
           <div>
-            <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
-              <Lightbulb className="w-4 h-4 text-amber-400" />
+            <h2 className="text-sm font-semibold flex items-center gap-2 mb-3 text-slate-900 dark:text-white">
+              <Lightbulb className="w-4 h-4 text-amber-500" />
               AI Suggestions
             </h2>
-            <Card className="glass-card">
+            <Card className="bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937]">
               <CardContent className="p-3 space-y-2">
                 {(stats.recommendations || [
                   'Enter your project idea above to start the full research pipeline',
@@ -569,8 +586,9 @@ export default function Dashboard() {
                 ]).map((rec: string, i: number) => (
                   <div
                     key={i}
-                    className="p-2.5 rounded-lg bg-accent/50 text-xs leading-relaxed
-                               hover:bg-accent transition-colors cursor-pointer"
+                    className="p-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-xs leading-relaxed
+                               text-amber-800 dark:text-amber-200/80 border border-amber-100 dark:border-amber-500/20
+                               hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors cursor-pointer font-medium"
                   >
                     {rec}
                   </div>

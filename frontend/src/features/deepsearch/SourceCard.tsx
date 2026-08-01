@@ -41,14 +41,14 @@ export default function SourceCard({ source, index, citationNumber }: SourceCard
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
-      className="block glass-card p-4 group cursor-pointer"
+      className="block bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm p-4 group cursor-pointer"
       id={`source-card-${index}`}
     >
       {/* Header: Badge + Citation Number */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
           {citationNumber !== undefined && (
-            <span className="shrink-0 w-6 h-6 rounded-full bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-bold flex items-center justify-center">
+            <span className="shrink-0 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-500/20 border border-blue-300 dark:border-blue-500/40 text-blue-500 dark:text-blue-300 text-xs font-bold flex items-center justify-center">
               {citationNumber}
             </span>
           )}
@@ -87,7 +87,7 @@ export default function SourceCard({ source, index, citationNumber }: SourceCard
               </span>
             )}
             {source.metadata.language && (
-              <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+              <span className="px-1.5 py-0.5 rounded bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                 {String(source.metadata.language)}
               </span>
             )}
@@ -121,7 +121,7 @@ export default function SourceCard({ source, index, citationNumber }: SourceCard
               </span>
             )}
             {source.metadata.primary_category && (
-              <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+              <span className="px-1.5 py-0.5 rounded bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                 {String(source.metadata.primary_category)}
               </span>
             )}
@@ -131,7 +131,7 @@ export default function SourceCard({ source, index, citationNumber }: SourceCard
         {/* Relevance score (all types) */}
         {source.relevance_score > 0 && (
           <span className="ml-auto flex items-center gap-1">
-            <div className="w-12 h-1 rounded-full bg-white/10 overflow-hidden">
+            <div className="w-12 h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500"
                 style={{ width: `${source.relevance_score * 100}%` }}

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus,
@@ -14,12 +14,12 @@ import {
   Search,
   FolderOpen,
   Clock,
-  Sparkles,
   ChevronRight,
   Lightbulb,
   Wrench,
   CheckCircle2,
   X,
+  Network
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore, type Project } from '@/stores/projectStore'
@@ -30,38 +30,40 @@ const STATUS_CONFIG: Record<
 > = {
   ideation: {
     label: 'Ideation',
-    color: 'text-amber-400',
-    icon: <Lightbulb className="w-3.5 h-3.5" />,
-    bg: 'bg-amber-500/10 border-amber-500/20',
+    color: 'text-amber-600',
+    icon: <Lightbulb className="w-5 h-5 text-amber-600" />,
+    bg: 'bg-amber-100',
   },
   researching: {
     label: 'Researching',
-    color: 'text-blue-400',
-    icon: <Search className="w-3.5 h-3.5" />,
-    bg: 'bg-blue-500/10 border-blue-500/20',
+    color: 'text-blue-600',
+    icon: <Search className="w-5 h-5 text-blue-600" />,
+    bg: 'bg-blue-100',
   },
   planning: {
     label: 'Planning',
-    color: 'text-violet-400',
-    icon: <Sparkles className="w-3.5 h-3.5" />,
-    bg: 'bg-violet-500/10 border-violet-500/20',
+    color: 'text-purple-600',
+    icon: <Network className="w-5 h-5 text-purple-600" />,
+    bg: 'bg-purple-100',
   },
   building: {
     label: 'Building',
-    color: 'text-emerald-400',
-    icon: <Wrench className="w-3.5 h-3.5" />,
-    bg: 'bg-emerald-500/10 border-emerald-500/20',
+    color: 'text-indigo-600',
+    icon: <Wrench className="w-5 h-5 text-indigo-600" />,
+    bg: 'bg-indigo-100',
   },
   completed: {
     label: 'Completed',
-    color: 'text-green-400',
-    icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-    bg: 'bg-green-500/10 border-green-500/20',
+    color: 'text-emerald-600',
+    icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
+    bg: 'bg-emerald-100',
   },
 }
 
 export default function ProjectHubPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const initialStatus = searchParams.get('status') || 'all'
   const {
     projects,
     setProjects,
@@ -75,7 +77,7 @@ export default function ProjectHubPage() {
   const [newTitle, setNewTitle] = useState('')
   const [newIdea, setNewIdea] = useState('')
   const [creating, setCreating] = useState(false)
-  const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [filterStatus, setFilterStatus] = useState<string>(initialStatus)
   const [searchQuery, setSearchQuery] = useState('')
 
   const fetchProjects = useCallback(async () => {
@@ -93,6 +95,13 @@ export default function ProjectHubPage() {
   useEffect(() => {
     fetchProjects()
   }, [fetchProjects])
+
+  useEffect(() => {
+    const status = searchParams.get('status')
+    if (status) {
+      setFilterStatus(status)
+    }
+  }, [searchParams])
 
   const handleCreate = async () => {
     if (!newTitle.trim() || !newIdea.trim()) return
@@ -136,94 +145,91 @@ export default function ProjectHubPage() {
   })
 
   return (
-    <div className="min-h-full p-6 lg:p-8">
+    <div className="min-h-full p-6 lg:p-12 max-w-[1400px] mx-auto bg-gray-50/50">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
+        className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-pink-600 flex items-center justify-center">
-            <Rocket className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Project HUB</h1>
-            <p className="text-sm text-muted-foreground">
-              AI-generated project plans from your research
-            </p>
-          </div>
+        <div>
+          <h1 className="text-[32px] font-bold text-slate-900 tracking-tight mb-1">
+            Projects Directory
+          </h1>
+          <p className="text-slate-500">
+            Manage and track your active ideation pipelines.
+          </p>
+        </div>
+
+        {/* Status filter pills */}
+        <div className="flex gap-2 flex-wrap">
+          {['all', 'ideation', 'researching', 'planning', 'building', 'completed'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-4 py-2 rounded-lg text-sm transition-all border
+                ${
+                  filterStatus === status
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-semibold'
+                    : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50 font-medium'
+                }`}
+            >
+              {status === 'all'
+                ? 'All Projects'
+                : status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Search and Action Row */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10"
+      >
+        {/* Search */}
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white border border-gray-200
+                       text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none
+                       focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+          />
         </div>
 
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl
-                     bg-gradient-to-r from-violet-600 to-purple-600
-                     text-white text-sm font-medium
-                     hover:from-violet-500 hover:to-purple-500
-                     transition-all shadow-lg shadow-violet-500/20"
-          id="create-project-btn"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+                     bg-indigo-600 text-white text-sm font-semibold
+                     hover:bg-indigo-700 transition-all shadow-sm shrink-0"
         >
           <Plus className="w-4 h-4" />
           New Project
         </button>
       </motion.div>
 
-      {/* Filters */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="flex flex-col sm:flex-row gap-3 mb-6"
-      >
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search projects..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10
-                       text-sm placeholder:text-muted-foreground focus:outline-none
-                       focus:border-violet-500/50 transition-colors"
-            id="project-search-input"
-          />
-        </div>
-
-        {/* Status filter pills */}
-        <div className="flex gap-1.5 flex-wrap">
-          {['all', ...Object.keys(STATUS_CONFIG)].map((status) => (
-            <button
-              key={status}
-              onClick={() => setFilterStatus(status)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all
-                ${
-                  filterStatus === status
-                    ? 'bg-violet-600/20 border-violet-500/40 text-violet-300'
-                    : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
-                }`}
-            >
-              {status === 'all'
-                ? `All (${projects.length})`
-                : `${STATUS_CONFIG[status]?.label} (${projects.filter((p) => p.status === status).length})`}
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
       {/* Project Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="glass-card rounded-xl p-5 animate-pulse space-y-3"
+              className="bg-white border border-gray-200 shadow-sm rounded-xl p-6 animate-pulse"
             >
-              <div className="h-5 bg-white/10 rounded w-2/3" />
-              <div className="h-3 bg-white/5 rounded w-full" />
-              <div className="h-3 bg-white/5 rounded w-4/5" />
-              <div className="h-6 bg-white/5 rounded-full w-20 mt-3" />
+              <div className="flex justify-between mb-4">
+                <div className="w-10 h-10 bg-gray-100 rounded-full" />
+                <div className="w-20 h-6 bg-gray-100 rounded-full" />
+              </div>
+              <div className="h-6 bg-gray-100 rounded w-3/4 mb-3" />
+              <div className="h-4 bg-gray-100 rounded w-full mb-2" />
+              <div className="h-4 bg-gray-100 rounded w-5/6 mb-8" />
+              <div className="h-4 bg-gray-100 rounded w-24" />
             </div>
           ))}
         </div>
@@ -231,29 +237,28 @@ export default function ProjectHubPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center"
+          className="flex flex-col items-center justify-center py-20 text-center bg-white border border-gray-200 rounded-xl shadow-sm"
         >
-          <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-            <FolderOpen className="w-8 h-8 text-muted-foreground" />
+          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+            <FolderOpen className="w-8 h-8 text-slate-400" />
           </div>
-          <h3 className="text-lg font-medium mb-1">No projects yet</h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+          <h3 className="text-xl font-semibold text-slate-900 mb-2">No projects yet</h3>
+          <p className="text-sm text-slate-500 mb-6 max-w-sm">
             Create your first project to get AI-generated plans with
             architecture, tech stack, and development roadmaps.
           </p>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-                       bg-gradient-to-r from-violet-600 to-purple-600
-                       text-white text-sm font-medium
-                       hover:from-violet-500 hover:to-purple-500 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+                       bg-indigo-600 text-white text-sm font-semibold
+                       hover:bg-indigo-700 transition-all shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Create Project
           </button>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           <AnimatePresence>
             {filtered.map((project, idx) => {
               const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.ideation
@@ -267,47 +272,53 @@ export default function ProjectHubPage() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => navigate(`/projects/${project.id}`)}
-                  className="glass-card rounded-xl p-5 cursor-pointer group
-                             hover:border-violet-500/30 transition-all duration-300
-                             hover:shadow-lg hover:shadow-violet-500/5"
+                  className="bg-white rounded-xl p-6 cursor-pointer group
+                             border border-gray-200 shadow-sm
+                             hover:border-l-[6px] hover:border-l-indigo-600 hover:-ml-[5px]
+                             hover:shadow-md transition-all duration-200
+                             flex flex-col relative"
                 >
                   {/* Status + Delete */}
-                  <div className="flex items-center justify-between mb-3">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                                  text-xs font-medium border ${statusCfg?.bg ?? ''} ${statusCfg?.color ?? ''}`}
-                    >
+                  <div className="flex items-center justify-between mb-5">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${statusCfg?.bg || 'bg-gray-100'}`}>
                       {statusCfg?.icon}
-                      {statusCfg?.label ?? project.status}
-                    </span>
-                    <button
-                      onClick={(e) => handleDelete(project.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded-lg
-                                 hover:bg-red-500/20 text-muted-foreground hover:text-red-400
-                                 transition-all"
-                      aria-label="Delete project"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full
+                                    text-[10px] font-bold tracking-widest uppercase ${statusCfg?.bg || 'bg-gray-100'} ${statusCfg?.color || 'text-gray-600'}`}
+                      >
+                        {statusCfg?.label ?? project.status}
+                      </span>
+                      <button
+                        onClick={(e) => handleDelete(project.id, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md
+                                   hover:bg-red-50 text-slate-300 hover:text-red-500
+                                   transition-all"
+                        aria-label="Delete project"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Title + Idea */}
-                  <h3 className="font-semibold text-sm mb-1.5 line-clamp-1 group-hover:text-violet-300 transition-colors">
+                  <h3 className="font-bold text-xl text-slate-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
                     {project.title}
                   </h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-4">
+                  <p className="text-sm text-slate-500 line-clamp-2 mb-8 flex-1 leading-relaxed">
                     {project.idea_text}
                   </p>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                  <div className="flex items-center justify-between text-xs text-slate-400 border-t border-gray-100 pt-5 mt-auto">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Clock className="w-3.5 h-3.5" />
                       {new Date(project.updated_at).toLocaleDateString()}
                     </span>
-                    <span className="flex items-center gap-1 text-violet-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="flex items-center gap-1 text-indigo-600 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
                       {hasPlan ? 'View Plan' : 'Open'}
-                      <ChevronRight className="w-3 h-3" />
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </motion.div>
@@ -317,14 +328,14 @@ export default function ProjectHubPage() {
         </div>
       )}
 
-      {/* Create Project Modal */}
+      {/* Create Project Modal (Keeping it light theme) */}
       <AnimatePresence>
         {showCreate && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
             onClick={() => setShowCreate(false)}
           >
             <motion.div
@@ -332,15 +343,15 @@ export default function ProjectHubPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="glass-card rounded-2xl p-6 w-full max-w-lg border border-white/10"
+              className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl"
             >
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                  <Plus className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <Rocket className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">New Project</h2>
-                  <p className="text-xs text-muted-foreground">
+                  <h2 className="text-xl font-bold text-slate-900">New Project</h2>
+                  <p className="text-sm text-slate-500">
                     Describe your idea and we'll generate a complete plan
                   </p>
                 </div>
@@ -348,7 +359,7 @@ export default function ProjectHubPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                     Project Title
                   </label>
                   <input
@@ -356,16 +367,16 @@ export default function ProjectHubPage() {
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="e.g., AI-Powered Study Planner"
-                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10
-                               text-sm placeholder:text-muted-foreground/50 focus:outline-none
-                               focus:border-violet-500/50 transition-colors"
+                    className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-200
+                               text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none
+                               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
                     id="new-project-title"
                     autoFocus
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
                     Your Idea
                   </label>
                   <textarea
@@ -373,28 +384,28 @@ export default function ProjectHubPage() {
                     onChange={(e) => setNewIdea(e.target.value)}
                     placeholder="Describe your project idea in detail — what problem it solves, who it's for, any specific features you have in mind..."
                     rows={4}
-                    className="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10
-                               text-sm placeholder:text-muted-foreground/50 focus:outline-none
-                               focus:border-violet-500/50 transition-colors resize-none"
+                    className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-200
+                               text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none
+                               focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors resize-none"
                     id="new-project-idea"
                   />
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setShowCreate(false)}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-white/5 border border-white/10
-                               text-sm text-muted-foreground hover:bg-white/10 transition-colors"
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-gray-200
+                               text-sm font-medium text-slate-600 hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleCreate}
                     disabled={!newTitle.trim() || !newIdea.trim() || creating}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600
-                               text-white text-sm font-medium hover:from-violet-500 hover:to-purple-500
+                    className="flex-1 px-4 py-2.5 rounded-lg bg-indigo-600
+                               text-white text-sm font-semibold hover:bg-indigo-700
                                disabled:opacity-50 disabled:cursor-not-allowed transition-all
-                               flex items-center justify-center gap-2"
+                               flex items-center justify-center gap-2 shadow-sm"
                     id="submit-project-btn"
                   >
                     {creating ? (

@@ -42,8 +42,8 @@ const MOMENTUM_CONFIG = {
   emerging: {
     icon: <Sparkles className="w-3.5 h-3.5" />,
     label: 'Emerging',
-    color: 'text-violet-400',
-    bg: 'bg-violet-500/10 border-violet-500/20',
+    color: 'text-blue-600 dark:text-blue-400',
+    bg: 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30',
   },
   stable: {
     icon: <Minus className="w-3.5 h-3.5" />,
@@ -72,12 +72,12 @@ export default function TrendingTopics({ trends, domain, isLoading }: TrendingTo
     return (
       <div className="space-y-3">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="glass-card rounded-xl p-4 animate-pulse">
+          <div key={i} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 animate-pulse">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white/10" />
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-white/10 rounded w-1/3" />
-                <div className="h-3 bg-white/5 rounded w-2/3" />
+                <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/3" />
+                <div className="h-3 bg-slate-50 dark:bg-slate-800/50 rounded w-2/3" />
               </div>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function TrendingTopics({ trends, domain, isLoading }: TrendingTo
 
   if (!trends.length) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <TrendingUp className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">
           No trends found for "{domain}". Try a broader search term.
@@ -110,14 +110,14 @@ export default function TrendingTopics({ trends, domain, isLoading }: TrendingTo
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
-              className="glass-card rounded-xl overflow-hidden cursor-pointer
-                         hover:border-violet-500/20 transition-all"
+              className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden cursor-pointer
+                         hover:border-blue-200 dark:border-blue-500/30 transition-all"
               onClick={() => setExpandedIdx(isExpanded ? null : idx)}
             >
               <div className="p-4">
                 <div className="flex items-start gap-3">
                   {/* Rank number */}
-                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center
+                  <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center
                                   text-xs font-bold text-muted-foreground flex-shrink-0">
                     {idx + 1}
                   </div>
@@ -158,7 +158,7 @@ export default function TrendingTopics({ trends, domain, isLoading }: TrendingTo
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="border-t border-white/5"
+                    className="border-t border-slate-200 dark:border-slate-800"
                   >
                     <div className="p-4 pt-3 space-y-3">
                       {trend.why_important && (
@@ -178,7 +178,7 @@ export default function TrendingTopics({ trends, domain, isLoading }: TrendingTo
                             {trend.related_keywords.map((kw, i) => (
                               <span
                                 key={i}
-                                className="px-2 py-0.5 rounded-md bg-white/5 text-[11px] text-muted-foreground"
+                                className="px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800/50 text-[11px] text-muted-foreground"
                               >
                                 {kw}
                               </span>

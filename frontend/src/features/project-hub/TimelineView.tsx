@@ -44,7 +44,7 @@ interface Risk {
 }
 
 const PHASE_COLORS = [
-  'from-violet-500 to-purple-500',
+  'from-blue-500 to-indigo-500',
   'from-blue-500 to-cyan-500',
   'from-emerald-500 to-teal-500',
   'from-orange-500 to-amber-500',
@@ -53,7 +53,7 @@ const PHASE_COLORS = [
 ]
 
 const PHASE_BG = [
-  'bg-violet-500/10 border-violet-500/20',
+  'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30',
   'bg-blue-500/10 border-blue-500/20',
   'bg-emerald-500/10 border-emerald-500/20',
   'bg-orange-500/10 border-orange-500/20',
@@ -70,7 +70,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
 
   if (roadmap.length === 0 && timeline.length === 0) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">No timeline data available.</p>
       </div>
@@ -93,22 +93,22 @@ export default function TimelineView({ plan }: TimelineViewProps) {
         animate={{ opacity: 1, y: 0 }}
         className="grid grid-cols-2 md:grid-cols-4 gap-3"
       >
-        <div className="glass-card rounded-xl p-4 text-center">
-          <CalendarDays className="w-5 h-5 text-violet-400 mx-auto mb-1.5" />
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 text-center">
+          <CalendarDays className="w-5 h-5 text-blue-600 dark:text-blue-400 mx-auto mb-1.5" />
           <p className="text-lg font-bold">{totalWeeks}</p>
           <p className="text-[10px] text-muted-foreground">Total Weeks</p>
         </div>
-        <div className="glass-card rounded-xl p-4 text-center">
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 text-center">
           <Flag className="w-5 h-5 text-emerald-400 mx-auto mb-1.5" />
           <p className="text-lg font-bold">{roadmap.length}</p>
           <p className="text-[10px] text-muted-foreground">Phases</p>
         </div>
-        <div className="glass-card rounded-xl p-4 text-center">
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 text-center">
           <Target className="w-5 h-5 text-amber-400 mx-auto mb-1.5" />
           <p className="text-lg font-bold">Week {mvpWeek}</p>
           <p className="text-[10px] text-muted-foreground">MVP Ready</p>
         </div>
-        <div className="glass-card rounded-xl p-4 text-center">
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 text-center">
           <AlertTriangle className="w-5 h-5 text-orange-400 mx-auto mb-1.5" />
           <p className="text-lg font-bold">{risks.length}</p>
           <p className="text-[10px] text-muted-foreground">Risks Identified</p>
@@ -120,10 +120,10 @@ export default function TimelineView({ plan }: TimelineViewProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="glass-card rounded-xl p-4"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4"
       >
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-violet-400" />
+          <CalendarDays className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Development Timeline
         </h3>
 
@@ -158,7 +158,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
                 <span className="text-xs text-muted-foreground w-[120px] truncate flex-shrink-0">
                   Phase {phase.phase}
                 </span>
-                <div className="flex-1 relative h-8 bg-white/5 rounded-lg overflow-hidden">
+                <div className="flex-1 relative h-8 bg-slate-50 dark:bg-slate-800/50 rounded-lg overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${widthPercent}%` }}
@@ -213,7 +213,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 + idx * 0.1 }}
-              className={`glass-card rounded-xl p-4 border ${PHASE_BG[colorIdx]}`}
+              className={`bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 border ${PHASE_BG[colorIdx]}`}
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -233,7 +233,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
               {phase.milestones && phase.milestones.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {phase.milestones.map((ms, msIdx) => (
-                    <div key={msIdx} className="pl-3 border-l-2 border-white/10">
+                    <div key={msIdx} className="pl-3 border-l-2 border-slate-200 dark:border-slate-700">
                       <div className="flex items-center gap-1.5 mb-1">
                         {prioIcon[ms.priority] || <Circle className="w-3 h-3 text-gray-400 flex-shrink-0" />}
                         <span className="text-xs font-medium">{ms.name}</span>
@@ -262,9 +262,9 @@ export default function TimelineView({ plan }: TimelineViewProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="glass-card rounded-xl overflow-hidden"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden"
         >
-          <div className="p-4 border-b border-white/5">
+          <div className="p-4 border-b border-slate-200 dark:border-slate-800">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-400" />
               Weekly Task Breakdown
@@ -273,7 +273,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left p-3 text-muted-foreground font-medium">Week</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Phase</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Focus</th>
@@ -284,7 +284,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
                 {timeline.map((week, idx) => (
                   <tr
                     key={idx}
-                    className={`border-b border-white/5 ${
+                    className={`border-b border-slate-200 dark:border-slate-800 ${
                       week.week === mvpWeek ? 'bg-amber-500/5' : ''
                     }`}
                   >

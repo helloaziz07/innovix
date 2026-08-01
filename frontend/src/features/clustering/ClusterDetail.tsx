@@ -44,11 +44,11 @@ export default function ClusterDetail({ cluster, results, onClose }: ClusterDeta
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 20 }}
-        className="glass-card rounded-xl overflow-hidden"
+        className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden"
       >
         {/* Header */}
         <div
-          className="p-4 border-b border-white/5"
+          className="p-4 border-b border-slate-200 dark:border-slate-800"
           style={{ background: `linear-gradient(135deg, ${cluster.color}15, transparent)` }}
         >
           <div className="flex items-start justify-between">
@@ -66,7 +66,7 @@ export default function ClusterDetail({ cluster, results, onClose }: ClusterDeta
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-white/10 text-muted-foreground
+              className="p-1 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground
                          hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
@@ -84,7 +84,7 @@ export default function ClusterDetail({ cluster, results, onClose }: ClusterDeta
                 <span
                   key={i}
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px]
-                             font-medium bg-white/5 text-muted-foreground"
+                             font-medium bg-slate-50 dark:bg-slate-800/50 text-muted-foreground"
                 >
                   <Tag className="w-2.5 h-2.5" />
                   {kw}
@@ -130,8 +130,8 @@ export default function ClusterDetail({ cluster, results, onClose }: ClusterDeta
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px]
-                                     bg-white/5 text-muted-foreground hover:text-violet-400
-                                     hover:bg-violet-500/10 transition-colors"
+                                     bg-slate-50 dark:bg-slate-800/50 text-muted-foreground hover:text-blue-600 dark:text-blue-400
+                                     hover:bg-blue-50 dark:bg-blue-500/10 transition-colors"
                         >
                           <ExternalLink className="w-2.5 h-2.5" />
                           {src.title?.substring(0, 25)}...

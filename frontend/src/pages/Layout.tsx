@@ -27,7 +27,7 @@ const navItems = [
 export default function Layout() {
   const { user, signOut } = useAuthStore()
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  useTranslation()
   const [collapsed, setCollapsed] = useState(false)
 
   const handleSignOut = async () => {
@@ -36,19 +36,19 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-slate-50 dark:bg-[#0B1120] overflow-hidden">
       {/* Sidebar */}
       <aside
         className={cn(
-          'flex flex-col border-r border-border bg-card/50 backdrop-blur-sm transition-all duration-300',
+          'flex flex-col border-r border-border bg-white dark:bg-[#111827] transition-all duration-300',
           collapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Logo */}
         <div className="h-16 flex items-center gap-2 px-4 border-b border-border shrink-0">
-          <Sparkles className="w-6 h-6 text-violet-400 shrink-0" />
+          <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400 shrink-0" />
           {!collapsed && (
-            <span className="text-lg font-bold gradient-text">Innovix</span>
+            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">Innovix</span>
           )}
         </div>
 
@@ -60,10 +60,10 @@ export default function Layout() {
               to={navItem.to}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all duration-200',
                   isActive
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                    : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-[#1F2937] hover:text-slate-900 dark:hover:text-white'
                 )
               }
             >
@@ -83,14 +83,14 @@ export default function Layout() {
 
           {!collapsed && user && (
             <div className="flex items-center gap-3 px-3 py-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm font-bold shrink-0">
                 {user.user_metadata?.full_name?.[0] || user.email?.[0]?.toUpperCase() || '?'}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate">
+                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                   {user.user_metadata?.full_name || 'User'}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                   {user.email}
                 </p>
               </div>

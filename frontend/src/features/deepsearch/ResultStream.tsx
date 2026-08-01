@@ -60,7 +60,7 @@ export default function ResultStream({ progress, summary, isStreaming }: ResultS
       className="w-full max-w-4xl mx-auto"
     >
       {/* Progress Header */}
-      <div className="glass-card p-4 mb-4 rounded-xl">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm p-4 mb-4 rounded-xl">
         <div className="flex items-center gap-3 mb-3">
           {isStreaming ? (
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center animate-pulse-glow">
@@ -107,7 +107,7 @@ export default function ResultStream({ progress, summary, isStreaming }: ResultS
                     ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                     : errored
                       ? 'bg-red-500/10 border-red-500/20 text-red-400'
-                      : 'bg-white/5 border-white/10 text-muted-foreground'
+                      : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-muted-foreground'
                   }
                 `}
               >
@@ -137,10 +137,10 @@ export default function ResultStream({ progress, summary, isStreaming }: ResultS
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             ref={scrollRef}
-            className="glass-card p-6 rounded-xl"
+            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm p-6 rounded-xl"
           >
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
                 <Brain className="w-3.5 h-3.5 text-white" />
               </span>
               AI Research Summary
@@ -151,7 +151,7 @@ export default function ResultStream({ progress, summary, isStreaming }: ResultS
                           prose-p:text-muted-foreground prose-p:leading-relaxed
                           prose-strong:text-foreground prose-strong:font-semibold
                           prose-li:text-muted-foreground
-                          prose-a:text-violet-400 prose-a:no-underline hover:prose-a:underline">
+                          prose-a:text-blue-600 dark:text-blue-400 prose-a:no-underline hover:prose-a:underline">
               {/* Simple markdown-to-HTML rendering */}
               <MarkdownRenderer content={summary} />
             </div>
@@ -252,10 +252,10 @@ function formatInline(text: string): string {
     // Italic
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     // Code
-    .replace(/`(.+?)`/g, '<code class="px-1 py-0.5 rounded bg-white/10 text-violet-300 text-xs">$1</code>')
+    .replace(/`(.+?)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-500 dark:text-blue-300 text-xs">$1</code>')
     // Citation references [1], [2]
     .replace(
       /\[(\d+)\]/g,
-      '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-violet-500/20 border border-violet-500/30 text-violet-300 text-[9px] font-bold align-text-top mx-0.5 cursor-pointer">$1</span>'
+      '<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-500/20 border border-blue-300 dark:border-blue-500/40 text-blue-500 dark:text-blue-300 text-[9px] font-bold align-text-top mx-0.5 cursor-pointer">$1</span>'
     )
 }

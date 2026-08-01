@@ -22,7 +22,7 @@ export function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivEl
 /** Skeleton for a stat card */
 export function StatCardSkeleton() {
   return (
-    <div className="glass-card rounded-xl p-4 flex items-center gap-4">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 flex items-center gap-4">
       <Skeleton className="w-8 h-8 rounded-lg" />
       <div className="space-y-2 flex-1">
         <Skeleton className="h-6 w-12" />
@@ -35,7 +35,7 @@ export function StatCardSkeleton() {
 /** Skeleton for a project card */
 export function ProjectCardSkeleton() {
   return (
-    <div className="glass-card rounded-xl p-5 space-y-3">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-5 space-y-3">
       <div className="flex items-center gap-3">
         <Skeleton className="w-10 h-10 rounded-lg" />
         <div className="space-y-2 flex-1">
@@ -57,7 +57,7 @@ export function ProjectCardSkeleton() {
 /** Skeleton for a search result */
 export function SearchResultSkeleton() {
   return (
-    <div className="glass-card rounded-xl p-4 space-y-3">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Skeleton className="w-5 h-5 rounded" />
         <Skeleton className="h-4 w-24" />

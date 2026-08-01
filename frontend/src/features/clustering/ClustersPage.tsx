@@ -138,7 +138,7 @@ export default function ClustersPage() {
             setSelectedCluster(null)
             setError('')
           }}
-          className="flex-1 max-w-md px-4 py-2.5 rounded-xl bg-white/5 border border-white/10
+          className="flex-1 max-w-md px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
                      text-sm focus:outline-none focus:border-violet-500/50 transition-colors
                      [&>option]:bg-[#1a1a2e] [&>option]:text-foreground"
           id="cluster-project-select"
@@ -192,7 +192,7 @@ export default function ClustersPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="glass-card rounded-xl p-8 text-center mb-6"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center mb-6"
         >
           <Loader2 className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
           <h3 className="font-semibold mb-1">Generating Knowledge Clusters</h3>
@@ -256,7 +256,7 @@ export default function ClustersPage() {
                   }}
                 />
               ) : (
-                <div className="glass-card rounded-xl p-6 text-center h-full flex flex-col items-center justify-center">
+                <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-6 text-center h-full flex flex-col items-center justify-center">
                   <Brain className="w-8 h-8 text-muted-foreground mb-3" />
                   <p className="text-sm text-muted-foreground">
                     Click a cluster or point to see details
@@ -294,7 +294,7 @@ export default function ClustersPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-10 text-center"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-10 text-center"
         >
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 flex items-center justify-center mx-auto mb-4">
             <Brain className="w-7 h-7 text-indigo-400" />

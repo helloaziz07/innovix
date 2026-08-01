@@ -151,6 +151,7 @@ Return a JSON object with these keys:
 - "web": A query optimized for general web search
 
 Keep each query concise (5-15 words), focused, and use appropriate terminology for each platform.
+CRITICAL: You MUST translate the query to English if it is in another language. All generated search queries MUST be in English.
 Return ONLY the JSON object, no markdown formatting or code blocks."""
 
     try:
@@ -294,7 +295,8 @@ async def _generate_summary(query: str, sources: List[SearchSource]) -> tuple[st
 2. Use inline citations like [1], [2], etc. to reference the sources above.
 3. Be specific and technical — this is for a researcher/student, not general public.
 4. Use markdown formatting (headers, bold, lists).
-5. Do NOT start with "Here is..." or similar meta-text. Start directly with the content."""
+5. Do NOT start with "Here is..." or similar meta-text. Start directly with the content.
+6. CRITICAL: The ENTIRE summary MUST be written in English, regardless of the language of the user's idea."""
 
     try:
         response = await asyncio.to_thread(

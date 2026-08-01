@@ -67,7 +67,7 @@ function TurnstileWidget({
         callback: onVerify,
         'expired-callback': onExpire,
         'error-callback': onExpire,
-        theme: 'dark',
+        theme: 'light',
         size: 'normal',
       })
     }
@@ -127,7 +127,7 @@ function PasswordStrength({ password }: { password: string }) {
                   : score <= 3
                   ? 'bg-yellow-500'
                   : 'bg-green-500'
-                : 'bg-white/10'
+                : 'bg-muted'
             }`}
           />
         ))}
@@ -136,7 +136,7 @@ function PasswordStrength({ password }: { password: string }) {
         {checks.map((check) => (
           <span
             key={check.label}
-            className={`text-[10px] ${check.met ? 'text-green-400' : 'text-muted-foreground'}`}
+            className={`text-[10px] ${check.met ? 'text-emerald-600' : 'text-slate-400'}`}
           >
             {check.met ? '✓' : '○'} {check.label}
           </span>
@@ -149,6 +149,15 @@ function PasswordStrength({ password }: { password: string }) {
 // ─── Main Auth Page ────────────────────────────────
 export default function Login() {
   const navigate = useNavigate()
+
+  // Force light mode on Login page
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+    return () => {
+      document.documentElement.classList.add('dark')
+    }
+  }, [])
+
   const { isAuthenticated, signInWithGoogle, signInWithGithub, signInWithEmail, signUpWithEmail, resetPassword } = useAuthStore()
 
   const [mode, setMode] = useState<AuthMode>('signin')
@@ -259,25 +268,18 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-      {/* Ambient Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-indigo-500/8 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-3xl" />
-      </div>
-
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        <Card className="glass-card border-white/10 glow-purple">
+        <Card className="bg-white border border-slate-200 shadow-lg">
           <CardHeader className="text-center space-y-4">
             {/* Logo */}
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-8 h-8 text-violet-400" />
-              <span className="text-2xl font-bold gradient-text">Innovix</span>
+              <Sparkles className="w-8 h-8 text-primary" />
+              <span className="text-2xl font-bold text-primary">Innovix</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -288,12 +290,12 @@ export default function Login() {
                 exit={{ opacity: 0, y: 10 }}
                 transition={{ duration: 0.2 }}
               >
-                <CardTitle className="text-2xl">
+                <CardTitle className="text-2xl text-slate-900">
                   {mode === 'signin' && 'Welcome back'}
                   {mode === 'signup' && 'Create your account'}
                   {mode === 'forgot' && 'Reset password'}
                 </CardTitle>
-                <CardDescription className="text-base mt-2">
+                <CardDescription className="text-base mt-2 text-slate-400">
                   {mode === 'signin' && 'Sign in to continue your research journey'}
                   {mode === 'signup' && 'Start building innovative projects today'}
                   {mode === 'forgot' && "We'll send you a reset link to your email"}
@@ -310,7 +312,7 @@ export default function Login() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+                  className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm"
                 >
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
@@ -325,7 +327,7 @@ export default function Login() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-sm"
+                  className="flex items-center gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 text-sm"
                 >
                   <CheckCircle className="w-4 h-4 shrink-0" />
                   <span>{successMessage}</span>
@@ -345,7 +347,7 @@ export default function Login() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full h-12 text-base gap-3 hover:bg-white/5"
+                    className="w-full h-12 text-base gap-3 hover:bg-white"
                     onClick={() => handleOAuth('google')}
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -360,7 +362,7 @@ export default function Login() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="w-full h-12 text-base gap-3 hover:bg-white/5"
+                    className="w-full h-12 text-base gap-3 hover:bg-white"
                     onClick={() => handleOAuth('github')}
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -373,43 +375,43 @@ export default function Login() {
                 {/* Divider */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
+                    <div className="w-full border-t border-slate-200" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-card px-3 text-muted-foreground">or continue with email</span>
+                    <span className="bg-white px-3 text-slate-400">or continue with email</span>
                   </div>
                 </div>
 
                 {/* Email/Password Form */}
                 <form onSubmit={handleEmailSignIn} className="space-y-3">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type="email"
                       placeholder="Email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                      className="pl-10 h-12 !bg-white !text-slate-900 !border-slate-200 focus:!border-primary placeholder:text-slate-400"
                       autoComplete="email"
                       required
                     />
                   </div>
 
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                      className="pl-10 pr-10 h-12 !bg-white !text-slate-900 !border-slate-200 focus:!border-primary placeholder:text-slate-400"
                       autoComplete="current-password"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -419,7 +421,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setMode('forgot')}
-                      className="text-xs text-violet-400 hover:text-violet-300 transition-colors"
+                      className="text-xs text-primary hover:text-primary/80 transition-colors"
                     >
                       Forgot password?
                     </button>
@@ -431,7 +433,7 @@ export default function Login() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full h-12 text-base bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 border-0"
+                    className="w-full h-12 text-base bg-primary hover:bg-primary/90 border-0"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -443,11 +445,11 @@ export default function Login() {
                 </form>
 
                 {/* Switch to Sign Up */}
-                <p className="text-center text-sm text-muted-foreground mt-6">
+                <p className="text-center text-sm text-slate-400 mt-6">
                   Don&apos;t have an account?{' '}
                   <button
                     onClick={() => setMode('signup')}
-                    className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
+                    className="text-primary hover:text-primary/80 font-medium transition-colors"
                   >
                     Create one
                   </button>
@@ -464,39 +466,39 @@ export default function Login() {
               >
                 <form onSubmit={handleEmailSignUp} className="space-y-3">
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type="text"
                       placeholder="Full name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="pl-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                      className="pl-10 h-12 !bg-white !text-slate-900 !border-slate-200 focus:!border-primary placeholder:text-slate-400"
                       autoComplete="name"
                       required
                     />
                   </div>
 
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type="email"
                       placeholder="Email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                      className="pl-10 h-12 !bg-white !text-slate-900 !border-slate-200 focus:!border-primary placeholder:text-slate-400"
                       autoComplete="email"
                       required
                     />
                   </div>
 
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Password (8+ characters)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                      className="pl-10 pr-10 h-12 !bg-white !text-slate-900 !border-slate-200 focus:!border-primary placeholder:text-slate-400"
                       autoComplete="new-password"
                       minLength={8}
                       required
@@ -504,7 +506,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -513,13 +515,13 @@ export default function Login() {
                   <PasswordStrength password={password} />
 
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type="password"
                       placeholder="Confirm password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`pl-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50 ${
+                      className={`pl-10 h-12 bg-white border-slate-200 focus:border-primary ${
                         confirmPassword && confirmPassword !== password ? 'border-red-500/50' : ''
                       }`}
                       autoComplete="new-password"
@@ -527,7 +529,7 @@ export default function Login() {
                     />
                   </div>
                   {confirmPassword && confirmPassword !== password && (
-                    <p className="text-xs text-red-400">Passwords do not match</p>
+                    <p className="text-xs text-red-600">Passwords do not match</p>
                   )}
 
                   {/* CAPTCHA */}
@@ -536,7 +538,7 @@ export default function Login() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full h-12 text-base bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 border-0"
+                    className="w-full h-12 text-base bg-primary hover:bg-primary/90 border-0"
                     disabled={isSubmitting || (!!confirmPassword && confirmPassword !== password)}
                   >
                     {isSubmitting ? (
@@ -550,17 +552,17 @@ export default function Login() {
                 {/* OAuth alt */}
                 <div className="relative my-5">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
+                    <div className="w-full border-t border-slate-200" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-card px-3 text-muted-foreground">or sign up with</span>
+                    <span className="bg-white px-3 text-slate-400">or sign up with</span>
                   </div>
                 </div>
 
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    className="flex-1 h-11 gap-2 hover:bg-white/5"
+                    className="flex-1 h-11 gap-2 hover:bg-white"
                     onClick={() => handleOAuth('google')}
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -573,7 +575,7 @@ export default function Login() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="flex-1 h-11 gap-2 hover:bg-white/5"
+                    className="flex-1 h-11 gap-2 hover:bg-white"
                     onClick={() => handleOAuth('github')}
                   >
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -584,11 +586,11 @@ export default function Login() {
                 </div>
 
                 {/* Switch to Sign In */}
-                <p className="text-center text-sm text-muted-foreground mt-6">
+                <p className="text-center text-sm text-slate-400 mt-6">
                   Already have an account?{' '}
                   <button
                     onClick={() => setMode('signin')}
-                    className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
+                    className="text-primary hover:text-primary/80 font-medium transition-colors"
                   >
                     Sign in
                   </button>
@@ -605,13 +607,13 @@ export default function Login() {
               >
                 <form onSubmit={handleForgotPassword} className="space-y-3">
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       type="email"
                       placeholder="Email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                      className="pl-10 h-12 !bg-white !text-slate-900 !border-slate-200 focus:!border-primary placeholder:text-slate-400"
                       autoComplete="email"
                       required
                     />
@@ -623,7 +625,7 @@ export default function Login() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full h-12 text-base bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 border-0"
+                    className="w-full h-12 text-base bg-primary hover:bg-primary/90 border-0"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -636,7 +638,7 @@ export default function Login() {
 
                 <button
                   onClick={() => setMode('signin')}
-                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors mt-6 mx-auto"
+                  className="flex items-center gap-1 text-sm text-slate-400 hover:text-slate-900 transition-colors mt-6 mx-auto"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   Back to sign in
@@ -647,7 +649,7 @@ export default function Login() {
             {/* Back to home */}
             <Button
               variant="ghost"
-              className="w-full text-muted-foreground mt-2"
+              className="w-full text-slate-400 mt-2"
               onClick={() => navigate('/')}
             >
               ← Back to home
@@ -656,7 +658,7 @@ export default function Login() {
         </Card>
 
         {/* Security note */}
-        <p className="text-center text-[11px] text-muted-foreground/50 mt-4">
+        <p className="text-center text-[11px] text-slate-400/50 mt-4">
           Protected by Cloudflare Turnstile · Your data is encrypted end-to-end
         </p>
       </motion.div>

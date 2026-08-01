@@ -51,11 +51,8 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-indigo-500/8 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B1120] flex items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-50 -z-10"></div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -63,11 +60,11 @@ export default function ResetPassword() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        <Card className="glass-card border-white/10 glow-purple">
+        <Card className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] shadow-xl">
           <CardHeader className="text-center space-y-4">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Sparkles className="w-8 h-8 text-violet-400" />
-              <span className="text-2xl font-bold gradient-text">Innovix</span>
+              <Sparkles className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              <span className="text-2xl font-bold text-slate-900 dark:text-white">Innovix</span>
             </div>
             <CardTitle className="text-2xl">Set new password</CardTitle>
             <CardDescription className="text-base">
@@ -98,7 +95,7 @@ export default function ResetPassword() {
                     placeholder="New password (8+ characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50"
+                    className="pl-10 pr-10 h-12 bg-white dark:bg-[#0B1120] border-slate-200 dark:border-slate-700 focus:border-blue-500"
                     autoComplete="new-password"
                     minLength={8}
                     required
@@ -119,7 +116,7 @@ export default function ResetPassword() {
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`pl-10 h-12 bg-white/5 border-white/10 focus:border-violet-500/50 ${
+                    className={`pl-10 h-12 bg-white dark:bg-[#0B1120] border-slate-200 dark:border-slate-700 focus:border-blue-500 ${
                       confirmPassword && confirmPassword !== password ? 'border-red-500/50' : ''
                     }`}
                     autoComplete="new-password"
@@ -130,7 +127,7 @@ export default function ResetPassword() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full h-12 text-base bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 border-0"
+                  className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700 text-white shadow-md border-0"
                   disabled={isSubmitting || (!!confirmPassword && confirmPassword !== password)}
                 >
                   {isSubmitting ? (

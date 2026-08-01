@@ -133,7 +133,7 @@ export default function AgentsPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="lg:col-span-3 glass-card rounded-xl flex flex-col overflow-hidden"
+          className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl flex flex-col overflow-hidden"
           style={{ minHeight: '500px', maxHeight: '70vh' }}
         >
           {/* Chat messages */}
@@ -160,8 +160,8 @@ export default function AgentsPage() {
                         setInput(qc.cmd)
                         inputRef.current?.focus()
                       }}
-                      className="px-3 py-1.5 rounded-lg text-xs bg-white/5 border border-white/10
-                                 text-muted-foreground hover:bg-white/10 hover:text-foreground
+                      className="px-3 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
+                                 text-muted-foreground hover:bg-slate-100 dark:bg-slate-800 hover:text-foreground
                                  transition-colors"
                     >
                       {qc.label}
@@ -182,7 +182,7 @@ export default function AgentsPage() {
                       className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed
                         ${msg.role === 'user'
                           ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-br-md'
-                          : 'bg-white/5 border border-white/10 text-foreground rounded-bl-md'
+                          : 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-foreground rounded-bl-md'
                         }`}
                     >
                       {msg.role === 'assistant' && (
@@ -201,7 +201,7 @@ export default function AgentsPage() {
                     animate={{ opacity: 1 }}
                     className="flex justify-start"
                   >
-                    <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-bl-md px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="flex gap-1">
                           <span className="w-2 h-2 rounded-full bg-pink-400 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -219,7 +219,7 @@ export default function AgentsPage() {
           </div>
 
           {/* Input bar */}
-          <div className="p-3 border-t border-white/5 bg-white/[0.02]">
+          <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white/[0.02]">
             <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
@@ -228,9 +228,9 @@ export default function AgentsPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask anything... (try /search, /projects, /ask)"
-                className="flex-1 bg-white/5 rounded-xl px-4 py-2.5 text-sm
+                className="flex-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-2.5 text-sm
                            placeholder:text-muted-foreground/40 focus:outline-none
-                           focus:ring-1 focus:ring-pink-500/30 border border-white/10"
+                           focus:ring-1 focus:ring-pink-500/30 border border-slate-200 dark:border-slate-700"
                 disabled={isLoading}
               />
               <button
@@ -259,7 +259,7 @@ export default function AgentsPage() {
           className="space-y-4"
         >
           {/* Telegram setup */}
-          <div className="glass-card rounded-xl p-4">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center">
                 <MessageSquare className="w-3.5 h-3.5 text-blue-400" />
@@ -271,24 +271,24 @@ export default function AgentsPage() {
             </p>
             <ol className="text-xs text-muted-foreground space-y-1.5 mb-3">
               <li className="flex gap-1.5">
-                <span className="text-violet-400 font-bold">1.</span>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">1.</span>
                 Open @BotFather on Telegram
               </li>
               <li className="flex gap-1.5">
-                <span className="text-violet-400 font-bold">2.</span>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">2.</span>
                 Create a new bot and copy the token
               </li>
               <li className="flex gap-1.5">
-                <span className="text-violet-400 font-bold">3.</span>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">3.</span>
                 Paste token in backend/.env
               </li>
               <li className="flex gap-1.5">
-                <span className="text-violet-400 font-bold">4.</span>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">4.</span>
                 Run the bot script
               </li>
             </ol>
             <div className="flex items-center gap-1.5">
-              <code className="text-[10px] bg-white/5 px-2 py-1 rounded flex-1 truncate font-mono">
+              <code className="text-[10px] bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded flex-1 truncate font-mono">
                 python -m bots.telegram_bot
               </code>
               <button
@@ -297,7 +297,7 @@ export default function AgentsPage() {
                   setCopied(true)
                   setTimeout(() => setCopied(false), 1500)
                 }}
-                className="p-1 rounded hover:bg-white/10 text-muted-foreground"
+                className="p-1 rounded hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground"
               >
                 {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
               </button>
@@ -305,7 +305,7 @@ export default function AgentsPage() {
           </div>
 
           {/* WhatsApp setup */}
-          <div className="glass-card rounded-xl p-4">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-7 h-7 rounded-lg bg-green-500/20 flex items-center justify-center">
                 <MessageSquare className="w-3.5 h-3.5 text-green-400" />
@@ -346,7 +346,7 @@ export default function AgentsPage() {
           </div>
 
           {/* Commands reference */}
-          <div className="glass-card rounded-xl p-4">
+          <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4">
             <h3 className="text-sm font-semibold mb-3">Available Commands</h3>
             <div className="space-y-1.5 text-xs">
               {[
@@ -359,7 +359,7 @@ export default function AgentsPage() {
                 <div
                   key={c.cmd}
                   className="flex items-center justify-between py-1 px-2 rounded
-                             hover:bg-white/5 cursor-pointer transition-colors"
+                             hover:bg-slate-50 dark:bg-slate-800/50 cursor-pointer transition-colors"
                   onClick={() => {
                     setInput(c.cmd + ' ')
                     inputRef.current?.focus()

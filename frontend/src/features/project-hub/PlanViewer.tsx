@@ -21,10 +21,12 @@ import {
   ThumbsUp,
   ThumbsDown,
   Briefcase,
+  Volume2,
 } from 'lucide-react'
 
 interface PlanViewerProps {
   plan: Record<string, any>
+  onNarrate?: () => void
 }
 
 interface SectionProps {
@@ -38,10 +40,10 @@ function CollapsibleSection({ title, icon, defaultOpen = false, children }: Sect
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
       >
         <span className="flex items-center gap-2.5 text-sm font-semibold">
           {icon}
@@ -69,7 +71,7 @@ function CollapsibleSection({ title, icon, defaultOpen = false, children }: Sect
   )
 }
 
-export default function PlanViewer({ plan }: PlanViewerProps) {
+export default function PlanViewer({ plan, onNarrate }: PlanViewerProps) {
   const pv = plan.problem_validation as Record<string, any> | undefined
   const solutions = plan.existing_solutions as Record<string, any>[] | undefined
   const innovations = plan.innovation_opportunities as Record<string, any>[] | undefined
@@ -87,7 +89,22 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
           icon={<Target className="w-4 h-4 text-amber-400" />}
           defaultOpen={true}
         >
-          <p className="text-muted-foreground mb-3">{pv.summary as string}</p>
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <p className="text-muted-foreground">{pv.summary as string}</p>
+            {onNarrate && (
+              <button
+                onClick={onNarrate}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md shrink-0
+                           bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20
+                           text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20
+                           transition-colors"
+                title="Listen to problem validation summary"
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                Listen
+              </button>
+            )}
+          </div>
 
           {pv.market_size && (
             <div className="mb-3 p-3 rounded-lg bg-amber-500/5 border border-amber-500/10">
@@ -105,7 +122,7 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
                 <ul className="space-y-1">
                   {(pv.target_users as string[]).map((u, i) => (
                     <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                      <span className="text-violet-400 mt-0.5">•</span> {u}
+                      <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span> {u}
                     </li>
                   ))}
                 </ul>
@@ -154,7 +171,7 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
             {solutions.map((sol, idx) => (
               <div
                 key={idx}
-                className="p-3 rounded-lg bg-white/5 border border-white/5"
+                className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-xs">{sol.name as string}</span>
@@ -209,7 +226,7 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
               }[inn.impact as string] || 'text-gray-400 bg-gray-500/10 border-gray-500/20'
 
               return (
-                <div key={idx} className="p-3 rounded-lg bg-white/5 border border-white/5">
+                <div key={idx} className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="font-medium text-xs">{String(inn.area)}</span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full border ${impactColor}`}>
@@ -232,9 +249,9 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
         >
           <div className="space-y-2">
             {apis.map((api, idx) => (
-              <div key={idx} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors">
+              <div key={idx} className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 dark:bg-slate-800/50 transition-colors">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded mt-0.5 border
-                  ${api.type === 'api' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+                  ${api.type === 'api' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
                   {(api.type as string)?.toUpperCase()}
                 </span>
                 <div className="flex-1 min-w-0">
@@ -242,7 +259,7 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
                     <span className="font-medium text-xs">{String(api.name)}</span>
                     {api.url && (
                       <a href={String(api.url)} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-3 h-3 text-muted-foreground hover:text-violet-400" />
+                        <ExternalLink className="w-3 h-3 text-muted-foreground hover:text-blue-600 dark:text-blue-400" />
                       </a>
                     )}
                   </div>
@@ -267,12 +284,12 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
                 href={repo.url as string}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block p-3 rounded-lg bg-white/5 border border-white/5
-                           hover:border-violet-500/20 transition-colors group"
+                className="block p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800
+                           hover:border-blue-200 dark:border-blue-500/30 transition-colors group"
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <GitBranch className="w-3.5 h-3.5 text-muted-foreground group-hover:text-violet-400 transition-colors" />
-                  <span className="font-medium text-xs group-hover:text-violet-300 transition-colors">
+                  <GitBranch className="w-3.5 h-3.5 text-muted-foreground group-hover:text-blue-600 dark:text-blue-400 transition-colors" />
+                  <span className="font-medium text-xs group-hover:text-blue-500 dark:text-blue-300 transition-colors">
                     {repo.name as string}
                   </span>
                   {repo.stars && (
@@ -281,7 +298,7 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
                 </div>
                 <p className="text-xs text-muted-foreground">{repo.description as string}</p>
                 {repo.use_case && (
-                  <p className="text-xs text-violet-400/70 mt-1 italic">
+                  <p className="text-xs text-blue-600 dark:text-blue-400/70 mt-1 italic">
                     Use: {repo.use_case as string}
                   </p>
                 )}
@@ -299,7 +316,7 @@ export default function PlanViewer({ plan }: PlanViewerProps) {
         >
           <div className="space-y-2">
             {risks.map((risk, idx) => (
-              <div key={idx} className="p-3 rounded-lg bg-white/5 border border-white/5">
+              <div key={idx} className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-medium text-xs">{risk.risk as string}</span>
                   <span

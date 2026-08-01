@@ -207,7 +207,7 @@ export default function WorkspacePage() {
         <select
           value={selectedProjectId || ''}
           onChange={(e) => setSelectedProjectId(e.target.value || null)}
-          className="flex-1 max-w-xs px-4 py-2.5 rounded-xl bg-white/5 border border-white/10
+          className="flex-1 max-w-xs px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
                      text-sm focus:outline-none focus:border-emerald-500/50 transition-colors
                      [&>option]:bg-[#1a1a2e] [&>option]:text-foreground"
         >
@@ -221,7 +221,7 @@ export default function WorkspacePage() {
           <select
             value={activeWorkspace?.id || ''}
             onChange={(e) => e.target.value && loadWorkspace(e.target.value)}
-            className="max-w-xs px-4 py-2.5 rounded-xl bg-white/5 border border-white/10
+            className="max-w-xs px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
                        text-sm focus:outline-none focus:border-emerald-500/50 transition-colors
                        [&>option]:bg-[#1a1a2e] [&>option]:text-foreground"
           >
@@ -238,7 +238,7 @@ export default function WorkspacePage() {
               value={newWsName}
               onChange={(e) => setNewWsName(e.target.value)}
               placeholder="New workspace name..."
-              className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm
+              className="px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm
                          placeholder:text-muted-foreground/40 focus:outline-none
                          focus:border-emerald-500/50 transition-colors w-44"
               onKeyDown={(e) => e.key === 'Enter' && handleCreateWorkspace()}
@@ -267,7 +267,7 @@ export default function WorkspacePage() {
         >
           {/* Tabs + actions bar */}
           <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-            <div className="flex gap-1 p-1 bg-white/5 rounded-xl border border-white/5">
+            <div className="flex gap-1 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
@@ -275,13 +275,13 @@ export default function WorkspacePage() {
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all
                     ${activeTab === tab.key
                       ? 'bg-emerald-500/20 text-emerald-300 font-medium border border-emerald-500/20'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:bg-slate-800/50'
                     }`}
                 >
                   {tab.icon}
                   {tab.label}
                   {tab.count > 0 && (
-                    <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full">
                       {tab.count}
                     </span>
                   )}
@@ -304,8 +304,8 @@ export default function WorkspacePage() {
               <button
                 onClick={() => setShowExport(true)}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs
-                           bg-white/5 border border-white/10 text-muted-foreground
-                           hover:bg-white/10 hover:text-foreground transition-colors"
+                           bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-muted-foreground
+                           hover:bg-slate-100 dark:bg-slate-800 hover:text-foreground transition-colors"
               >
                 <Download className="w-3.5 h-3.5" />
                 Export
@@ -328,7 +328,7 @@ export default function WorkspacePage() {
             {activeTab === 'notes' && (
               <div className="space-y-2.5">
                 {(activeWorkspace.notes || []).length === 0 && !showNoteEditor ? (
-                  <div className="glass-card rounded-xl p-8 text-center">
+                  <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
                     <StickyNote className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                     <p className="text-sm text-muted-foreground mb-1">No notes yet</p>
                     <p className="text-xs text-muted-foreground/70">
@@ -342,7 +342,7 @@ export default function WorkspacePage() {
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.04 }}
-                      className="glass-card rounded-xl p-4 group hover:border-emerald-500/20 transition-all"
+                      className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 group hover:border-emerald-500/20 transition-all"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm whitespace-pre-wrap flex-1">{note.content}</p>
@@ -360,7 +360,7 @@ export default function WorkspacePage() {
                           {note.tags.map((tag: string, i: number) => (
                             <span
                               key={i}
-                              className="px-1.5 py-0.5 rounded text-[10px] bg-white/5 text-muted-foreground"
+                              className="px-1.5 py-0.5 rounded text-[10px] bg-slate-50 dark:bg-slate-800/50 text-muted-foreground"
                             >
                               #{tag}
                             </span>
@@ -407,7 +407,7 @@ export default function WorkspacePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="glass-card rounded-xl p-10 text-center"
+            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-10 text-center"
           >
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center mx-auto mb-4">
               <BookOpen className="w-7 h-7 text-emerald-400" />

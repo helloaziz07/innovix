@@ -50,7 +50,7 @@ export default function ClusterMap({
 
   if (!points.length) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <p className="text-sm text-muted-foreground">
           No data points to visualize. Generate clusters first.
         </p>
@@ -63,15 +63,15 @@ export default function ClusterMap({
     : points
 
   return (
-    <div className="glass-card rounded-xl p-5">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-5">
       {/* Legend */}
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <button
           onClick={() => setSelectedCluster(null)}
           className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all
             ${selectedCluster === null
-              ? 'bg-white/10 border-white/20 text-foreground'
-              : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+              ? 'bg-slate-100 dark:bg-slate-800 border-white/20 text-foreground'
+              : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-slate-100 dark:bg-slate-800'
             }`}
         >
           All ({points.length})
@@ -87,7 +87,7 @@ export default function ClusterMap({
                          border transition-all
               ${selectedCluster === cluster.id
                 ? 'border-opacity-60 text-foreground'
-                : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-slate-100 dark:bg-slate-800'
               }`}
             style={
               selectedCluster === cluster.id
@@ -105,7 +105,7 @@ export default function ClusterMap({
       </div>
 
       {/* SVG Scatter Plot */}
-      <div className="relative bg-white/[0.02] rounded-lg border border-white/5 overflow-hidden">
+      <div className="relative bg-white/[0.02] rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden">
         <svg
           viewBox={`0 0 ${MAP_W} ${MAP_H}`}
           className="w-full"
@@ -175,7 +175,7 @@ export default function ClusterMap({
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             className="absolute bottom-3 left-3 right-3 p-3 rounded-lg
-                       bg-black/80 backdrop-blur-sm border border-white/10
+                       bg-black/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700
                        pointer-events-none z-10"
           >
             <div className="flex items-center gap-2 mb-1">

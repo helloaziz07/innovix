@@ -222,7 +222,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
 
   if (!architecture) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <Layers className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">
           No architecture data available. Generate a plan first.
@@ -238,19 +238,19 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl overflow-hidden"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden"
         >
-          <div className="flex items-center justify-between p-4 border-b border-white/5">
+          <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
             <span className="text-sm font-semibold flex items-center gap-2">
-              <Layers className="w-4 h-4 text-violet-400" />
+              <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               System Architecture Diagram
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs
-                           bg-white/5 text-muted-foreground hover:text-foreground
-                           hover:bg-white/10 transition-colors"
+                           bg-slate-50 dark:bg-slate-800/50 text-muted-foreground hover:text-foreground
+                           hover:bg-slate-100 dark:bg-slate-800 transition-colors"
                 title="View Fullscreen"
               >
                 <Maximize2 className="w-3 h-3" />
@@ -262,11 +262,11 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
             <div className="relative">
               {/* Zoom & Download Controls */}
               <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-                <div className="flex flex-col bg-black/40 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden">
-                  <button onClick={handleZoomIn} className="p-2 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10" title="Zoom In">
+                <div className="flex flex-col bg-black/40 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                  <button onClick={handleZoomIn} className="p-2 text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700" title="Zoom In">
                     <ZoomIn className="w-4 h-4" />
                   </button>
-                  <button onClick={handleZoomOut} className="p-2 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors" title="Zoom Out">
+                  <button onClick={handleZoomOut} className="p-2 text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors" title="Zoom Out">
                     <ZoomOut className="w-4 h-4" />
                   </button>
                 </div>
@@ -276,19 +276,19 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                       e.stopPropagation()
                       setShowDownloadMenu(!showDownloadMenu)
                     }} 
-                    className="flex items-center justify-center p-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg text-muted-foreground hover:text-white hover:bg-white/10 transition-colors" 
+                    className="flex items-center justify-center p-2 bg-black/40 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors" 
                     title="Download Image"
                   >
                     <Download className="w-4 h-4" />
                   </button>
                   {showDownloadMenu && (
-                    <div className="absolute top-0 right-10 flex flex-col bg-black/80 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
+                    <div className="absolute top-0 right-10 flex flex-col bg-black/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
                       <button 
                         onClick={(e) => {
                           downloadImage('png', e)
                           setShowDownloadMenu(false)
                         }} 
-                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10 text-left"
+                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700 text-left"
                       >
                         Download PNG
                       </button>
@@ -297,7 +297,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                           downloadImage('jpeg', e)
                           setShowDownloadMenu(false)
                         }} 
-                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors text-left"
+                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors text-left"
                       >
                         Download JPEG
                       </button>
@@ -331,7 +331,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                 <AlertTriangle className="w-4 h-4" />
                 Diagram render failed — showing raw Mermaid code
               </div>
-              <pre className="text-xs text-muted-foreground bg-white/5 p-4 rounded-lg overflow-x-auto">
+              <pre className="text-xs text-muted-foreground bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg overflow-x-auto">
                 {mermaidCode.replace(/\\n/g, '\n')}
               </pre>
             </div>
@@ -345,7 +345,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-xl p-4"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4"
         >
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Cpu className="w-4 h-4 text-cyan-400" />
@@ -357,7 +357,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                 frontend: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
                 backend: 'text-green-400 bg-green-500/10 border-green-500/20',
                 database: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-                service: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
+                service: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30',
                 external: 'text-gray-400 bg-gray-500/10 border-gray-500/20',
               }
               const color = typeColor[comp.type as string] || typeColor.service
@@ -365,7 +365,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
               return (
                 <div
                   key={idx}
-                  className="p-3 rounded-lg bg-white/5 border border-white/5"
+                  className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800"
                 >
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="font-medium text-xs">{comp.name as string}</span>
@@ -381,7 +381,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                       {(comp.technologies as string[]).map((tech, i) => (
                         <span
                           key={i}
-                          className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground"
+                          className="text-[10px] px-1.5 py-0.5 rounded bg-slate-50 dark:bg-slate-800/50 text-muted-foreground"
                         >
                           {tech}
                         </span>
@@ -401,13 +401,13 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-4"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4"
         >
           <h3 className="text-sm font-semibold mb-3">🧩 Design Patterns</h3>
           <div className="space-y-2">
             {patterns.map((p, idx) => (
               <div key={idx} className="flex items-start gap-3 text-xs">
-                <span className="font-medium text-violet-300 whitespace-nowrap">
+                <span className="font-medium text-blue-500 dark:text-blue-300 whitespace-nowrap">
                   {p.pattern as string}
                 </span>
                 <span className="text-muted-foreground">
@@ -425,9 +425,9 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="p-4 rounded-xl bg-violet-500/5 border border-violet-500/10 text-xs text-muted-foreground"
+          className="p-4 rounded-xl bg-violet-500/5 border border-blue-100 dark:border-blue-500/20 text-xs text-muted-foreground"
         >
-          <span className="font-medium text-violet-400">🚀 Deployment Notes:</span>{' '}
+          <span className="font-medium text-blue-600 dark:text-blue-400">🚀 Deployment Notes:</span>{' '}
           {deployNotes}
         </motion.div>
       )}
@@ -439,28 +439,28 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-50 dark:bg-[#0B1120]/90 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-full max-w-5xl max-h-[90vh] glass-card rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+              className="relative w-full max-w-5xl max-h-[90vh] bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl overflow-hidden flex flex-col shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10 bg-white/5">
+              <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-violet-400" />
+                  <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   System Architecture
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="flex bg-black/40 rounded-lg overflow-hidden border border-white/10">
-                    <button onClick={handleZoomIn} className="p-2 hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Zoom In">
+                  <div className="flex bg-black/40 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <button onClick={handleZoomIn} className="p-2 hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors" title="Zoom In">
                       <ZoomIn className="w-4 h-4" />
                     </button>
-                    <div className="w-px bg-white/10" />
-                    <button onClick={handleZoomOut} className="p-2 hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" title="Zoom Out">
+                    <div className="w-px bg-slate-100 dark:bg-slate-800" />
+                    <button onClick={handleZoomOut} className="p-2 hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors" title="Zoom Out">
                       <ZoomOut className="w-4 h-4" />
                     </button>
                   </div>
@@ -470,19 +470,19 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                         e.stopPropagation()
                         setShowModalDownloadMenu(!showModalDownloadMenu)
                       }}
-                      className="p-2 flex items-center bg-black/40 rounded-lg border border-white/10 hover:bg-white/10 text-muted-foreground hover:text-white transition-colors" 
+                      className="p-2 flex items-center bg-black/40 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors" 
                       title="Download Image"
                     >
                       <Download className="w-4 h-4" />
                     </button>
                     {showModalDownloadMenu && (
-                      <div className="absolute top-10 right-0 flex flex-col bg-black/80 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl mt-1">
+                      <div className="absolute top-10 right-0 flex flex-col bg-black/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl mt-1">
                         <button 
                           onClick={(e) => {
                             downloadImage('png', e)
                             setShowModalDownloadMenu(false)
                           }} 
-                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors border-b border-white/10 text-left"
+                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700 text-left"
                         >
                           Download PNG
                         </button>
@@ -491,7 +491,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                             downloadImage('jpeg', e)
                             setShowModalDownloadMenu(false)
                           }} 
-                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-white/10 transition-colors text-left"
+                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors text-left"
                         >
                           Download JPEG
                         </button>
@@ -500,20 +500,22 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                   </div>
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="p-2 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                    className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
-              <div className="p-8 flex-1 overflow-auto flex items-center justify-center bg-black/20">
-                <motion.div
-                  animate={{ scale: zoom }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  style={{ transformOrigin: 'center center' }}
-                  className="[&_svg]:max-w-none [&_svg]:h-auto"
-                  dangerouslySetInnerHTML={{ __html: svgContent }}
-                />
+              <div className="p-8 flex-1 overflow-auto bg-slate-100 dark:bg-slate-900">
+                <div className="min-h-full min-w-max flex items-center justify-center">
+                  <motion.div
+                    animate={{ scale: zoom }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    style={{ transformOrigin: 'center center' }}
+                    className="[&_svg]:max-w-none [&_svg]:h-auto"
+                    dangerouslySetInnerHTML={{ __html: svgContent }}
+                  />
+                </div>
               </div>
             </motion.div>
           </motion.div>

@@ -30,7 +30,7 @@ export default function ClusterLabels({
 }: ClusterLabelsProps) {
   if (!clusters.length) {
     return (
-      <div className="glass-card rounded-xl p-6 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-6 text-center">
         <Brain className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">
           No clusters generated yet
@@ -51,7 +51,7 @@ export default function ClusterLabels({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: idx * 0.06 }}
             onClick={() => onSelect(isSelected ? null : cluster.id)}
-            className={`glass-card rounded-xl p-4 cursor-pointer transition-all duration-200
+            className={`bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 cursor-pointer transition-all duration-200
               ${isSelected
                 ? 'ring-1 shadow-lg'
                 : 'hover:border-white/20'
@@ -95,7 +95,7 @@ export default function ClusterLabels({
                   <span
                     key={i}
                     className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px]
-                               bg-white/5 text-muted-foreground"
+                               bg-slate-50 dark:bg-slate-800/50 text-muted-foreground"
                   >
                     <Hash className="w-2 h-2" />
                     {kw}
@@ -105,7 +105,7 @@ export default function ClusterLabels({
             )}
 
             {/* Size bar */}
-            <div className="mt-3 h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className="mt-3 h-1 bg-slate-50 dark:bg-slate-800/50 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(100, cluster.size * 15)}%` }}

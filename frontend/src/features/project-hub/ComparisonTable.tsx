@@ -24,7 +24,7 @@ interface ComparisonTableProps {
 export default function ComparisonTable({ solutions }: ComparisonTableProps) {
   if (!solutions || solutions.length === 0) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <Search className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">No existing solutions analyzed.</p>
       </div>
@@ -35,9 +35,9 @@ export default function ComparisonTable({ solutions }: ComparisonTableProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card rounded-xl overflow-hidden"
+      className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden"
     >
-      <div className="p-4 border-b border-white/5">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Search className="w-4 h-4 text-blue-400" />
           Existing Solution Comparison
@@ -47,7 +47,7 @@ export default function ComparisonTable({ solutions }: ComparisonTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-white/5">
+            <tr className="border-b border-slate-200 dark:border-slate-800">
               <th className="text-left p-3 text-muted-foreground font-medium min-w-[120px]">
                 Solution
               </th>
@@ -76,7 +76,7 @@ export default function ComparisonTable({ solutions }: ComparisonTableProps) {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:bg-slate-800/50 transition-colors"
               >
                 <td className="p-3">
                   <div className="flex items-center gap-1.5">
@@ -86,7 +86,7 @@ export default function ComparisonTable({ solutions }: ComparisonTableProps) {
                         href={sol.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-violet-400 transition-colors"
+                        className="text-muted-foreground hover:text-blue-600 dark:text-blue-400 transition-colors"
                       >
                         <ExternalLink className="w-3 h-3" />
                       </a>

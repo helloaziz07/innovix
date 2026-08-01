@@ -65,8 +65,8 @@ export default function AnnotationOverlay({ annotations, onAdd, onDelete }: Anno
         <button
           onClick={() => setIsAdding(!isAdding)}
           className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs
-                     bg-white/5 border border-white/10 text-muted-foreground
-                     hover:bg-white/10 hover:text-foreground transition-colors"
+                     bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-muted-foreground
+                     hover:bg-slate-100 dark:bg-slate-800 hover:text-foreground transition-colors"
         >
           {isAdding ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
           {isAdding ? 'Cancel' : 'Add'}
@@ -80,13 +80,13 @@ export default function AnnotationOverlay({ annotations, onAdd, onDelete }: Anno
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="glass-card rounded-xl p-3.5 space-y-3"
+            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3.5 space-y-3"
           >
             <textarea
               value={newText}
               onChange={(e) => setNewText(e.target.value)}
               placeholder="Highlighted text or key quote..."
-              className="w-full bg-white/5 rounded-lg p-2.5 text-xs resize-none h-16
+              className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 text-xs resize-none h-16
                          placeholder:text-muted-foreground/40 focus:outline-none
                          focus:ring-1 focus:ring-violet-500/30"
               autoFocus
@@ -96,7 +96,7 @@ export default function AnnotationOverlay({ annotations, onAdd, onDelete }: Anno
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               placeholder="Your note about this..."
-              className="w-full bg-white/5 rounded-lg p-2.5 text-xs
+              className="w-full bg-slate-50 dark:bg-slate-800/50 rounded-lg p-2.5 text-xs
                          placeholder:text-muted-foreground/40 focus:outline-none
                          focus:ring-1 focus:ring-violet-500/30"
             />
@@ -130,7 +130,7 @@ export default function AnnotationOverlay({ annotations, onAdd, onDelete }: Anno
 
       {/* Annotations list */}
       {annotations.length === 0 && !isAdding ? (
-        <div className="glass-card rounded-xl p-6 text-center">
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-6 text-center">
           <Highlighter className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
           <p className="text-xs text-muted-foreground">
             No annotations yet. Highlight key findings and add notes.

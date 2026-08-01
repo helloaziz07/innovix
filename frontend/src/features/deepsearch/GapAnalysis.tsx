@@ -26,7 +26,7 @@ export default function GapAnalysis({ content }: GapAnalysisProps) {
         {/* Gradient border glow */}
         <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/30 via-orange-500/30 to-rose-500/30 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
 
-        <div className="relative glass-card p-6 rounded-xl">
+        <div className="relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm p-6 rounded-xl">
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
@@ -67,8 +67,8 @@ function GapMarkdownRenderer({ content }: { content: string }) {
     'missing': <AlertTriangle className="w-4 h-4 text-amber-400" />,
     'innovation': <TrendingUp className="w-4 h-4 text-emerald-400" />,
     'opportunities': <TrendingUp className="w-4 h-4 text-emerald-400" />,
-    'recommended': <Rocket className="w-4 h-4 text-violet-400" />,
-    'approach': <Rocket className="w-4 h-4 text-violet-400" />,
+    'recommended': <Rocket className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+    'approach': <Rocket className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
   }
 
   const getIcon = (title: string) => {
@@ -144,5 +144,5 @@ function formatGapInline(text: string): string {
   return text
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code class="px-1 py-0.5 rounded bg-white/10 text-amber-300 text-xs">$1</code>')
+    .replace(/`(.+?)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-amber-300 text-xs">$1</code>')
 }

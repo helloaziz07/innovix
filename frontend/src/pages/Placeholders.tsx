@@ -14,7 +14,7 @@ function PlaceholderPage({ icon: Icon, title, phase, color }: {
 }) {
   return (
     <div className="flex items-center justify-center h-full p-6">
-      <Card className="glass-card max-w-md w-full glow-purple">
+      <Card className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm max-w-md w-full shadow-lg">
         <CardContent className="p-10 text-center">
           <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center mx-auto mb-6`}>
             <Icon className="w-8 h-8 text-white" />
@@ -30,7 +30,7 @@ function PlaceholderPage({ icon: Icon, title, phase, color }: {
 }
 
 export function DeepSearchPage() {
-  return <PlaceholderPage icon={Search} title="DeepSearch" phase={2} color="from-violet-500 to-purple-600" />
+  return <PlaceholderPage icon={Search} title="DeepSearch" phase={2} color="from-blue-600 to-indigo-600" />
 }
 
 export function ProjectsPage() {

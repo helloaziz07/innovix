@@ -14,7 +14,6 @@ import {
   Layers,
   Wrench,
   CalendarDays,
-  Volume2,
   Loader2,
   Rocket,
   AlertTriangle,
@@ -51,7 +50,7 @@ class MermaidErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="glass-card rounded-xl p-6 text-center">
+        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
           <h3 className="text-sm font-semibold mb-2">Architecture Diagram</h3>
           <p className="text-xs text-muted-foreground mb-4">
@@ -60,7 +59,7 @@ class MermaidErrorBoundary extends Component<
           </p>
           <button
             onClick={() => this.setState({ hasError: false })}
-            className="px-3 py-1.5 rounded-lg bg-violet-600/20 text-violet-300 text-xs hover:bg-violet-600/30 transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-violet-600/20 text-blue-500 dark:text-blue-300 text-xs hover:bg-violet-600/30 transition-colors"
           >
             Try Again
           </button>
@@ -167,7 +166,7 @@ export default function ProjectDetail() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+          <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
           <p className="text-sm text-muted-foreground">Loading project...</p>
         </div>
       </div>
@@ -182,7 +181,7 @@ export default function ProjectDetail() {
           <p className="text-muted-foreground">Project not found</p>
           <button
             onClick={() => navigate('/projects')}
-            className="mt-4 text-sm text-violet-400 hover:text-violet-300"
+            className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:text-blue-300"
           >
             ← Back to Projects
           </button>
@@ -201,16 +200,16 @@ export default function ProjectDetail() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm
+          className="fixed inset-0 z-50 bg-slate-50 dark:bg-[#0B1120]/80 backdrop-blur-sm
                      flex items-center justify-center"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="glass-card rounded-2xl p-8 max-w-md text-center shadow-2xl"
+            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-8 max-w-md text-center shadow-2xl"
           >
             <div className="w-16 h-16 mx-auto mb-4 rounded-2xl
-                            bg-gradient-to-br from-violet-500 to-purple-600
+                            bg-gradient-to-br from-blue-600 to-indigo-600
                             flex items-center justify-center">
               <Loader2 className="w-8 h-8 text-white animate-spin" />
             </div>
@@ -219,7 +218,7 @@ export default function ProjectDetail() {
               Our AI is researching your idea, analyzing gaps, and building
               a complete project plan with architecture and timeline.
             </p>
-            <div className="flex items-center justify-center gap-2 text-xs text-violet-400">
+            <div className="flex items-center justify-center gap-2 text-xs text-blue-600 dark:text-blue-400">
               <Rocket className="w-3.5 h-3.5 animate-pulse" />
               This usually takes 30-60 seconds...
             </div>
@@ -258,7 +257,7 @@ export default function ProjectDetail() {
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-gradient-to-r from-violet-600 to-purple-600
                            text-white text-sm font-medium
-                           hover:from-violet-500 hover:to-purple-500
+                           hover:from-blue-600 hover:to-indigo-600
                            disabled:opacity-50 disabled:cursor-not-allowed
                            transition-all shadow-lg shadow-violet-500/20"
                 id="generate-plan-btn"
@@ -277,25 +276,13 @@ export default function ProjectDetail() {
               </button>
             ) : (
               <>
-                <button
-                  onClick={handleNarrate}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg
-                             bg-white/5 border border-white/10 text-sm
-                             text-muted-foreground hover:bg-white/10
-                             hover:text-foreground transition-colors"
-                  title="Listen to plan summary (Sarvam AI TTS)"
-                  id="narrate-btn"
-                >
-                  <Volume2 className="w-4 h-4" />
-                  Listen
-                </button>
                 <ExportButton projectId={activeProject.id} projectTitle={activeProject.title} />
                 <button
                   onClick={handleGeneratePlan}
                   disabled={isGeneratingPlan}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg
-                             bg-white/5 border border-white/10 text-sm
-                             text-muted-foreground hover:bg-white/10
+                             bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm
+                             text-muted-foreground hover:bg-slate-100 dark:bg-slate-800
                              hover:text-foreground transition-colors
                              disabled:opacity-50"
                   title="Re-generate plan"
@@ -329,9 +316,9 @@ export default function ProjectDetail() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="glass-card rounded-xl p-8 text-center mb-6"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center mb-6"
         >
-          <Loader2 className="w-10 h-10 text-violet-400 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-10 h-10 text-blue-600 dark:text-blue-400 animate-spin mx-auto mb-4" />
           <h3 className="font-semibold mb-1">Generating Your Project Plan</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
             Our AI is analyzing your idea, designing the architecture,
@@ -358,15 +345,15 @@ export default function ProjectDetail() {
       {hasPlan && !isGeneratingPlan && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 p-1 bg-white/5 rounded-xl w-fit border border-white/5">
+          <div className="flex gap-1 mb-6 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl w-fit border border-slate-200 dark:border-slate-800">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all
                   ${activeTab === tab.key
-                    ? 'bg-violet-600/20 text-violet-300 font-medium border border-violet-500/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                    ? 'bg-violet-600/20 text-blue-500 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-500/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:bg-slate-800/50'
                   }`}
               >
                 {tab.icon}
@@ -377,7 +364,7 @@ export default function ProjectDetail() {
 
           {/* Tab content */}
           <div className="min-h-[400px]">
-            {activeTab === 'overview' && <PlanViewer plan={plan as Record<string, unknown>} />}
+            {activeTab === 'overview' && <PlanViewer plan={plan as Record<string, unknown>} onNarrate={handleNarrate} />}
             {activeTab === 'architecture' && (
               <MermaidErrorBoundary>
                 <ArchitectureDiagram
@@ -404,10 +391,10 @@ export default function ProjectDetail() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card rounded-xl p-10 text-center"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-10 text-center"
         >
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-4">
-            <Rocket className="w-7 h-7 text-violet-400" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-100 dark:from-blue-500/20 to-indigo-100 dark:to-indigo-500/20 flex items-center justify-center mx-auto mb-4">
+            <Rocket className="w-7 h-7 text-blue-600 dark:text-blue-400" />
           </div>
           <h3 className="text-lg font-semibold mb-2">Ready to Generate Your Plan</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">

@@ -31,14 +31,14 @@ export default function FreshnessTimeline({
 }: FreshnessTimelineProps) {
   if (isLoading) {
     return (
-      <div className="glass-card rounded-xl p-5 animate-pulse space-y-4">
-        <div className="h-5 bg-white/10 rounded w-1/3" />
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-5 animate-pulse space-y-4">
+        <div className="h-5 bg-slate-100 dark:bg-slate-800 rounded w-1/3" />
         <div className="space-y-2">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center gap-3">
-              <div className="h-3 bg-white/10 rounded w-24" />
-              <div className="flex-1 h-6 bg-white/5 rounded-full" />
-              <div className="h-3 bg-white/10 rounded w-8" />
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-24" />
+              <div className="flex-1 h-6 bg-slate-50 dark:bg-slate-800/50 rounded-full" />
+              <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded w-8" />
             </div>
           ))}
         </div>
@@ -48,7 +48,7 @@ export default function FreshnessTimeline({
 
   if (!bands.length) {
     return (
-      <div className="glass-card rounded-xl p-6 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-6 text-center">
         <Clock className="w-7 h-7 text-muted-foreground mx-auto mb-2" />
         <p className="text-sm text-muted-foreground">
           No freshness data available. Run a DeepSearch first.
@@ -60,11 +60,11 @@ export default function FreshnessTimeline({
   const maxCount = Math.max(...bands.map((b) => b.count), 1)
 
   return (
-    <div className="glass-card rounded-xl p-5">
+    <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-violet-400" />
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <h3 className="font-semibold text-sm">Source Freshness</h3>
         </div>
         <span className="text-xs text-muted-foreground">{total} sources analyzed</span>
@@ -80,7 +80,7 @@ export default function FreshnessTimeline({
               <span className="text-[11px] text-muted-foreground w-28 text-right flex-shrink-0">
                 {band.label}
               </span>
-              <div className="flex-1 h-7 bg-white/5 rounded-full overflow-hidden relative">
+              <div className="flex-1 h-7 bg-slate-50 dark:bg-slate-800/50 rounded-full overflow-hidden relative">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${widthPct}%` }}
@@ -100,7 +100,7 @@ export default function FreshnessTimeline({
 
       {/* Date range */}
       {(newestDate || oldestDate) && (
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5 text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] text-muted-foreground">
           {oldestDate && <span>Oldest: {new Date(oldestDate).toLocaleDateString()}</span>}
           {newestDate && <span>Newest: {new Date(newestDate).toLocaleDateString()}</span>}
         </div>

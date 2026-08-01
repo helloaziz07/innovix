@@ -49,8 +49,8 @@ const LAYER_CONFIG: Record<
   },
   ai: {
     icon: <Brain className="w-4 h-4" />,
-    gradient: 'from-violet-500 to-purple-500',
-    borderColor: 'border-violet-500/20 hover:border-violet-500/40',
+    gradient: 'from-blue-500 to-indigo-500',
+    borderColor: 'border-blue-200 dark:border-blue-500/30 hover:border-violet-500/40',
   },
   devops: {
     icon: <Cloud className="w-4 h-4" />,
@@ -84,7 +84,7 @@ function getLayerConfig(layer: string) {
 export default function TechStackCards({ techStack }: TechStackCardsProps) {
   if (!techStack || techStack.length === 0) {
     return (
-      <div className="glass-card rounded-xl p-8 text-center">
+      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
         <Wrench className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
         <p className="text-sm text-muted-foreground">No tech stack recommendations yet.</p>
       </div>
@@ -133,7 +133,7 @@ export default function TechStackCards({ techStack }: TechStackCardsProps) {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: groupIdx * 0.1 + idx * 0.05 }}
-                  className={`glass-card rounded-xl p-4 border transition-all duration-300 ${config.borderColor}`}
+                  className={`bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 border transition-all duration-300 ${config.borderColor}`}
                 >
                   <h4 className="font-semibold text-sm mb-1.5">{item.technology}</h4>
                   <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
@@ -149,8 +149,8 @@ export default function TechStackCards({ techStack }: TechStackCardsProps) {
                         {item.alternatives.map((alt, i) => (
                           <span
                             key={i}
-                            className="text-[10px] px-1.5 py-0.5 rounded bg-white/5
-                                       text-muted-foreground/70 border border-white/5"
+                            className="text-[10px] px-1.5 py-0.5 rounded bg-slate-50 dark:bg-slate-800/50
+                                       text-muted-foreground/70 border border-slate-200 dark:border-slate-800"
                           >
                             {alt}
                           </span>

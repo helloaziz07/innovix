@@ -72,7 +72,7 @@ export default function ThemeToggle({ collapsed = false }: { collapsed?: boolean
           className={cn(
             'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs transition-all',
             theme === opt.value
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'bg-slate-50 dark:bg-[#0B1120] text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground',
           )}
           title={opt.label}

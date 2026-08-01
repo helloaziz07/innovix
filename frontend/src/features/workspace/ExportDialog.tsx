@@ -143,22 +143,22 @@ export default function ExportDialog({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative glass-card rounded-2xl w-full max-w-sm p-5 z-10
-                     border border-white/10 shadow-xl"
+          className="relative bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl w-full max-w-sm p-5 z-10
+                     border border-slate-200 dark:border-slate-700 shadow-xl"
         >
           {/* Close */}
           <button
             onClick={onClose}
             className="absolute top-3 right-3 p-1 rounded-lg text-muted-foreground
-                       hover:text-foreground hover:bg-white/10 transition-colors"
+                       hover:text-foreground hover:bg-slate-100 dark:bg-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
 
           {/* Header */}
           <div className="flex items-center gap-2.5 mb-5">
-            <div className="w-9 h-9 rounded-lg bg-violet-500/20 flex items-center justify-center">
-              <Download className="w-4.5 h-4.5 text-violet-400" />
+            <div className="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+              <Download className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
               <h3 className="font-semibold text-sm">Export Workspace</h3>
@@ -176,8 +176,8 @@ export default function ExportDialog({
                 onClick={() => setFormat('md')}
                 className={`flex items-center gap-2 p-3 rounded-xl border transition-all text-left
                   ${format === 'md'
-                    ? 'bg-violet-500/10 border-violet-500/30 text-foreground'
-                    : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                    ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/40 text-foreground'
+                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-slate-100 dark:bg-slate-800'
                   }`}
               >
                 <FileText className="w-5 h-5 flex-shrink-0" />
@@ -190,8 +190,8 @@ export default function ExportDialog({
                 onClick={() => setFormat('pdf')}
                 className={`flex items-center gap-2 p-3 rounded-xl border transition-all text-left
                   ${format === 'pdf'
-                    ? 'bg-violet-500/10 border-violet-500/30 text-foreground'
-                    : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                    ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/40 text-foreground'
+                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-slate-100 dark:bg-slate-800'
                   }`}
               >
                 <File className="w-5 h-5 flex-shrink-0" />
@@ -204,8 +204,8 @@ export default function ExportDialog({
                 onClick={() => setFormat('pptx')}
                 className={`flex items-center gap-2 p-3 rounded-xl border transition-all text-left col-span-2
                   ${format === 'pptx'
-                    ? 'bg-violet-500/10 border-violet-500/30 text-foreground'
-                    : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                    ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-300 dark:border-blue-500/40 text-foreground'
+                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-muted-foreground hover:bg-slate-100 dark:bg-slate-800'
                   }`}
               >
                 <Presentation className="w-5 h-5 flex-shrink-0" />

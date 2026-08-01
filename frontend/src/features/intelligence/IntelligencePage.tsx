@@ -120,7 +120,7 @@ export default function IntelligencePage() {
               onChange={(e) => setDomain(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Enter a research domain (e.g., quantum computing, AI healthcare)..."
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
                          text-sm placeholder:text-muted-foreground/50 focus:outline-none
                          focus:border-violet-500/50 transition-colors"
               id="intelligence-search-input"
@@ -152,8 +152,8 @@ export default function IntelligencePage() {
               <button
                 key={example}
                 onClick={() => handleExampleClick(example)}
-                className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10
-                           text-xs text-muted-foreground hover:bg-white/10 hover:text-foreground
+                className="px-2.5 py-1 rounded-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700
+                           text-xs text-muted-foreground hover:bg-slate-100 dark:bg-slate-800 hover:text-foreground
                            transition-colors"
               >
                 {example}
@@ -171,7 +171,7 @@ export default function IntelligencePage() {
           transition={{ delay: 0.15 }}
         >
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 p-1 bg-white/5 rounded-xl w-fit border border-white/5">
+          <div className="flex gap-1 mb-6 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl w-fit border border-slate-200 dark:border-slate-800">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
@@ -180,7 +180,7 @@ export default function IntelligencePage() {
                   ${
                     activeTab === tab.key
                       ? 'bg-orange-500/20 text-orange-300 font-medium border border-orange-500/20'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:bg-slate-800/50'
                   }`}
               >
                 {tab.icon}
@@ -220,7 +220,7 @@ export default function IntelligencePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass-card rounded-xl p-10 text-center"
+          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-10 text-center"
         >
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center mx-auto mb-4">
             <Globe className="w-7 h-7 text-orange-400" />
