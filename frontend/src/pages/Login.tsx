@@ -256,26 +256,49 @@ export default function Login() {
   }
 
   return (
-    <div className="bg-slate-50 text-slate-900 min-h-screen text-lg selection:bg-blue-200 selection:text-blue-900 relative flex items-center justify-center" style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida/AP1WRLshjY7CyhJhMGIgfNZd5lARJJDYBHa_gWHXsS1LiY5VqKMtmdeEbLhvwGcXwgeDoWlXDOPNgES3M9j_LOjuYBy0ObNOl7tjoTAhk-WqfD6r_IAC25KLRhY57PhR7jU_67JGaFxCK_LiKRpCDFRNycEuJg5Q49Sn5BOgzbI7siamNqFdFPZERwam0AeyOl68Sgje6eisPu1t7d_I57FEyTtF2cj8LMgGfsql8fdIKuMDZSZrTq3MnpNXD10")', backgroundSize: 'cover', backgroundPosition: 'center center', backgroundRepeat: 'no-repeat' }}>
-      <main className="relative z-10 w-full max-w-7xl px-4 md:px-8 py-8 mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-[10%] min-h-[819px]">
+    <div className="min-h-screen flex selection:bg-blue-200 selection:text-blue-900 font-sans">
+      
+      {/* Left Panel - Branding (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden flex-col justify-between p-12">
+        {/* Deep blue gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 z-0"></div>
         
-        {/* Branding Section */}
-        <section className="flex-1 flex flex-col justify-center items-center lg:items-start text-center lg:text-left space-y-4 max-w-xl w-full">
-          <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate('/')}>
-            <Box className="w-10 h-10 text-blue-600" />
-            <h1 className="text-4xl font-bold text-blue-600 tracking-tight">Innovix</h1>
-          </div>
-          <h2 className="text-[28px] md:text-[32px] leading-tight font-bold text-slate-900">
-            Transform Ideas into <span className="text-blue-700">Reality.</span>
+        {/* Ambient Glows */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 z-0"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 z-0"></div>
+        
+        {/* Top Logo */}
+        <div className="relative z-10 flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+          <Box className="w-8 h-8 text-blue-400" />
+          <h1 className="text-2xl font-bold text-white tracking-tight">Innovix</h1>
+        </div>
+        
+        {/* Center Content */}
+        <div className="relative z-10 max-w-lg mb-24">
+          <h2 className="text-4xl md:text-5xl leading-[1.1] font-bold text-white mb-6">
+            Architect your next <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">big breakthrough.</span>
           </h2>
-          <p className="text-lg text-slate-600 max-w-md mt-4">
-            Enter the digital alchemy war room. Synthesize your research, structure your workflow, and generate actionable blueprints with AI-driven precision.
+          <p className="text-lg text-slate-300 leading-relaxed max-w-md">
+            The intelligent workspace for creators to map dependencies, analyze markets, and structure projects instantly.
           </p>
-        </section>
+        </div>
+        
+        {/* Bottom Footer or Detail */}
+        <div className="relative z-10">
+          <p className="text-sm text-slate-500">© 2026 Innovix Inc. All rights reserved.</p>
+        </div>
+      </div>
 
-        {/* Auth Form Container */}
-        <section className="w-full max-w-md flex-shrink-0">
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-md relative overflow-hidden group">
+      {/* Right Panel - Auth Form */}
+      <div className="w-full lg:w-1/2 bg-slate-50 flex items-center justify-center p-4 sm:p-8">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo (Only visible on small screens) */}
+          <div className="lg:hidden flex justify-center items-center gap-3 mb-8 cursor-pointer" onClick={() => navigate('/')}>
+            <Box className="w-8 h-8 text-blue-600" />
+            <h1 className="text-2xl font-bold text-blue-600 tracking-tight">Innovix</h1>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-xl">
             
             {/* Form Header */}
             <div className="mb-8 text-center">
@@ -458,24 +481,24 @@ export default function Login() {
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {mode === 'signin' ? 'Initialize Session' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
+                  {mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create Account' : 'Send Reset Link'}
                   {!isSubmitting && <ArrowRight className="w-5 h-5" />}
                 </span>
               </button>
             </form>
 
             <p className="mt-6 text-center text-sm text-slate-600">
-              {mode === 'signin' ? "Don't have access? " : mode === 'signup' ? "Already have an account? " : "Remembered your password? "}
+              {mode === 'signin' ? "Don't have an account? " : mode === 'signup' ? "Already have an account? " : "Remembered your password? "}
               <button 
                 onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
               >
-                {mode === 'signin' ? "Request Invite" : "Sign in"}
+                {mode === 'signin' ? "Sign up" : "Sign in"}
               </button>
             </p>
           </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   )
 }

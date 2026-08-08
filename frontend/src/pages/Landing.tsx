@@ -1,4 +1,4 @@
-import { Box, Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, FileSearch, PencilRuler, Network, Brain, Sparkles, Search, Rocket, Bot, Globe, BookOpen } from 'lucide-react';
+import { Box, Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, FileSearch, PencilRuler, Network, Brain, Sparkles, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 
@@ -247,6 +247,124 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* How it Works & Terminal Preview */}
+      <section className="py-24 bg-slate-50 relative z-10 border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left: Steps */}
+          <div className="flex flex-col gap-12">
+            <div>
+              <h2 className="text-4xl font-bold text-slate-900 mb-4">How Innovix Works</h2>
+              <p className="text-base text-slate-600">
+                Go from a simple idea to a production-ready project blueprint in three simple steps.
+              </p>
+            </div>
+            
+            <div className="space-y-8 relative">
+              {/* Vertical connecting line */}
+              <div className="absolute left-6 top-8 bottom-8 w-px bg-slate-200"></div>
+              
+              {/* Step 1 */}
+              <div className="flex gap-6 relative">
+                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0 z-10">1</div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Ideation</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Input your rough concept. Innovix understands your goals and target audience instantly.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Step 2 */}
+              <div className="flex gap-6 relative">
+                <div className="w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center font-bold text-lg shadow-sm shrink-0 z-10">2</div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">AI Analysis</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Our AI researches the market, selects the optimal tech stack, and structures the architecture.
+                  </p>
+                </div>
+              </div>
+              
+              {/* Step 3 */}
+              <div className="flex gap-6 relative">
+                <div className="w-12 h-12 rounded-full bg-white border-2 border-slate-200 text-slate-400 flex items-center justify-center font-bold text-lg shadow-sm shrink-0 z-10">3</div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Blueprint Generation</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Export a complete, build-ready architecture with dependencies, timelines, and logic maps.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right: Mock Terminal */}
+          <div className="rounded-xl overflow-hidden bg-slate-900 border border-slate-700 shadow-2xl">
+            {/* Terminal Header */}
+            <div className="bg-slate-800 px-4 py-3 flex items-center gap-2 border-b border-slate-700">
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <div className="ml-4 flex items-center gap-2 text-slate-400 text-xs font-mono">
+                <Terminal className="w-3 h-3" /> innovix-agent.exe
+              </div>
+            </div>
+            {/* Terminal Body */}
+            <div className="p-6 font-mono text-sm space-y-4">
+              <div className="flex gap-3 text-slate-300">
+                <ChevronRight className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <p>Analyzing idea: "AI Project Management Tool"</p>
+              </div>
+              <div className="flex gap-3 text-slate-500">
+                <div className="w-4 h-4 shrink-0 mt-0.5 border-2 border-slate-600 border-t-blue-400 rounded-full animate-spin"></div>
+                <p>Generating optimal tech stack...</p>
+              </div>
+              <div className="pl-7 text-emerald-400">
+                <p>✓ Frontend: React + Vite + Tailwind</p>
+                <p>✓ Backend: FastAPI + PostgreSQL</p>
+                <p>✓ Deployment: Vercel + Render</p>
+              </div>
+              <div className="flex gap-3 text-slate-300">
+                <ChevronRight className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <p>Scaffolding project architecture...</p>
+              </div>
+              <div className="pl-7 text-slate-400">
+                <p className="text-blue-300">src/</p>
+                <p>├── <span className="text-indigo-300">components/</span></p>
+                <p>├── <span className="text-indigo-300">features/</span></p>
+                <p>├── <span className="text-indigo-300">hooks/</span></p>
+                <p>└── <span className="text-emerald-300">main.tsx</span></p>
+              </div>
+              <div className="flex gap-3 text-emerald-400 font-bold mt-6">
+                <p>► Blueprint successfully generated in 2.4s.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Banner */}
+      <section className="py-24 relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-900 z-0"></div>
+        {/* Decorative Circles */}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
+        
+        <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-8 text-center flex flex-col items-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+            Ready to build your next breakthrough?
+          </h2>
+          <p className="text-lg text-blue-100 mb-10 max-w-2xl">
+            Join thousands of creators using Innovix to turn abstract ideas into production-ready architectures instantly.
+          </p>
+          <button onClick={() => navigate('/login')} className="bg-white text-blue-900 font-bold text-base px-8 py-4 rounded-xl flex items-center justify-center gap-4 hover:bg-blue-50 hover:scale-105 transition-all duration-300 shadow-xl">
+            Get Started for Free
+            <ArrowRight className="w-5 h-5" />
+          </button>
         </div>
       </section>
 
