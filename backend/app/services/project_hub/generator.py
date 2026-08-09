@@ -44,6 +44,7 @@ async def generate_project_plan(
     user_id: str,
     progress_callback=None,
     cancel_event: Optional[asyncio.Event] = None,
+    target_phase: str = "full",
 ) -> Dict[str, Any]:
     """
     Generate a complete project plan for the given project.
@@ -58,9 +59,11 @@ async def generate_project_plan(
             Each event is a dict with: stage, message, progress (0-100).
         cancel_event: Optional asyncio.Event — if set, generation is
             aborted between stages and GenerationCancelled is raised.
+        target_phase: "full", "main_plan", "architecture", or "roadmap".
+            Halts generation after the specified phase is complete.
 
     Returns:
-        The complete plan dict with all sections.
+        The complete plan dict with all generated sections.
 
     Raises:
         ValueError: If the project isn't found or doesn't belong to the user.
@@ -93,13 +96,25 @@ async def generate_project_plan(
     # Update project status → researching
     await _update_project_status(project_id, "researching")
 
+    # Initialize empty partials
+    architecture = {}
+    roadmap = {}
+
     # ─── Stage 2: Main Plan (Gemini call 1) ─────────────────
     await _emit("main_plan", "Analyzing idea and generating plan structure...", 15)
     _check_cancelled()
     main_plan = await _generate_main_plan(idea, research_summary, sources_text, gap_analysis)
     logger.info(f"[ProjectHub] Main plan generated for project {project_id}")
     _check_cancelled()
-    await _emit("main_plan", "Plan structure complete.", 40)
+    await _emit("main_plan", "Plan structure complete.", 40 if target_phase == "full" else 90)
+
+    if target_phase == "main_plan":
+        # Save early
+        await _emit("saving", "Saving partial plan to database...", 92)
+        full_plan = {**main_plan}
+        await _persist_plan(project_id, full_plan)
+        await _emit("complete", "Project plan generated successfully!", 100)
+        return full_plan
 
     # ─── Stage 3: Architecture (Gemini call 2) ──────────────
     await _emit("architecture", "Designing system architecture...", 45)
@@ -108,7 +123,18 @@ async def generate_project_plan(
     architecture = await _generate_architecture(idea, tech_stack_json)
     logger.info(f"[ProjectHub] Architecture generated for project {project_id}")
     _check_cancelled()
-    await _emit("architecture", "Architecture design complete.", 70)
+    await _emit("architecture", "Architecture design complete.", 70 if target_phase == "full" else 90)
+
+    if target_phase == "architecture":
+        # Save early
+        await _emit("saving", "Saving partial plan to database...", 92)
+        full_plan = {
+            **main_plan,
+            "architecture": architecture,
+        }
+        await _persist_plan(project_id, full_plan)
+        await _emit("complete", "Project plan generated successfully!", 100)
+        return full_plan
 
     # ─── Stage 4: Roadmap (Gemini call 3) ───────────────────
     await _emit("roadmap", "Building development roadmap...", 75)

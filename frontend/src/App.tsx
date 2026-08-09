@@ -52,7 +52,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-import { AutoTranslator } from '@/components/AutoTranslator'
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -63,7 +62,6 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <AutoTranslator />
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>

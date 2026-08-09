@@ -7,11 +7,9 @@
  */
 
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
 import {
   LayoutDashboard, FolderKanban,
   LogOut, Sparkles, ChevronLeft, ChevronRight,
@@ -27,7 +25,6 @@ const navItems = [
 export default function Layout() {
   const { user, signOut } = useAuthStore()
   const navigate = useNavigate()
-  useTranslation()
   const [collapsed, setCollapsed] = useState(false)
 
   const handleSignOut = async () => {
@@ -77,9 +74,6 @@ export default function Layout() {
         <div className="p-3 border-t border-border space-y-2 shrink-0">
           {/* Theme Toggle */}
           <ThemeToggle collapsed={collapsed} />
-
-          {/* Language Switcher */}
-          <LanguageSwitcher collapsed={collapsed} />
 
           {!collapsed && user && (
             <div className="flex items-center gap-3 px-3 py-2">

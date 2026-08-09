@@ -329,6 +329,7 @@ Takes DeepSearch results + user idea as input, generates:
 #### [NEW] `backend/app/api/projects.py`
 - `POST /api/projects` — Create project from idea
 - `POST /api/projects/{id}/generate-plan` — Generate full plan from research
+- `POST /api/projects/{id}/generate-plan-stream` — SSE stream with target_phase support
 - `GET /api/projects/{id}` — Get project with plan
 - `PATCH /api/projects/{id}` — Update project details
 - `GET /api/projects/{id}/export` — Export as PDF/Markdown
@@ -337,6 +338,8 @@ Takes DeepSearch results + user idea as input, generates:
 #### [NEW] `frontend/src/features/project-hub/`
 - `ProjectHubPage.tsx` — Grid view of all user projects with status cards
 - `ProjectDetail.tsx` — Full project view with tabs
+- `GenerationConfigModal.tsx` — Pre-generation scoped config popup
+- `GenerationPipeline.tsx` — Real-time visual tracking stepper
 - `PlanViewer.tsx` — Rendered project plan with sections
 - `ArchitectureDiagram.tsx` — Mermaid diagram renderer
 - `TechStackCards.tsx` — Visual tech stack display with icons
@@ -531,18 +534,9 @@ Using Meta WhatsApp Cloud API:
 
 ---
 
-### 🌍 Phase 7 — Multilingual Support + Polish (Days 18–19)
+### ✨ Phase 7 — UI/UX Polish & Performance (Days 18–19)
 
-> Add multilingual capability and polish the entire application for production.
-
-#### Multilingual Support (Sarvam AI)
-- `backend/app/services/translation.py` — Sarvam AI Translate API (mayura:v1)
-- `backend/app/api/translation.py` — Translation REST endpoints (detect, translate, batch)
-- Frontend i18n using `react-i18next` with browser language detection
-- Support for: English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, Gujarati, Malayalam, Punjabi
-- Unicode script-based language detection for Indic scripts
-- Results translated back to user's preferred language via Sarvam API
-- `LanguageSwitcher` component in sidebar with flag indicators
+> Polish the entire application for production readiness.
 
 #### UI/UX Polish
 - Dark mode / Light mode toggle with system preference detection
@@ -609,7 +603,7 @@ Using Meta WhatsApp Cloud API:
 > 7. **Twilio Account** — For WhatsApp integration (can be added later)
 
 > [!WARNING]
-> **Scope vs. Time** — This is an ambitious project. The 8 phases are ordered by priority. If time is limited, **Phases 1–5 deliver a complete, demo-ready product** covering 6 of the 7 Layer 2 capabilities. Phases 6–8 add messaging agents, multilingual support, and production deployment.
+> **Scope vs. Time** — This is an ambitious project. The 8 phases are ordered by priority. If time is limited, **Phases 1–5 deliver a complete, demo-ready product** covering 6 of the 7 Layer 2 capabilities. Phases 6–8 add messaging agents and production deployment.
 
 ## Open Questions
 

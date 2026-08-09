@@ -16,7 +16,7 @@
 - [7. Research Workspaces](#7-research-workspaces)
 - [8. Personalized Dashboard](#8-personalized-dashboard)
 - [9. AI Messaging Agents](#9-ai-messaging-agents)
-- [10. Multilingual Support & Translation](#10-multilingual-support--translation)
+- [10. Text-to-Speech (TTS)](#10-text-to-speech-tts)
 - [11. Export & Document Generation](#11-export--document-generation)
 - [12. Security & Production Hardening](#12-security--production-hardening)
 - [13. UI/UX Design System](#13-uiux-design-system)
@@ -124,7 +124,10 @@ A premium visual stepper overlay that shows exactly which stage the AI is workin
 | Feature | Description | Files |
 |---------|-------------|-------|
 | SSE Streaming Endpoint | `POST /api/projects/{id}/generate-plan-stream` returns a `text/event-stream` response. Each pipeline stage emits a JSON event with `stage`, `message`, and `progress` (0–100%) | `projects.py` |
-| 5-Stage Visual Pipeline | The overlay displays a vertical stepper with 5 stages: **Fetching Research** → **Generating Plan** → **Designing Architecture** → **Building Roadmap** → **Finalizing** | `GenerationPipeline.tsx` |
+| Pre-Generation Config | A modal popup intercepts the "Generate Plan" action, allowing users to choose between a "Full Plan" or a "Scoped Plan" (stop early at Main Plan or Architecture) | `GenerationConfigModal.tsx` |
+| Scoped Generation | The backend `generate_project_plan` accepts a `target_phase` and halts generation early, instantly saving and returning the partial plan to save API tokens | `generator.py` |
+| Dynamic UI Pipeline | The frontend pipeline stepper dynamically filters out skipped stages based on the `targetPhase` so the UI remains clean | `GenerationPipeline.tsx` |
+| 5-Stage Visual Pipeline | The overlay displays a vertical stepper with up to 5 stages: **Fetching Research** → **Generating Plan** → **Designing Architecture** → **Building Roadmap** → **Finalizing** | `GenerationPipeline.tsx` |
 | Live Progress Bar | A gradient progress bar at the top animates smoothly as `progress` events arrive from the backend | `GenerationPipeline.tsx` |
 | Animated Stage Icons | Each step transitions between icons: ○ (pending) → ⟳ spinner (active) → ✓ checkmark (completed) → ✗ (error/cancelled), all with spring animations | `GenerationPipeline.tsx` |
 | Real-Time Messages | Each SSE event includes a human-readable `message` (e.g., "Analyzing idea and generating plan structure...") displayed below the progress bar | `GenerationPipeline.tsx` |
@@ -271,22 +274,15 @@ Conversational AI bots on Telegram and WhatsApp for interacting with Innovix fro
 
 ---
 
-## 10. Multilingual Support & Translation
+## 10. Text-to-Speech (TTS)
 
 **Status:** ✅ Implemented
 
-Supports 10 Indian languages plus English via the Sarvam AI Translation and TTS APIs.
+Provides audio narration capabilities via the Sarvam AI TTS API.
 
 | Feature | Description | Files |
 |---------|-------------|-------|
-| Sarvam Translate API | Backend service wrapping the Sarvam AI Translate API (`mayura:v1` model) for text translation | `translation.py` |
-| Translation REST API | `POST /api/translation/translate` for single text, `POST /api/translation/batch` for batch translation | `translation.py` (API) |
-| Language Detection | Unicode script-based detection for Indic scripts (Devanagari, Tamil, Telugu, Bengali, etc.) | `translation.py` |
-| Supported Languages | English, Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, Gujarati, Malayalam, Punjabi | `translation.py` |
-| Auto-Translation Component | Frontend `AutoTranslator` component that automatically posts content for translation | `AutoTranslator.tsx` |
-| Language Switcher | Sidebar component to switch the active language, with flag/label indicators | `LanguageSwitcher.tsx` |
-| i18n Integration | Frontend uses `react-i18next` with browser language detection for UI string localization | `i18next` config |
-| Text-to-Speech (TTS) | `tts_service.py` synthesizes speech from text via Sarvam AI for supported languages | `tts_service.py` |
+| Text-to-Speech (TTS) | `tts_service.py` synthesizes speech from text via Sarvam AI | `tts_service.py` |
 | Plan Narration | `POST /api/projects/{id}/narrate` generates a spoken narration of the project plan as WAV audio | `projects.py` |
 
 ---

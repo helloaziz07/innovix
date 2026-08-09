@@ -28,16 +28,16 @@ SARVAM_TTS_URL = "https://api.sarvam.ai/text-to-speech"
 
 # Supported languages and default voices
 SARVAM_LANGUAGES = {
-    "en": {"code": "en-IN", "voice": "anushka"},
-    "hi": {"code": "hi-IN", "voice": "anushka"},
-    "ta": {"code": "ta-IN", "voice": "anushka"},
-    "te": {"code": "te-IN", "voice": "anushka"},
-    "bn": {"code": "bn-IN", "voice": "anushka"},
-    "mr": {"code": "mr-IN", "voice": "anushka"},
-    "kn": {"code": "kn-IN", "voice": "anushka"},
-    "gu": {"code": "gu-IN", "voice": "anushka"},
-    "ml": {"code": "ml-IN", "voice": "anushka"},
-    "pa": {"code": "pa-IN", "voice": "anushka"},
+    "en": {"code": "en-IN", "voice": "ritu"},
+    "hi": {"code": "hi-IN", "voice": "ritu"},
+    "ta": {"code": "ta-IN", "voice": "ritu"},
+    "te": {"code": "te-IN", "voice": "ritu"},
+    "bn": {"code": "bn-IN", "voice": "ritu"},
+    "mr": {"code": "mr-IN", "voice": "ritu"},
+    "kn": {"code": "kn-IN", "voice": "ritu"},
+    "gu": {"code": "gu-IN", "voice": "ritu"},
+    "ml": {"code": "ml-IN", "voice": "ritu"},
+    "pa": {"code": "pa-IN", "voice": "ritu"},
 }
 
 

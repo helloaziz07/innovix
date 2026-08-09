@@ -104,6 +104,7 @@ interface GenerationPipelineProps {
   message: string
   onCancel: () => void
   error?: string
+  targetPhase?: string
 }
 
 export default function GenerationPipeline({
@@ -112,6 +113,7 @@ export default function GenerationPipeline({
   message,
   onCancel,
   error,
+  targetPhase = 'full',
 }: GenerationPipelineProps) {
   const isCancelled = currentStage === 'cancelled'
   const isError = currentStage === 'error'
@@ -120,6 +122,18 @@ export default function GenerationPipeline({
 
   // Find the index of the current active step for error/cancel display
   const activeStepIdx = STAGE_ORDER[currentStage] ?? -1
+
+  // Filter steps based on targetPhase
+  const visibleSteps = PIPELINE_STEPS.filter((step) => {
+    if (targetPhase === 'full' || targetPhase === 'roadmap') return true
+    if (targetPhase === 'main_plan') {
+      return !['architecture', 'roadmap'].includes(step.id)
+    }
+    if (targetPhase === 'architecture') {
+      return step.id !== 'roadmap'
+    }
+    return true
+  })
 
   return (
     <motion.div
@@ -186,10 +200,9 @@ export default function GenerationPipeline({
           </div>
         </div>
 
-        {/* Pipeline Steps */}
         <div className="px-6 pb-3">
           <div className="space-y-0">
-            {PIPELINE_STEPS.map((step, idx) => {
+            {visibleSteps.map((step, idx) => {
               let status: StepStatus
 
               if (isError || isCancelled) {
@@ -209,7 +222,7 @@ export default function GenerationPipeline({
               return (
                 <div key={step.id} className="flex items-start gap-3 relative">
                   {/* Connector line */}
-                  {idx < PIPELINE_STEPS.length - 1 && (
+                  {idx < visibleSteps.length - 1 && (
                     <div
                       className={`absolute left-[17px] top-[36px] w-0.5 h-[28px] transition-colors duration-500 ${
                         status === 'completed'

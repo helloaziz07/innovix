@@ -25,6 +25,7 @@ import ArchitectureDiagram from './ArchitectureDiagram'
 import TechStackCards from './TechStackCards'
 import TimelineView from './TimelineView'
 import ExportButton from './ExportButton'
+import GenerationConfigModal from './GenerationConfigModal'
 import GenerationPipeline from './GenerationPipeline'
 
 /**
@@ -117,6 +118,9 @@ export default function ProjectDetail() {
     }
   }, [id, setActiveProject])
 
+  const [isConfigModalOpen, setConfigModalOpen] = useState(false)
+  const [generationTarget, setGenerationTarget] = useState('full')
+
   useEffect(() => {
     fetchProject()
     return () => setActiveProject(null)
@@ -131,13 +135,15 @@ export default function ProjectDetail() {
       !isGeneratingPlan &&
       id
     ) {
-      handleGeneratePlan()
+      setConfigModalOpen(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProject?.id, activeProject?.status])
 
-  const handleGeneratePlan = async () => {
+  const handleGeneratePlan = async (targetPhase: string = 'full') => {
+    setConfigModalOpen(false)
     if (!id || isGeneratingPlan) return
+    setGenerationTarget(targetPhase)
     setGeneratingPlan(true)
     setError('')
     setPipelineStage('fetching_research')
@@ -148,7 +154,7 @@ export default function ProjectDetail() {
     abortControllerRef.current = abortController
 
     try {
-      const response = await projectsApi.generatePlanStream(id, abortController.signal)
+      const response = await projectsApi.generatePlanStream(id, abortController.signal, targetPhase)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -285,6 +291,13 @@ export default function ProjectDetail() {
 
   return (
     <div className="min-h-full p-6 lg:p-8 relative">
+      {/* Config Modal */}
+      <GenerationConfigModal
+        isOpen={isConfigModalOpen}
+        onClose={() => setConfigModalOpen(false)}
+        onConfirm={handleGeneratePlan}
+      />
+
       {/* Pipeline Tracker Overlay */}
       {(isGeneratingPlan || ['complete', 'error', 'cancelled'].includes(pipelineStage)) && pipelineStage !== 'idle' && (
         <GenerationPipeline
@@ -297,6 +310,7 @@ export default function ProjectDetail() {
               : handleCancelGeneration
           }
           error={pipelineStage === 'error' ? error : undefined}
+          targetPhase={generationTarget}
         />
       )}
       {/* Back + Header */}
@@ -326,7 +340,7 @@ export default function ProjectDetail() {
           <div className="flex items-center gap-2 flex-shrink-0">
             {!hasPlan ? (
               <button
-                onClick={handleGeneratePlan}
+                onClick={() => setConfigModalOpen(true)}
                 disabled={isGeneratingPlan}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl
                            bg-gradient-to-r from-violet-600 to-purple-600
@@ -352,7 +366,7 @@ export default function ProjectDetail() {
               <>
                 <ExportButton projectId={activeProject.id} projectTitle={activeProject.title} />
                 <button
-                  onClick={handleGeneratePlan}
+                  onClick={() => setConfigModalOpen(true)}
                   disabled={isGeneratingPlan}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg
                              bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm
