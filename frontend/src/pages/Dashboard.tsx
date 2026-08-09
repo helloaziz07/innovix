@@ -14,7 +14,6 @@ import { useAuthStore } from '@/stores/authStore'
 import { dashboardApi, projectsApi } from '@/lib/api'
 import { 
   Rocket, 
-  Search, 
   Lightbulb,
   ArrowRight,
   Network,
@@ -25,10 +24,8 @@ import {
   X,
   Smartphone,
   Mic,
-  Activity,
   FolderOpen,
   Sparkles,
-  Clock,
   Link,
   Loader2
 } from 'lucide-react'
@@ -73,59 +70,6 @@ function ProjectOverviewCards({ stats }: { stats: any }) {
     </div>
   )
 }
-
-/** Activity feed showing recent actions */
-function ActivityFeed({ activities }: { activities: any[] }) {
-  const navigate = useNavigate()
-
-  const ICONS: Record<string, any> = {
-    project: { icon: Rocket, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10' },
-    search: { icon: Search, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
-  }
-
-  if (!activities.length) {
-    return (
-      <div className="p-6 text-center">
-        <Activity className="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No recent activity</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="divide-y divide-slate-100 dark:divide-slate-800">
-      {activities.slice(0, 8).map((act, idx) => {
-        const config = ICONS[act.type] || ICONS.project
-        return (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: idx * 0.04 }}
-            className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-[#1F2937] transition-colors cursor-pointer"
-            onClick={() => {
-              if (act.type === 'project') navigate(`/projects/${act.entity_id}`)
-            }}
-          >
-            <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center flex-shrink-0`}>
-              <config.icon className={`w-5 h-5 ${config.color}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm truncate text-slate-900 dark:text-white">
-                <span className="capitalize font-medium text-slate-500 dark:text-slate-400 mr-1">{act.action}</span>
-                <span className="font-bold">{act.title}</span>
-              </p>
-            </div>
-            <span className="text-xs font-medium text-slate-400 flex-shrink-0">
-              {act.timestamp ? formatRelativeTime(act.timestamp) : ''}
-            </span>
-          </motion.div>
-        )
-      })}
-    </div>
-  )
-}
-
 
 
 /** Mobile connection options for Telegram & WhatsApp */
@@ -246,18 +190,7 @@ function MobileCompanion() {
   )
 }
 
-// ─── Utility ────────────────────────────────
 
-function formatRelativeTime(timestamp: string): string {
-  const diff = Date.now() - new Date(timestamp).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
 
 // ─── Main Dashboard ────────────────────────────────
 
@@ -267,7 +200,6 @@ export default function Dashboard() {
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'Researcher'
 
   const [stats, setStats] = useState<any>({})
-  const [activities, setActivities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   // Search bar state — this is the main entry point
@@ -313,12 +245,8 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const [dashRes, actRes] = await Promise.allSettled([
-          dashboardApi.get(),
-          dashboardApi.getActivity(),
-        ])
-        if (dashRes.status === 'fulfilled') setStats(dashRes.value.data)
-        if (actRes.status === 'fulfilled') setActivities(actRes.value.data.activities || [])
+        const dashRes = await dashboardApi.get()
+        setStats(dashRes.data)
       } catch (err) {
         console.error('Dashboard fetch failed:', err)
       } finally {
@@ -503,10 +431,18 @@ export default function Dashboard() {
           className="lg:col-span-2 space-y-4"
         >
           {/* Recent Projects Quick Access */}
-          <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
-            <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            Recent Projects
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-white">
+              <FolderOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              Recent Projects
+            </h2>
+            <button 
+              onClick={() => navigate('/projects')}
+              className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            >
+              View all
+            </button>
+          </div>
           {stats.recent_projects?.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {stats.recent_projects.slice(0, 4).map((proj: any, idx: number) => (
@@ -559,19 +495,6 @@ export default function Dashboard() {
           transition={{ delay: 0.25 }}
           className="space-y-4"
         >
-          {/* Activity Feed */}
-          <div>
-            <h2 className="text-sm font-semibold flex items-center gap-2 mb-3 text-slate-900 dark:text-white">
-              <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              Recent Activity
-            </h2>
-            <Card className="bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937]">
-              <CardContent className="p-0">
-                <ActivityFeed activities={activities} />
-              </CardContent>
-            </Card>
-          </div>
-
           {/* AI Suggestions */}
           <div>
             <h2 className="text-sm font-semibold flex items-center gap-2 mb-3 text-slate-900 dark:text-white">

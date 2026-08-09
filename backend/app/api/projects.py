@@ -58,12 +58,16 @@ async def list_projects(
     user: dict = Depends(get_current_user),
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    is_pinned: Optional[bool] = Query(default=None),
 ):
     """List all projects for the current user with pagination."""
+    query = supabase_admin.table("projects").select("*").eq("user_id", user["id"])
+    
+    if is_pinned is not None:
+        query = query.eq("is_pinned", is_pinned)
+        
     result = (
-        supabase_admin.table("projects")
-        .select("*")
-        .eq("user_id", user["id"])
+        query
         .order("updated_at", desc=True)
         .range(offset, offset + limit - 1)
         .execute()

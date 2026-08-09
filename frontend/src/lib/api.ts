@@ -43,7 +43,7 @@ api.interceptors.response.use(
 
 /** Projects */
 export const projectsApi = {
-  list: () => api.get('/projects'),
+  list: (params?: { is_pinned?: boolean, limit?: number }) => api.get('/projects', { params }),
   get: (id: string) => api.get(`/projects/${id}`),
   create: (data: { title: string; idea_text: string }) =>
     api.post('/projects', data),

@@ -22,11 +22,13 @@ import {
   ThumbsDown,
   Briefcase,
   Volume2,
+  Square,
 } from 'lucide-react'
 
 interface PlanViewerProps {
   plan: Record<string, any>
   onNarrate?: () => void
+  isNarrating?: boolean
 }
 
 interface SectionProps {
@@ -71,7 +73,7 @@ function CollapsibleSection({ title, icon, defaultOpen = false, children }: Sect
   )
 }
 
-export default function PlanViewer({ plan, onNarrate }: PlanViewerProps) {
+export default function PlanViewer({ plan, onNarrate, isNarrating }: PlanViewerProps) {
   const pv = plan.problem_validation as Record<string, any> | undefined
   const solutions = plan.existing_solutions as Record<string, any>[] | undefined
   const innovations = plan.innovation_opportunities as Record<string, any>[] | undefined
@@ -94,14 +96,24 @@ export default function PlanViewer({ plan, onNarrate }: PlanViewerProps) {
             {onNarrate && (
               <button
                 onClick={onNarrate}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md shrink-0
-                           bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20
-                           text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20
-                           transition-colors"
-                title="Listen to problem validation summary"
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md shrink-0 border text-xs font-medium transition-colors
+                           ${isNarrating
+                              ? 'bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20'
+                              : 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20'
+                           }`}
+                title={isNarrating ? "Stop narration" : "Listen to problem validation summary"}
               >
-                <Volume2 className="w-3.5 h-3.5" />
-                Listen
+                {isNarrating ? (
+                  <>
+                    <Square className="w-3.5 h-3.5 fill-current" />
+                    Stop
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="w-3.5 h-3.5" />
+                    Listen
+                  </>
+                )}
               </button>
             )}
           </div>

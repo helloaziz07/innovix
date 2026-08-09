@@ -48,6 +48,7 @@ class ProjectUpdate(BaseModel):
     tech_stack: Optional[Any] = None
     architecture: Optional[dict] = None
     timeline: Optional[dict] = None
+    is_pinned: Optional[bool] = None
 
 
 class ProjectResponse(BaseModel):
@@ -61,6 +62,7 @@ class ProjectResponse(BaseModel):
     tech_stack: Optional[Any] = None
     architecture: Optional[dict] = None
     timeline: Optional[dict] = None
+    is_pinned: bool = False
     created_at: datetime
     updated_at: datetime
 

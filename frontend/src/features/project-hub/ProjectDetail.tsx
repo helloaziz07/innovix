@@ -17,6 +17,7 @@ import {
   Loader2,
   Rocket,
   AlertTriangle,
+  Pin,
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
@@ -99,6 +100,9 @@ export default function ProjectDetail() {
     resetPipeline,
   } = useProjectStore()
 
+  // TTS State
+  const [isNarrating, setIsNarrating] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -125,6 +129,22 @@ export default function ProjectDetail() {
     fetchProject()
     return () => setActiveProject(null)
   }, [fetchProject, setActiveProject])
+
+  const handleTogglePin = async () => {
+    if (!activeProject || !id) return
+    const newPinnedStatus = !activeProject.is_pinned
+    try {
+      // Optimistic update
+      updateProject(id, { is_pinned: newPinnedStatus })
+      await projectsApi.update(id, { is_pinned: newPinnedStatus })
+      // Dispatch event to update sidebar
+      window.dispatchEvent(new CustomEvent('project-pinned'))
+    } catch (err) {
+      console.error('Failed to toggle pin status:', err)
+      // Revert on failure
+      updateProject(id, { is_pinned: !newPinnedStatus })
+    }
+  }
 
   // Auto-trigger pipeline for newly created projects (status = 'ideation', no plan yet)
   useEffect(() => {
@@ -245,15 +265,33 @@ export default function ProjectDetail() {
 
   const handleNarrate = async () => {
     if (!id) return
+    
+    if (isNarrating && audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setIsNarrating(false)
+      return
+    }
+
     try {
+      setIsNarrating(true)
       const res = await projectsApi.narrate(id)
-      // Play the audio
       const blob = new Blob([res.data], { type: 'audio/wav' })
       const url = URL.createObjectURL(blob)
       const audio = new Audio(url)
+      
+      audio.onended = () => {
+        setIsNarrating(false)
+      }
+      audio.onerror = () => {
+        setIsNarrating(false)
+      }
+      
+      audioRef.current = audio
       audio.play()
     } catch (err) {
       console.error('Narration failed:', err)
+      setIsNarrating(false)
       alert('Narration is not available. Make sure SARVAM_API_KEY is configured.')
     }
   }
@@ -330,7 +368,20 @@ export default function ProjectDetail() {
 
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold mb-1">{activeProject.title}</h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-2xl font-bold">{activeProject.title}</h1>
+              <button 
+                onClick={handleTogglePin}
+                className={`p-1.5 rounded-md transition-colors ${
+                  activeProject.is_pinned 
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400' 
+                    : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                }`}
+                title={activeProject.is_pinned ? "Unpin Project" : "Pin Project"}
+              >
+                <Pin className={`w-4 h-4 ${activeProject.is_pinned ? 'fill-current rotate-45' : ''}`} />
+              </button>
+            </div>
             <p className="text-sm text-muted-foreground max-w-2xl">
               {activeProject.idea_text}
             </p>
@@ -424,7 +475,7 @@ export default function ProjectDetail() {
 
           {/* Tab content */}
           <div className="min-h-[400px]">
-            {activeTab === 'overview' && <PlanViewer plan={plan as Record<string, unknown>} onNarrate={handleNarrate} />}
+            {activeTab === 'overview' && <PlanViewer plan={plan as Record<string, unknown>} onNarrate={handleNarrate} isNarrating={isNarrating} />}
             {activeTab === 'architecture' && (
               <MermaidErrorBoundary>
                 <ArchitectureDiagram

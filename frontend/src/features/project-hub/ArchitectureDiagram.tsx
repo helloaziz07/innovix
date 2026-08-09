@@ -7,7 +7,7 @@
  * Uses mermaid.js for client-side rendering (loaded dynamically).
  */
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Layers, AlertTriangle, Cpu, ZoomIn, ZoomOut, Maximize2, X, Download } from 'lucide-react'
 
@@ -53,9 +53,33 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
 
   const [mermaidLoaded, setMermaidLoaded] = useState(false)
   const [zoom, setZoom] = useState(1)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false)
-  const [showModalDownloadMenu, setShowModalDownloadMenu] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const modalContainerRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 })
+
+  const handleMouseDown = (e: React.MouseEvent, ref: React.RefObject<HTMLDivElement>) => {
+    if (e.button !== 0 || !ref.current) return
+    setIsDragging(true)
+    setDragStart({ 
+      x: e.clientX, 
+      y: e.clientY, 
+      scrollLeft: ref.current.scrollLeft, 
+      scrollTop: ref.current.scrollTop 
+    })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent, ref: React.RefObject<HTMLDivElement>) => {
+    if (!isDragging || !ref.current) return
+    const dx = e.clientX - dragStart.x
+    const dy = e.clientY - dragStart.y
+    ref.current.scrollLeft = dragStart.scrollLeft - dx
+    ref.current.scrollTop = dragStart.scrollTop - dy
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
 
   const mermaidCode = architecture?.mermaid_diagram as string | undefined
   const components = architecture?.components as Record<string, unknown>[] | undefined
@@ -130,16 +154,18 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
     return () => { cancelled = true }
   }, [mermaidCode])
 
-
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false)
+  const [showModalDownloadMenu, setShowModalDownloadMenu] = useState(false)
 
   const handleZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setZoom((z) => Math.min(z + 0.25, 3))
+    setZoom((z) => Math.min(z + 0.2, 3))
   }
 
   const handleZoomOut = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setZoom((z) => Math.max(z - 0.25, 0.5))
+    setZoom((z) => Math.max(z - 0.2, 0.5))
   }
 
   const downloadImage = (format: 'png' | 'jpeg', e?: React.MouseEvent) => {
@@ -259,14 +285,14 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
           </div>
 
           {!renderError ? (
-            <div className="relative">
+            <div className="relative overflow-hidden bg-slate-50 dark:bg-[#0B1120] rounded-b-xl border-t border-slate-200 dark:border-slate-800">
               {/* Zoom & Download Controls */}
               <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
-                <div className="flex flex-col bg-black/40 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-                  <button onClick={handleZoomIn} className="p-2 text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700" title="Zoom In">
+                <div className="flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
+                  <button onClick={handleZoomIn} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b border-slate-200 dark:border-slate-700" title="Zoom In">
                     <ZoomIn className="w-4 h-4" />
                   </button>
-                  <button onClick={handleZoomOut} className="p-2 text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors" title="Zoom Out">
+                  <button onClick={handleZoomOut} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Zoom Out">
                     <ZoomOut className="w-4 h-4" />
                   </button>
                 </div>
@@ -276,19 +302,19 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                       e.stopPropagation()
                       setShowDownloadMenu(!showDownloadMenu)
                     }} 
-                    className="flex items-center justify-center p-2 bg-black/40 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors" 
+                    className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm" 
                     title="Download Image"
                   >
                     <Download className="w-4 h-4" />
                   </button>
                   {showDownloadMenu && (
-                    <div className="absolute top-0 right-10 flex flex-col bg-black/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
+                    <div className="absolute top-0 right-10 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
                       <button 
                         onClick={(e) => {
                           downloadImage('png', e)
                           setShowDownloadMenu(false)
                         }} 
-                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700 text-left"
+                        className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700 text-left"
                       >
                         Download PNG
                       </button>
@@ -297,7 +323,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                           downloadImage('jpeg', e)
                           setShowDownloadMenu(false)
                         }} 
-                        className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors text-left"
+                        className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                       >
                         Download JPEG
                       </button>
@@ -306,17 +332,24 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                 </div>
               </div>
               <div
-                onClick={() => setIsModalOpen(true)}
-                className="p-6 flex justify-center overflow-x-auto min-h-[200px] cursor-pointer
-                           [&_svg]:max-w-full [&_svg]:h-auto hover:bg-white/[0.02] transition-colors"
+                ref={containerRef}
+                onMouseDown={(e) => handleMouseDown(e, containerRef)}
+                onMouseMove={(e) => handleMouseMove(e, containerRef)}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                className={`p-6 flex justify-center items-center min-h-[300px] w-full 
+                           [&_svg]:max-w-none [&_svg]:h-auto transition-colors select-none overflow-auto
+                           ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
               >
                 {mermaidLoaded && svgContent ? (
-                  <motion.div
-                    animate={{ scale: zoom }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    style={{ transformOrigin: 'center center' }}
-                    dangerouslySetInnerHTML={{ __html: svgContent }}
-                  />
+                  <div className="min-w-fit min-h-fit flex items-center justify-center p-8">
+                    <motion.div
+                      animate={{ scale: zoom }}
+                      transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
+                      style={{ transformOrigin: 'center center' }}
+                      dangerouslySetInnerHTML={{ __html: svgContent }}
+                    />
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <div className="w-4 h-4 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
@@ -455,12 +488,12 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                   System Architecture
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="flex bg-black/40 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-                    <button onClick={handleZoomIn} className="p-2 hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors" title="Zoom In">
+                  <div className="flex bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <button onClick={handleZoomIn} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Zoom In">
                       <ZoomIn className="w-4 h-4" />
                     </button>
-                    <div className="w-px bg-slate-100 dark:bg-slate-800" />
-                    <button onClick={handleZoomOut} className="p-2 hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors" title="Zoom Out">
+                    <div className="w-px bg-slate-200 dark:bg-slate-700" />
+                    <button onClick={handleZoomOut} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Zoom Out">
                       <ZoomOut className="w-4 h-4" />
                     </button>
                   </div>
@@ -470,19 +503,19 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                         e.stopPropagation()
                         setShowModalDownloadMenu(!showModalDownloadMenu)
                       }}
-                      className="p-2 flex items-center bg-black/40 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors" 
+                      className="p-2 flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm" 
                       title="Download Image"
                     >
                       <Download className="w-4 h-4" />
                     </button>
                     {showModalDownloadMenu && (
-                      <div className="absolute top-10 right-0 flex flex-col bg-black/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl mt-1">
+                      <div className="absolute top-10 right-0 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl mt-1">
                         <button 
                           onClick={(e) => {
                             downloadImage('png', e)
                             setShowModalDownloadMenu(false)
                           }} 
-                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700 text-left"
+                          className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700 text-left"
                         >
                           Download PNG
                         </button>
@@ -491,7 +524,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                             downloadImage('jpeg', e)
                             setShowModalDownloadMenu(false)
                           }} 
-                          className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-white hover:bg-slate-100 dark:bg-slate-800 transition-colors text-left"
+                          className="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                         >
                           Download JPEG
                         </button>
@@ -506,13 +539,21 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                   </button>
                 </div>
               </div>
-              <div className="p-8 flex-1 overflow-auto bg-slate-100 dark:bg-slate-900">
-                <div className="min-h-full min-w-max flex items-center justify-center">
+              <div 
+                ref={modalContainerRef}
+                className={`p-8 flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 select-none
+                           ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                onMouseDown={(e) => handleMouseDown(e, modalContainerRef)}
+                onMouseMove={(e) => handleMouseMove(e, modalContainerRef)}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+              >
+                <div className="min-h-full min-w-max flex items-center justify-center p-8">
                   <motion.div
                     animate={{ scale: zoom }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
                     style={{ transformOrigin: 'center center' }}
-                    className="[&_svg]:max-w-none [&_svg]:h-auto"
+                    className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                   />
                 </div>

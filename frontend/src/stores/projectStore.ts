@@ -28,6 +28,7 @@ export interface Project {
   tech_stack: Record<string, unknown>[] | null
   architecture: Record<string, unknown> | null
   timeline: Record<string, unknown> | null
+  is_pinned?: boolean
   created_at: string
   updated_at: string
 }
