@@ -34,10 +34,16 @@ gemini_client = genai.Client(api_key=settings.gemini_api_key)
 GEMINI_MODEL = "gemini-3.5-flash-lite"
 
 
+class GenerationCancelled(Exception):
+    """Raised when the user cancels plan generation mid-pipeline."""
+    pass
+
+
 async def generate_project_plan(
     project_id: str,
     user_id: str,
     progress_callback=None,
+    cancel_event: Optional[asyncio.Event] = None,
 ) -> Dict[str, Any]:
     """
     Generate a complete project plan for the given project.
@@ -49,50 +55,72 @@ async def generate_project_plan(
         project_id: The project UUID.
         user_id: The authenticated user's UUID (for ownership verification).
         progress_callback: Optional async callback for progress events.
+            Each event is a dict with: stage, message, progress (0-100).
+        cancel_event: Optional asyncio.Event — if set, generation is
+            aborted between stages and GenerationCancelled is raised.
 
     Returns:
         The complete plan dict with all sections.
 
     Raises:
         ValueError: If the project isn't found or doesn't belong to the user.
+        GenerationCancelled: If the cancel_event is set mid-generation.
     """
+
+    def _check_cancelled():
+        if cancel_event and cancel_event.is_set():
+            logger.info(f"[ProjectHub] Generation cancelled for project {project_id}")
+            raise GenerationCancelled("Plan generation was cancelled by the user.")
+
+    async def _emit(stage: str, message: str, progress: int):
+        if progress_callback:
+            await progress_callback({
+                "stage": stage,
+                "message": message,
+                "progress": progress,
+            })
+
     # ─── Fetch project ──────────────────────────────────────
     project = await _get_project(project_id, user_id)
     idea = project["idea_text"]
 
-    # ─── Fetch research results (if any) ────────────────────
+    # ─── Stage 1: Fetch research context ────────────────────
+    await _emit("fetching_research", "Gathering research context from DeepSearch...", 5)
     research_summary, sources_text, gap_analysis = await _get_research_context(project_id)
-
-    if progress_callback:
-        await progress_callback({"event": "step", "step": "planning", "message": "Generating project plan..."})
+    _check_cancelled()
+    await _emit("fetching_research", "Research context loaded.", 10)
 
     # Update project status → researching
     await _update_project_status(project_id, "researching")
 
-    # ─── Step 1: Main Plan ──────────────────────────────────
-    if progress_callback:
-        await progress_callback({"event": "step", "step": "main_plan", "message": "Analyzing idea and generating plan structure..."})
-
+    # ─── Stage 2: Main Plan (Gemini call 1) ─────────────────
+    await _emit("main_plan", "Analyzing idea and generating plan structure...", 15)
+    _check_cancelled()
     main_plan = await _generate_main_plan(idea, research_summary, sources_text, gap_analysis)
     logger.info(f"[ProjectHub] Main plan generated for project {project_id}")
+    _check_cancelled()
+    await _emit("main_plan", "Plan structure complete.", 40)
 
-    # ─── Step 2: Architecture ───────────────────────────────
-    if progress_callback:
-        await progress_callback({"event": "step", "step": "architecture", "message": "Designing system architecture..."})
-
+    # ─── Stage 3: Architecture (Gemini call 2) ──────────────
+    await _emit("architecture", "Designing system architecture...", 45)
+    _check_cancelled()
     tech_stack_json = json.dumps(main_plan.get("tech_stack", []), indent=2)
     architecture = await _generate_architecture(idea, tech_stack_json)
     logger.info(f"[ProjectHub] Architecture generated for project {project_id}")
+    _check_cancelled()
+    await _emit("architecture", "Architecture design complete.", 70)
 
-    # ─── Step 3: Roadmap ────────────────────────────────────
-    if progress_callback:
-        await progress_callback({"event": "step", "step": "roadmap", "message": "Building development roadmap..."})
-
+    # ─── Stage 4: Roadmap (Gemini call 3) ───────────────────
+    await _emit("roadmap", "Building development roadmap...", 75)
+    _check_cancelled()
     architecture_json = json.dumps(architecture.get("components", []), indent=2)
     roadmap = await _generate_roadmap(idea, tech_stack_json, architecture_json)
     logger.info(f"[ProjectHub] Roadmap generated for project {project_id}")
+    _check_cancelled()
+    await _emit("roadmap", "Roadmap complete.", 90)
 
-    # ─── Combine and persist ────────────────────────────────
+    # ─── Stage 5: Persist ───────────────────────────────────
+    await _emit("saving", "Saving plan to database...", 92)
     full_plan = {
         **main_plan,
         "architecture": architecture,
@@ -104,9 +132,7 @@ async def generate_project_plan(
     }
 
     await _persist_plan(project_id, full_plan)
-
-    if progress_callback:
-        await progress_callback({"event": "step", "step": "complete", "message": "Project plan generated successfully!"})
+    await _emit("complete", "Project plan generated successfully!", 100)
 
     return full_plan
 

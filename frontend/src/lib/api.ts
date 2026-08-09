@@ -52,6 +52,26 @@ export const projectsApi = {
   delete: (id: string) => api.delete(`/projects/${id}`),
   generatePlan: (id: string) =>
     api.post(`/projects/${id}/generate-plan`),
+  /**
+   * Start plan generation with real-time SSE progress streaming.
+   * Returns a ReadableStream of SSE events for the pipeline tracker.
+   *
+   * @param id - Project ID
+   * @param signal - AbortSignal for cancellation
+   * @returns Promise<Response> — the raw fetch Response with body stream
+   */
+  generatePlanStream: async (id: string, signal?: AbortSignal): Promise<Response> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token || ''
+    return fetch(`${API_BASE}/api/projects/${id}/generate-plan-stream`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      signal,
+    })
+  },
   export: (id: string, format: 'md' | 'pdf' | 'pptx' = 'md') =>
     api.get(`/projects/${id}/export`, {
       params: { format },

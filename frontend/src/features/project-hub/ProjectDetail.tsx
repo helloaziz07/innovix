@@ -5,7 +5,7 @@
  * Timeline, Export. Shows "Generate Plan" button and "Listen" (TTS).
  */
 
-import { useState, useEffect, useCallback, Component, type ReactNode } from 'react'
+import { useState, useEffect, useCallback, useRef, Component, type ReactNode } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -25,6 +25,7 @@ import ArchitectureDiagram from './ArchitectureDiagram'
 import TechStackCards from './TechStackCards'
 import TimelineView from './TimelineView'
 import ExportButton from './ExportButton'
+import GenerationPipeline from './GenerationPipeline'
 
 /**
  * Error boundary for Mermaid diagram rendering.
@@ -88,11 +89,19 @@ export default function ProjectDetail() {
     isGeneratingPlan,
     setGeneratingPlan,
     updateProject,
+    pipelineStage,
+    pipelineProgress,
+    pipelineMessage,
+    setPipelineStage,
+    setPipelineProgress,
+    setPipelineMessage,
+    resetPipeline,
   } = useProjectStore()
 
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const fetchProject = useCallback(async () => {
     if (!id) return
@@ -131,19 +140,100 @@ export default function ProjectDetail() {
     if (!id || isGeneratingPlan) return
     setGeneratingPlan(true)
     setError('')
+    setPipelineStage('fetching_research')
+    setPipelineProgress(0)
+    setPipelineMessage('Initializing...')
+
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
     try {
-      await projectsApi.generatePlan(id)
-      // Refresh project to get the updated plan
-      const updated = await projectsApi.get(id)
-      setActiveProject(updated.data)
-      updateProject(id, updated.data)
+      const response = await projectsApi.generatePlanStream(id, abortController.signal)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || `Server error: ${response.status}`)
+      }
+
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('No response stream available')
+
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        // Keep the last incomplete line in the buffer
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const event = JSON.parse(line.slice(6))
+              setPipelineStage(event.stage)
+              setPipelineProgress(event.progress)
+              setPipelineMessage(event.message)
+
+              if (event.stage === 'error') {
+                setError(event.message)
+              }
+            } catch {
+              // Skip malformed JSON lines
+            }
+          }
+        }
+      }
+
+      // Refresh project to get the updated plan data
+      const currentStage = useProjectStore.getState().pipelineStage
+      if (currentStage !== 'cancelled' && currentStage !== 'error') {
+        const updated = await projectsApi.get(id)
+        setActiveProject(updated.data)
+        updateProject(id, updated.data)
+      }
     } catch (err: unknown) {
-      const axiosErr = err as any
-      const msg = axiosErr?.response?.data?.detail || axiosErr?.message || 'Plan generation failed'
+      if ((err as Error).name === 'AbortError') {
+        setPipelineStage('cancelled')
+        setPipelineMessage('Generation cancelled.')
+        return
+      }
+      const msg = (err as Error).message || 'Plan generation failed'
       setError(msg)
+      setPipelineStage('error')
+      setPipelineMessage(msg)
       console.error('Plan generation failed:', msg, err)
     } finally {
-      setGeneratingPlan(false)
+      abortControllerRef.current = null
+      // Don't reset pipeline here — let the user see the final state
+      // Pipeline resets when the overlay is dismissed
+    }
+  }
+
+  const handleCancelGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setPipelineStage('cancelled')
+    setPipelineProgress(pipelineProgress) // freeze at current
+    setPipelineMessage('Generation cancelled by user.')
+  }
+
+  // Dismiss the pipeline overlay (after completion, error, or cancel)
+  const handleDismissPipeline = async () => {
+    const wasComplete = pipelineStage === 'complete'
+    resetPipeline()
+    // If generation completed, refresh the project
+    if (wasComplete && id) {
+      try {
+        const updated = await projectsApi.get(id)
+        setActiveProject(updated.data)
+        updateProject(id, updated.data)
+      } catch { /* ignore */ }
     }
   }
 
@@ -195,35 +285,19 @@ export default function ProjectDetail() {
 
   return (
     <div className="min-h-full p-6 lg:p-8 relative">
-      {/* Pipeline Loading Overlay */}
-      {isGeneratingPlan && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 bg-slate-50 dark:bg-[#0B1120]/80 backdrop-blur-sm
-                     flex items-center justify-center"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-2xl p-8 max-w-md text-center shadow-2xl"
-          >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl
-                            bg-gradient-to-br from-blue-600 to-indigo-600
-                            flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-white animate-spin" />
-            </div>
-            <h3 className="text-lg font-bold mb-2">Generating Your Project Plan</h3>
-            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-              Our AI is researching your idea, analyzing gaps, and building
-              a complete project plan with architecture and timeline.
-            </p>
-            <div className="flex items-center justify-center gap-2 text-xs text-blue-600 dark:text-blue-400">
-              <Rocket className="w-3.5 h-3.5 animate-pulse" />
-              This usually takes 30-60 seconds...
-            </div>
-          </motion.div>
-        </motion.div>
+      {/* Pipeline Tracker Overlay */}
+      {(isGeneratingPlan || ['complete', 'error', 'cancelled'].includes(pipelineStage)) && pipelineStage !== 'idle' && (
+        <GenerationPipeline
+          currentStage={pipelineStage}
+          progress={pipelineProgress}
+          message={pipelineMessage}
+          onCancel={
+            ['complete', 'error', 'cancelled'].includes(pipelineStage)
+              ? handleDismissPipeline
+              : handleCancelGeneration
+          }
+          error={pipelineStage === 'error' ? error : undefined}
+        />
       )}
       {/* Back + Header */}
       <motion.div
@@ -311,35 +385,7 @@ export default function ProjectDetail() {
         </motion.div>
       )}
 
-      {/* Generating state */}
-      {isGeneratingPlan && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center mb-6"
-        >
-          <Loader2 className="w-10 h-10 text-blue-600 dark:text-blue-400 animate-spin mx-auto mb-4" />
-          <h3 className="font-semibold mb-1">Generating Your Project Plan</h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Our AI is analyzing your idea, designing the architecture,
-            and building a development roadmap. This takes about 30–60 seconds.
-          </p>
-          <div className="flex justify-center gap-6 mt-6 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-              Problem validation
-            </span>
-            <span className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-violet-400/60 animate-pulse" style={{ animationDelay: '0.3s' }} />
-              Architecture design
-            </span>
-            <span className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-violet-400/30 animate-pulse" style={{ animationDelay: '0.6s' }} />
-              Roadmap planning
-            </span>
-          </div>
-        </motion.div>
-      )}
+
 
       {/* Plan content */}
       {hasPlan && !isGeneratingPlan && (

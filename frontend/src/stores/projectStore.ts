@@ -2,10 +2,21 @@
  * Innovix — Project Store (Zustand)
  *
  * Manages project state: active project, plan generation status,
- * export state, and project list caching.
+ * pipeline progress tracking, export state, and project list caching.
  */
 
 import { create } from 'zustand'
+
+export type PipelineStage =
+  | 'idle'
+  | 'fetching_research'
+  | 'main_plan'
+  | 'architecture'
+  | 'roadmap'
+  | 'saving'
+  | 'complete'
+  | 'error'
+  | 'cancelled'
 
 export interface Project {
   id: string
@@ -30,6 +41,11 @@ interface ProjectState {
   isLoading: boolean
   isGeneratingPlan: boolean
   isExporting: boolean
+
+  // Pipeline progress tracking
+  pipelineStage: PipelineStage
+  pipelineProgress: number
+  pipelineMessage: string
   
   // Actions
   setProjects: (projects: Project[]) => void
@@ -40,6 +56,12 @@ interface ProjectState {
   setExporting: (exporting: boolean) => void
   addProject: (project: Project) => void
   removeProject: (id: string) => void
+
+  // Pipeline actions
+  setPipelineStage: (stage: PipelineStage) => void
+  setPipelineProgress: (progress: number) => void
+  setPipelineMessage: (message: string) => void
+  resetPipeline: () => void
 }
 
 export const useProjectStore = create<ProjectState>((set) => ({
@@ -48,6 +70,11 @@ export const useProjectStore = create<ProjectState>((set) => ({
   isLoading: false,
   isGeneratingPlan: false,
   isExporting: false,
+
+  // Pipeline defaults
+  pipelineStage: 'idle',
+  pipelineProgress: 0,
+  pipelineMessage: '',
 
   setProjects: (projects) => set({ projects }),
 
@@ -81,4 +108,17 @@ export const useProjectStore = create<ProjectState>((set) => ({
       activeProject:
         state.activeProject?.id === id ? null : state.activeProject,
     })),
+
+  // Pipeline actions
+  setPipelineStage: (pipelineStage) => set({ pipelineStage }),
+  setPipelineProgress: (pipelineProgress) => set({ pipelineProgress }),
+  setPipelineMessage: (pipelineMessage) => set({ pipelineMessage }),
+  resetPipeline: () =>
+    set({
+      pipelineStage: 'idle',
+      pipelineProgress: 0,
+      pipelineMessage: '',
+      isGeneratingPlan: false,
+    }),
 }))
+

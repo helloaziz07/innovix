@@ -4,11 +4,13 @@ Innovix API — Project HUB Routes
 Endpoints for project CRUD, AI plan generation, export, and TTS narration.
 """
 
+import asyncio
+import json
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import Response, StreamingResponse
 
 from app.core.security import get_current_user
 from app.core.database import supabase_admin
@@ -18,7 +20,7 @@ from app.models.schemas import (
     ProjectResponse,
     MessageResponse,
 )
-from app.services.project_hub.generator import generate_project_plan
+from app.services.project_hub.generator import generate_project_plan, GenerationCancelled
 from app.services.project_hub.export_service import (
     export_to_markdown,
     export_to_pdf,
@@ -222,6 +224,97 @@ async def generate_plan(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Plan generation failed: {str(e)}",
         )
+
+
+@router.post("/{project_id}/generate-plan-stream")
+async def generate_plan_stream(
+    project_id: str,
+    request: Request,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Generate a project plan with real-time SSE progress streaming.
+
+    Returns a text/event-stream response. Each event is a JSON object:
+        {"stage": "...", "message": "...", "progress": 0-100}
+
+    Supports cancellation: if the client disconnects, the generation
+    is aborted between stages.
+    """
+    cancel_event = asyncio.Event()
+
+    async def event_generator():
+        queue: asyncio.Queue = asyncio.Queue()
+
+        async def progress_callback(event: dict):
+            await queue.put(event)
+
+        async def run_generation():
+            try:
+                plan = await generate_project_plan(
+                    project_id=project_id,
+                    user_id=user["id"],
+                    progress_callback=progress_callback,
+                    cancel_event=cancel_event,
+                )
+                if plan.get("error"):
+                    await queue.put({"stage": "error", "message": plan["error"], "progress": 0})
+                # Signal that generation is done
+                await queue.put(None)
+            except GenerationCancelled:
+                await queue.put({"stage": "cancelled", "message": "Generation cancelled.", "progress": 0})
+                await queue.put(None)
+            except ValueError as e:
+                await queue.put({"stage": "error", "message": str(e), "progress": 0})
+                await queue.put(None)
+            except Exception as e:
+                logger.error(f"[ProjectHub] SSE generation failed: {e}")
+                await queue.put({"stage": "error", "message": f"Plan generation failed: {str(e)}", "progress": 0})
+                await queue.put(None)
+
+        # Start generation in a background task
+        gen_task = asyncio.create_task(run_generation())
+
+        try:
+            while True:
+                # Check if the client disconnected
+                if await request.is_disconnected():
+                    cancel_event.set()
+                    break
+
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=1.0)
+                except asyncio.TimeoutError:
+                    # Send a keep-alive comment to prevent connection timeout
+                    yield ": keep-alive\n\n"
+                    continue
+
+                if event is None:
+                    # Generation finished
+                    break
+
+                yield f"data: {json.dumps(event)}\n\n"
+
+                if event.get("stage") in ("complete", "error", "cancelled"):
+                    break
+        finally:
+            if not gen_task.done():
+                cancel_event.set()
+                # Give the task a moment to clean up
+                try:
+                    await asyncio.wait_for(gen_task, timeout=5.0)
+                except (asyncio.TimeoutError, Exception):
+                    gen_task.cancel()
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.get("/{project_id}/export")
