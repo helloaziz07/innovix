@@ -174,6 +174,7 @@ CREATE TABLE projects (
   title TEXT NOT NULL,
   idea_text TEXT NOT NULL,
   status TEXT DEFAULT 'ideation',  -- ideation, researching, planning, building, completed
+  is_pinned BOOLEAN DEFAULT false, -- User pinned projects
   project_plan JSONB,              -- Full generated plan
   tech_stack JSONB,
   architecture JSONB,
@@ -336,12 +337,12 @@ Takes DeepSearch results + user idea as input, generates:
 - `GET /api/projects` — List user's projects
 
 #### [NEW] `frontend/src/features/project-hub/`
-- `ProjectHubPage.tsx` — Grid view of all user projects with status cards
-- `ProjectDetail.tsx` — Full project view with tabs
+- `ProjectHubPage.tsx` — Grid view of all user projects with status cards, dynamic hover styles, pin and trash actions
+- `ProjectDetail.tsx` — Full project view with tabs and Audio Narrator Listen/Stop control
 - `GenerationConfigModal.tsx` — Pre-generation scoped config popup
 - `GenerationPipeline.tsx` — Real-time visual tracking stepper
-- `PlanViewer.tsx` — Rendered project plan with sections
-- `ArchitectureDiagram.tsx` — Mermaid diagram renderer
+- `PlanViewer.tsx` — Rendered project plan with sections and Audio Narrator Listen/Stop control
+- `ArchitectureDiagram.tsx` — Mermaid diagram renderer with dual panning/scrolling, grab cursor, and enhanced controls
 - `TechStackCards.tsx` — Visual tech stack display with icons
 - `TimelineView.tsx` — Interactive Gantt/timeline component
 - `ComparisonTable.tsx` — Side-by-side solution comparison
@@ -445,9 +446,9 @@ Takes DeepSearch results + user idea as input, generates:
 - `QuickActions.tsx` — One-click actions (new search, continue project, etc.)
 
 #### [NEW] `frontend/src/pages/`
-- `Landing.tsx` — Beautiful landing page with demo
+- `Landing.tsx` — Beautiful landing page with demo and animated Feature Docs Modal
 - `Login.tsx` — Auth page with Google/GitHub OAuth
-- `Layout.tsx` — App shell with sidebar navigation
+- `Layout.tsx` — App shell with sidebar navigation, top-level collapse toggle, and always-visible Pinned Projects section
 
 #### Verification
 - [x] Dashboard loads with real data from all modules

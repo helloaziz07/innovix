@@ -1,9 +1,126 @@
-import { Box, Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, Brain, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight } from 'lucide-react';
+import { Box, Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, Brain, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const FEATURE_DOCS: Record<string, { title: string; subtitle: string; content: React.ReactNode }> = {
+  'DeepSearch': {
+    title: 'DeepSearch Engine',
+    subtitle: 'AI-powered multi-source research across academic and web databases.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p><strong>DeepSearch</strong> is the core research engine of Innovix. Instead of a standard web search, it acts as an autonomous AI researcher that aggregates data from multiple highly-credible sources simultaneously.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Key Capabilities:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Multi-Source Querying:</strong> Fetches live data from arXiv (academic papers), GitHub (open-source repositories), Semantic Scholar, and SerpAPI (real-time web).</li>
+          <li><strong>AI Synthesis:</strong> Uses Gemini 2.0 to synthesize findings into a comprehensive research summary, fully backed by inline citations.</li>
+          <li><strong>Gap Analysis:</strong> Automatically identifies what existing solutions lack, highlighting unique innovation opportunities for your project.</li>
+          <li><strong>Real-Time Streaming:</strong> Watch the research unfold in real-time with WebSockets streaming the AI's thought process and results directly to your screen.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Project HUB': {
+    title: 'Project HUB & AI Generator',
+    subtitle: 'Instantly transform abstract ideas into actionable project blueprints.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p>The <strong>Project HUB</strong> is where your research translates into execution. It takes your initial idea and the synthesized research data to automatically generate a comprehensive project plan.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">What it Generates:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>System Architecture:</strong> Auto-generates detailed Mermaid.js system architecture diagrams with dual panning and scrolling capabilities.</li>
+          <li><strong>Tech Stack Recommendations:</strong> Recommends the optimal frontend, backend, database, and infrastructure stack with AI justifications.</li>
+          <li><strong>Development Roadmap:</strong> Creates phased milestones, a weekly Gantt-style timeline, and an MVP readiness estimate.</li>
+          <li><strong>Audio Narration:</strong> Built-in Text-to-Speech (TTS) integration allows you to listen to your project plan like a podcast.</li>
+        </ul>
+      </div>
+    )
+  },
+  'AI Agents': {
+    title: 'Conversational AI Agents',
+    subtitle: 'Telegram and WhatsApp bots for on-the-go progress tracking and Q&A.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p>Stay connected to your research anywhere. Our <strong>AI Agents</strong> integrate directly into Telegram and WhatsApp, acting as your personal project managers and research assistants.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Agent Features:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>On-Demand Research:</strong> Send a quick idea via message to trigger a full DeepSearch instantly.</li>
+          <li><strong>Project Q&A:</strong> Ask questions about your architecture, timeline, or research, and the AI answers using Retrieval-Augmented Generation (RAG) based on your specific project context.</li>
+          <li><strong>Proactive Reminders:</strong> Schedule reminders and receive automated alerts for project milestones.</li>
+          <li><strong>Secure Linking:</strong> Safely link your messaging accounts to your Innovix profile via secure webhooks.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Web Intelligence': {
+    title: 'Real-Time Web Intelligence',
+    subtitle: 'Live trending topics, freshness scoring, and competitive analysis.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p><strong>Web Intelligence</strong> ensures your project remains relevant by continuously monitoring the live internet for emerging trends and competitors.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Intelligence Tools:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Trend Detection:</strong> Identifies trending searches and emerging topics in your specific domain using real-time API integrations.</li>
+          <li><strong>Freshness Scoring:</strong> Automatically scores and ranks research results based on publication date and recency to ensure you are viewing the latest data.</li>
+          <li><strong>News Aggregation:</strong> Curates domain-relevant tech news from sources like HackerNews and TechCrunch.</li>
+          <li><strong>Competitive Tracking:</strong> Monitors the web for similar projects to help you pivot or differentiate your solution.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Dashboard': {
+    title: 'Personalized Dashboard',
+    subtitle: 'Your command center for research analytics and AI recommendations.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p>The <strong>Dashboard</strong> aggregates data from all your active projects, providing a bird's-eye view of your innovation pipeline.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Dashboard Features:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Project Overview:</strong> Status cards showing active projects with dynamic hover effects indicating project phases (Ideation, Planning, etc.).</li>
+          <li><strong>AI Insights Widget:</strong> Proactively generates insights and suggestions for your next steps based on your recent activity.</li>
+          <li><strong>Progress Analytics:</strong> Radial and bar charts visualizing your research completion and project status breakdown.</li>
+          <li><strong>Quick Actions:</strong> One-click shortcuts to initiate a new search, continue a project, or jump into a workspace.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Knowledge Clustering': {
+    title: 'Knowledge Clustering',
+    subtitle: 'Embedding-based thematic grouping of research into visual clusters.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p>Make sense of massive amounts of data. <strong>Knowledge Clustering</strong> automatically organizes unstructured research results into thematic groups.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">How it Works:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Vector Embeddings:</strong> Converts research titles and snippets into high-dimensional TF-IDF and pgvector embeddings.</li>
+          <li><strong>K-Means Clustering:</strong> Groups similar research items together automatically using unsupervised machine learning.</li>
+          <li><strong>AI Labeling:</strong> Uses Gemini to analyze each cluster and assign a highly accurate, human-readable thematic label.</li>
+          <li><strong>Visual Drill-Down:</strong> Interactive 2D scatter plots allow you to explore clusters visually and drill down into specific grouped results.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Research Workspaces': {
+    title: 'Collaborative Research Workspaces',
+    subtitle: 'Save, annotate, organize, and export your research findings.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p><strong>Research Workspaces</strong> provide a dedicated environment to organize the data you discover during the DeepSearch phase.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Workspace Capabilities:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Rich Text Notes:</strong> Create, tag, and organize structured notes alongside your research.</li>
+          <li><strong>Saved Results & Annotations:</strong> Save specific DeepSearch findings directly to your workspace and highlight key takeaways.</li>
+          <li><strong>Multi-Format Export:</strong> Export your entire workspace—including all notes and saved results—into clean PDF, Markdown, or PPTX formats.</li>
+          <li><strong>Public/Private Sharing:</strong> Toggle workspace visibility to share your findings via a public link with collaborators.</li>
+        </ul>
+      </div>
+    )
+  }
+};
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -163,7 +280,7 @@ export default function Landing() {
           {/* Bento Grid Features */}
           <div className="grid md:grid-cols-3 gap-6">
             {/* Feature 1 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-purple-300 transition-colors">
+            <div onClick={() => setSelectedFeature('DeepSearch')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-purple-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                 <Search className="w-6 h-6" />
               </div>
@@ -175,7 +292,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Feature 2 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-blue-300 transition-colors">
+            <div onClick={() => setSelectedFeature('Project HUB')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-blue-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                 <Rocket className="w-6 h-6" />
               </div>
@@ -187,7 +304,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Feature 3 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-teal-300 transition-colors">
+            <div onClick={() => setSelectedFeature('AI Agents')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-teal-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
                 <Bot className="w-6 h-6" />
               </div>
@@ -199,7 +316,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Feature 4 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-orange-300 transition-colors">
+            <div onClick={() => setSelectedFeature('Web Intelligence')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-orange-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
                 <Globe className="w-6 h-6" />
               </div>
@@ -211,7 +328,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Feature 5 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-pink-300 transition-colors">
+            <div onClick={() => setSelectedFeature('Dashboard')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-pink-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-pink-600 group-hover:bg-pink-600 group-hover:text-white transition-colors">
                 <BarChart3 className="w-6 h-6" />
               </div>
@@ -223,7 +340,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Feature 6 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-purple-300 transition-colors">
+            <div onClick={() => setSelectedFeature('Knowledge Clustering')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-purple-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
                 <Brain className="w-6 h-6" />
               </div>
@@ -235,7 +352,7 @@ export default function Landing() {
               </div>
             </div>
             {/* Feature 7 */}
-            <div className="micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-emerald-300 transition-colors">
+            <div onClick={() => setSelectedFeature('Research Workspaces')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-emerald-300 hover-glow transition-all">
               <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                 <BookOpen className="w-6 h-6" />
               </div>
@@ -378,6 +495,52 @@ export default function Landing() {
           <p className="text-sm text-slate-600">© 2026 Innovix Inc. All rights reserved.</p>
         </div>
       </footer>
+
+      {/* Feature Docs Modal */}
+      <AnimatePresence>
+        {selectedFeature && FEATURE_DOCS[selectedFeature] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedFeature(null)}
+            className="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-2xl border border-slate-200 shadow-2xl relative my-8"
+            >
+              <button
+                onClick={() => setSelectedFeature(null)}
+                className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">{FEATURE_DOCS[selectedFeature].title}</h2>
+                <p className="text-blue-600 font-medium">{FEATURE_DOCS[selectedFeature].subtitle}</p>
+              </div>
+              
+              <div className="prose prose-slate max-w-none">
+                {FEATURE_DOCS[selectedFeature].content}
+              </div>
+              
+              <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+                <button
+                  onClick={() => setSelectedFeature(null)}
+                  className="px-6 py-2 bg-slate-900 text-white font-medium rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

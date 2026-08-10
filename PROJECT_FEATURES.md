@@ -38,6 +38,7 @@
 | 401 Auto-Redirect | Axios response interceptor catches 401 errors and redirects to `/login` | `api.ts` |
 | Email Verification | Signup returns a `needsVerification` flag instead of auto-signing the user in — enforces email verification flow | `authStore.ts` |
 | Password Reset | Dedicated password reset page via Supabase's `resetPasswordForEmail` | `ResetPassword.tsx` |
+| Sign Out Redirect | Users are cleanly redirected to the Landing page instead of Login upon signing out | `Layout.tsx`, `Dashboard.tsx` |
 | User Profile API | `GET /api/auth/me` and `PATCH /api/auth/me` endpoints for reading and updating user profiles | `auth.py` |
 
 ---
@@ -90,6 +91,7 @@ Takes a project idea (optionally enriched with DeepSearch results) and generates
 | Feature | Description | Files |
 |---------|-------------|-------|
 | Project CRUD | Full create, read, update, delete operations for projects with status tracking | `projects.py`, `ProjectHubPage.tsx` |
+| Pinned Projects | Users can pin projects to the sidebar for quick access. Pin button available on project cards in My Projects and Dashboard. | `Layout.tsx`, `Dashboard.tsx`, `ProjectHubPage.tsx` |
 | Stage 1 — Main Plan | Gemini generates: problem validation, existing solution comparison, innovation opportunities, recommended tech stack, API/dataset recommendations, relevant GitHub repos, documentation links | `generator.py`, `project_plan_prompt.py` |
 | Stage 2 — Architecture | Gemini generates: a complete Mermaid system architecture diagram, component breakdown with responsibilities, and design patterns | `generator.py`, `architecture_prompt.py` |
 | Stage 3 — Roadmap | Gemini generates: phased development milestones, weekly timeline, MVP readiness estimate, and a risk registry | `generator.py`, `roadmap_prompt.py` |
@@ -104,10 +106,10 @@ Takes a project idea (optionally enriched with DeepSearch results) and generates
 
 | Component | Description |
 |-----------|-------------|
-| `ProjectHubPage.tsx` | Grid view of all user projects with status cards, search, filters, create modal |
-| `ProjectDetail.tsx` | Full project view with tabs (Overview, Architecture, Tech Stack, Timeline) and action buttons |
-| `PlanViewer.tsx` | Rendered plan content with sections: problem validation, existing solutions, opportunities, etc. |
-| `ArchitectureDiagram.tsx` | Mermaid.js diagram renderer with error boundary fallback |
+| `ProjectHubPage.tsx` | Grid view of all user projects with status cards, search, filters, dynamic status hover borders, and pin/trash buttons |
+| `ProjectDetail.tsx` | Full project view with tabs (Overview, Architecture, Tech Stack, Timeline) and Audio Narrator Listen/Stop toggle |
+| `PlanViewer.tsx` | Rendered plan content with sections and integrated Audio Narrator Listen/Stop control |
+| `ArchitectureDiagram.tsx` | Mermaid.js diagram renderer with dual panning/scrolling, grab cursor, and hoverable enhanced controls |
 | `TechStackCards.tsx` | Visual tech stack display with layer grouping and justification text |
 | `TimelineView.tsx` | Interactive timeline/roadmap component with milestone cards |
 | `ComparisonTable.tsx` | Side-by-side comparison table for existing solutions |
@@ -229,9 +231,9 @@ The main landing page for authenticated users — aggregates data from all modul
 | Dashboard API | `GET /api/dashboard` returns aggregated data: project counts by status, recent searches, research metrics | `dashboard.py` |
 | Activity Feed API | `GET /api/dashboard/activity` returns recent user actions and AI-generated recommendations | `dashboard.py` |
 | Project Overview Cards | Status cards showing active projects with progress indicators | `Dashboard.tsx` |
-| Activity Feed | Recent actions and AI-generated next-step recommendations | `Dashboard.tsx` |
+| Recent Projects | Display recent projects with "View All" link and dynamic status-based full card hover effects | `Dashboard.tsx` |
 | Progress Charts | Radial/bar charts showing research completion and project status breakdown | `Dashboard.tsx` |
-| AI Insights Widget | AI-generated insights and suggestions based on the user's projects | `Dashboard.tsx` |
+| AI Insights Widget | AI-generated insights and suggestions based on the user's projects, prominently positioned at the top right | `Dashboard.tsx` |
 | Quick Actions | One-click shortcuts: new search, continue project, create workspace | `Dashboard.tsx` |
 
 ---
@@ -284,6 +286,7 @@ Provides audio narration capabilities via the Sarvam AI TTS API.
 |---------|-------------|-------|
 | Text-to-Speech (TTS) | `tts_service.py` synthesizes speech from text via Sarvam AI | `tts_service.py` |
 | Plan Narration | `POST /api/projects/{id}/narrate` generates a spoken narration of the project plan as WAV audio | `projects.py` |
+| Audio Narrator UI | Integrated single Listen/Stop toggle button in the Plan Viewer and Project Detail header for seamless playback control | `PlanViewer.tsx`, `ProjectDetail.tsx` |
 
 ---
 
@@ -343,8 +346,8 @@ Multiple export formats for project plans and workspace content.
 | Radix UI Primitives | Accessible UI primitives (Dialog, Tabs, Dropdown, Tooltip) from Radix | `ui/` components |
 | Lucide Icons | Consistent icon library across all components | All components |
 | Gradient Accents | Gradient buttons, progress bars, and accent elements | Throughout UI |
-| Landing Page | Premium public landing page with animated hero, feature cards, and CTA | `Landing.tsx` |
-| Authenticated Layout | App shell with sidebar navigation, header, and content area | `Layout.tsx` |
+| Landing Page | Premium public landing page with animated hero, feature cards, and interactive `framer-motion` Docs Modal | `Landing.tsx` |
+| Authenticated Layout | App shell with sidebar navigation, top-level professional collapse toggle (`PanelLeftClose`), and always-visible Pinned Projects | `Layout.tsx` |
 
 ---
 

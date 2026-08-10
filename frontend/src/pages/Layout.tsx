@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   LayoutDashboard, FolderKanban,
-  LogOut, Sparkles, ChevronLeft, ChevronRight, Pin
+  LogOut, Sparkles, ChevronLeft, ChevronRight, Pin, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { projectsApi } from '@/lib/api'
@@ -65,11 +65,21 @@ export default function Layout() {
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center gap-2 px-4 border-b border-border shrink-0">
-          <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400 shrink-0" />
+        <div className={cn("h-16 flex items-center border-b border-border shrink-0 transition-all duration-300", collapsed ? "justify-center px-0" : "justify-between px-4")}>
           {!collapsed && (
-            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">Innovix</span>
+            <div className="flex items-center gap-2 overflow-hidden">
+              <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="text-lg font-bold text-blue-600 dark:text-blue-400 truncate">Innovix</span>
+            </div>
           )}
+          
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn("p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors shrink-0", collapsed && "mx-auto")}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
         </div>
 
         {/* Nav Links */}
@@ -156,13 +166,6 @@ export default function Layout() {
           </Button>
         </div>
 
-        {/* Collapse Toggle */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="h-10 flex items-center justify-center border-t border-border text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </button>
       </aside>
 
       {/* Main Content */}
