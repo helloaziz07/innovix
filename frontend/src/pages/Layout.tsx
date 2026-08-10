@@ -92,27 +92,33 @@ export default function Layout() {
             </NavLink>
           ))}
 
-          {!collapsed && pinnedProjects.length > 0 && (
+          {!collapsed && (
             <div className="pt-4 pb-2">
               <h3 className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Pinned Projects</h3>
               <div className="space-y-1">
-                {pinnedProjects.map(proj => (
-                  <NavLink
-                    key={proj.id}
-                    to={`/projects/${proj.id}`}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                        isActive
-                          ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1F2937] hover:text-slate-900 dark:hover:text-white'
-                      )
-                    }
-                  >
-                    <Pin className="w-4 h-4 shrink-0 rotate-45" />
-                    <span className="truncate">{proj.title}</span>
-                  </NavLink>
-                ))}
+                {pinnedProjects.length > 0 ? (
+                  pinnedProjects.map(proj => (
+                    <NavLink
+                      key={proj.id}
+                      to={`/projects/${proj.id}`}
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+                          isActive
+                            ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1F2937] hover:text-slate-900 dark:hover:text-white'
+                        )
+                      }
+                    >
+                      <Pin className="w-4 h-4 shrink-0 rotate-45" />
+                      <span className="truncate">{proj.title}</span>
+                    </NavLink>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-sm text-slate-400 dark:text-slate-500">
+                    No pinned projects
+                  </div>
+                )}
               </div>
             </div>
           )}

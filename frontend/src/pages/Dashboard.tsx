@@ -27,7 +27,8 @@ import {
   FolderOpen,
   Sparkles,
   Link,
-  Loader2
+  Loader2,
+  Pin
 } from 'lucide-react'
 
 // ─── Sub-Components ────────────────────────────────
@@ -194,6 +195,17 @@ function MobileCompanion() {
 
 // ─── Main Dashboard ────────────────────────────────
 
+const getHoverClass = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case 'ideation': return 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400'
+    case 'researching': return 'hover:border-blue-400 hover:ring-1 hover:ring-blue-400'
+    case 'planning': return 'hover:border-purple-400 hover:ring-1 hover:ring-purple-400'
+    case 'building': return 'hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400'
+    case 'completed': return 'hover:border-emerald-400 hover:ring-1 hover:ring-emerald-400'
+    default: return 'hover:border-gray-400 hover:ring-1 hover:ring-gray-400'
+  }
+}
+
 export default function Dashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
@@ -240,6 +252,33 @@ export default function Dashboard() {
     recognition.onend = () => setIsListening(false);
     
     recognition.start();
+  }
+
+  const handleTogglePin = async (project: any, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newPinnedStatus = !project.is_pinned
+    
+    // Optimistic update of local stats
+    setStats((prev: any) => ({
+      ...prev,
+      recent_projects: prev.recent_projects?.map((p: any) => 
+        p.id === project.id ? { ...p, is_pinned: newPinnedStatus } : p
+      )
+    }))
+
+    try {
+      await projectsApi.update(project.id, { is_pinned: newPinnedStatus })
+      window.dispatchEvent(new CustomEvent('project-pinned'))
+    } catch (err) {
+      console.error('Failed to toggle pin status:', err)
+      // Revert on failure
+      setStats((prev: any) => ({
+        ...prev,
+        recent_projects: prev.recent_projects?.map((p: any) => 
+          p.id === project.id ? { ...p, is_pinned: !newPinnedStatus } : p
+        )
+      }))
+    }
   }
 
   useEffect(() => {
@@ -454,7 +493,7 @@ export default function Dashboard() {
                   className="h-full"
                 >
                   <Card
-                    className="bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937] cursor-pointer group h-full hover:shadow-md transition-all"
+                    className={`bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937] cursor-pointer group h-full hover:shadow-md transition-all ${getHoverClass(proj.status)}`}
                     onClick={() => navigate(`/projects/${proj.id}`)}
                   >
                     <CardContent className="p-4">
@@ -462,10 +501,21 @@ export default function Dashboard() {
                         <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
                           <Rocket className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h3 className="font-semibold text-sm mb-0.5 truncate text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.title}</h3>
                           <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{proj.status || 'ideation'}</p>
                         </div>
+                        <button
+                          onClick={(e) => handleTogglePin(proj, e)}
+                          className={`p-1.5 rounded-md transition-all shrink-0 ${
+                            proj.is_pinned 
+                              ? 'text-blue-500 bg-blue-50 opacity-100 dark:bg-blue-500/20 dark:text-blue-400' 
+                              : 'opacity-0 group-hover:opacity-100 hover:bg-slate-100 text-slate-400 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+                          }`}
+                          title={proj.is_pinned ? "Unpin Project" : "Pin Project"}
+                        >
+                          <Pin className={`w-4 h-4 ${proj.is_pinned ? 'fill-current rotate-45' : ''}`} />
+                        </button>
                       </div>
                     </CardContent>
                   </Card>

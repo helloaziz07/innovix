@@ -18,45 +18,51 @@ import {
   Lightbulb,
   Wrench,
   CheckCircle2,
-  X,
-  Network
+  Network,
+  Pin,
+  Trash2
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore, type Project } from '@/stores/projectStore'
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: React.ReactNode; bg: string }
+  { label: string; color: string; icon: React.ReactNode; bg: string; hoverClass: string }
 > = {
   ideation: {
     label: 'Ideation',
     color: 'text-amber-600',
     icon: <Lightbulb className="w-5 h-5 text-amber-600" />,
     bg: 'bg-amber-100',
+    hoverClass: 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400 hover:shadow-amber-400/20',
   },
   researching: {
     label: 'Researching',
     color: 'text-blue-600',
     icon: <Search className="w-5 h-5 text-blue-600" />,
     bg: 'bg-blue-100',
+    hoverClass: 'hover:border-blue-400 hover:ring-1 hover:ring-blue-400 hover:shadow-blue-400/20',
   },
   planning: {
     label: 'Planning',
     color: 'text-purple-600',
     icon: <Network className="w-5 h-5 text-purple-600" />,
     bg: 'bg-purple-100',
+    hoverClass: 'hover:border-purple-400 hover:ring-1 hover:ring-purple-400 hover:shadow-purple-400/20',
   },
   building: {
     label: 'Building',
     color: 'text-indigo-600',
     icon: <Wrench className="w-5 h-5 text-indigo-600" />,
     bg: 'bg-indigo-100',
+    hoverClass: 'hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400 hover:shadow-indigo-400/20',
   },
   completed: {
     label: 'Completed',
     color: 'text-emerald-600',
     icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
     bg: 'bg-emerald-100',
+    hoverClass: 'hover:border-emerald-400 hover:ring-1 hover:ring-emerald-400 hover:shadow-emerald-400/20',
   },
 }
 
@@ -71,6 +77,7 @@ export default function ProjectHubPage() {
     setLoading,
     addProject,
     removeProject,
+    updateProject,
   } = useProjectStore()
 
   const [showCreate, setShowCreate] = useState(false)
@@ -132,6 +139,19 @@ export default function ProjectHubPage() {
       removeProject(id)
     } catch (err) {
       console.error('Failed to delete project:', err)
+    }
+  }
+
+  const handleTogglePin = async (project: Project, e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newPinnedStatus = !project.is_pinned
+    try {
+      updateProject(project.id, { is_pinned: newPinnedStatus })
+      await projectsApi.update(project.id, { is_pinned: newPinnedStatus })
+      window.dispatchEvent(new CustomEvent('project-pinned'))
+    } catch (err) {
+      console.error('Failed to toggle pin status:', err)
+      updateProject(project.id, { is_pinned: !newPinnedStatus })
     }
   }
 
@@ -272,11 +292,11 @@ export default function ProjectHubPage() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => navigate(`/projects/${project.id}`)}
-                  className="bg-white rounded-xl p-6 cursor-pointer group
+                  className={`bg-white rounded-xl p-6 cursor-pointer group
                              border border-gray-200 shadow-sm
-                             hover:border-l-[6px] hover:border-l-indigo-600 hover:-ml-[5px]
+                             ${statusCfg?.hoverClass || 'hover:border-gray-400'}
                              hover:shadow-md transition-all duration-200
-                             flex flex-col relative"
+                             flex flex-col relative`}
                 >
                   {/* Status + Delete */}
                   <div className="flex items-center justify-between mb-5">
@@ -291,13 +311,24 @@ export default function ProjectHubPage() {
                         {statusCfg?.label ?? project.status}
                       </span>
                       <button
+                        onClick={(e) => handleTogglePin(project, e)}
+                        className={`p-1.5 rounded-md transition-all ${
+                          project.is_pinned 
+                            ? 'text-blue-500 bg-blue-50 opacity-100' 
+                            : 'opacity-0 group-hover:opacity-100 hover:bg-blue-50 text-slate-300 hover:text-blue-500'
+                        }`}
+                        title={project.is_pinned ? "Unpin Project" : "Pin Project"}
+                      >
+                        <Pin className={`w-4 h-4 ${project.is_pinned ? 'fill-current rotate-45' : ''}`} />
+                      </button>
+                      <button
                         onClick={(e) => handleDelete(project.id, e)}
                         className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md
                                    hover:bg-red-50 text-slate-300 hover:text-red-500
                                    transition-all"
                         aria-label="Delete project"
                       >
-                        <X className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
