@@ -71,10 +71,13 @@ async def list_projects(
     if is_pinned is not None:
         query = query.eq("is_pinned", is_pinned)
     owner_projects = query.execute().data or []
+    for p in owner_projects:
+        p["role"] = "owner"
     
     # Get projects where user is a member
-    member_res = supabase_admin.table("project_members").select("project_id").eq("user_id", user["id"]).execute()
-    member_project_ids = [m["project_id"] for m in (member_res.data or [])]
+    member_res = supabase_admin.table("project_members").select("project_id, role").eq("user_id", user["id"]).execute()
+    member_roles = {m["project_id"]: m["role"] for m in (member_res.data or [])}
+    member_project_ids = list(member_roles.keys())
     
     member_projects = []
     if member_project_ids:
@@ -82,6 +85,8 @@ async def list_projects(
         if is_pinned is not None:
             query2 = query2.eq("is_pinned", is_pinned)
         member_projects = query2.execute().data or []
+        for p in member_projects:
+            p["role"] = member_roles.get(p["id"], "viewer")
         
     # Combine and deduplicate just in case
     all_projects = list({p["id"]: p for p in owner_projects + member_projects}.values())
@@ -98,17 +103,21 @@ async def get_project(
 ):
     """Get a single project by ID."""
     # 1. Check if owner
-    result = supabase_admin.table("projects").select("*").eq("id", project_id).eq("user_id", user["id"]).single().execute()
+    result = supabase_admin.table("projects").select("*").eq("id", project_id).eq("user_id", user["id"]).limit(1).execute()
     if result.data:
-        return result.data
+        project_data = result.data[0]
+        project_data["role"] = "owner"
+        return project_data
         
     # 2. Check if member
-    member_res = supabase_admin.table("project_members").select("*").eq("project_id", project_id).eq("user_id", user["id"]).single().execute()
+    member_res = supabase_admin.table("project_members").select("*").eq("project_id", project_id).eq("user_id", user["id"]).limit(1).execute()
     if member_res.data:
         # Fetch the project
-        proj_res = supabase_admin.table("projects").select("*").eq("id", project_id).single().execute()
+        proj_res = supabase_admin.table("projects").select("*").eq("id", project_id).limit(1).execute()
         if proj_res.data:
-            return proj_res.data
+            project_data = proj_res.data[0]
+            project_data["role"] = member_res.data[0]["role"]
+            return project_data
             
     raise HTTPException(status_code=404, detail="Project not found or you don't have access")
 
@@ -125,14 +134,14 @@ async def update_project(
         raise HTTPException(status_code=400, detail="No fields to update")
 
     # 1. Check if owner
-    result = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).execute()
+    result = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).limit(1).execute()
     has_access = False
     
     if result.data:
         has_access = True
     else:
         # 2. Check if editor
-        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).limit(1).execute()
         if member_res.data and member_res.data[0]["role"] == "editor":
             has_access = True
             

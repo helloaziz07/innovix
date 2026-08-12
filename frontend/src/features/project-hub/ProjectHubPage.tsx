@@ -66,6 +66,120 @@ const STATUS_CONFIG: Record<
   },
 }
 
+function ProjectCard({ project, idx, isShared = false }: { project: Project, idx: number, isShared?: boolean }) {
+  const navigate = useNavigate()
+  const { updateProject, removeProject } = useProjectStore()
+  
+  const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.ideation
+  const hasPlan = !!project.project_plan
+
+  const handleTogglePin = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const newPinnedStatus = !project.is_pinned
+    updateProject(project.id, { is_pinned: newPinnedStatus })
+    try {
+      await projectsApi.update(project.id, { is_pinned: newPinnedStatus })
+      window.dispatchEvent(new CustomEvent('project-pinned'))
+    } catch (err) {
+      console.error('Failed to toggle pin status:', err)
+      updateProject(project.id, { is_pinned: !newPinnedStatus })
+    }
+  }
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!window.confirm('Are you sure you want to delete this project?')) return
+    try {
+      await projectsApi.delete(project.id)
+      removeProject(project.id)
+    } catch (err) {
+      console.error('Failed to delete project:', err)
+      alert('Failed to delete project.')
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ delay: idx * 0.05 }}
+      onClick={() => navigate(`/projects/${project.id}`)}
+      className={`bg-white rounded-xl p-6 cursor-pointer group
+                 border border-gray-200 shadow-sm
+                 ${statusCfg?.hoverClass || 'hover:border-gray-400'}
+                 hover:shadow-md transition-all duration-200
+                 flex flex-col relative overflow-hidden`}
+    >
+      {/* Role Badge (if shared) */}
+      {isShared && project.role && (
+        <div className="absolute top-0 right-0 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-bl-xl z-10">
+          {project.role}
+        </div>
+      )}
+
+      {/* Status + Delete */}
+      <div className="flex items-center justify-between mb-5">
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${statusCfg?.bg || 'bg-gray-100'}`}>
+          {statusCfg?.icon}
+        </div>
+        <div className="flex items-center gap-3">
+          <span
+            className={`inline-flex items-center px-3 py-1 rounded-full
+                        text-[10px] font-bold tracking-widest uppercase ${statusCfg?.bg || 'bg-gray-100'} ${statusCfg?.color || 'text-gray-600'}`}
+          >
+            {statusCfg?.label ?? project.status}
+          </span>
+          {!isShared && (
+            <button
+              onClick={handleTogglePin}
+              className={`p-1.5 rounded-md transition-all ${
+                project.is_pinned 
+                  ? 'text-blue-500 bg-blue-50 opacity-100' 
+                  : 'opacity-0 group-hover:opacity-100 hover:bg-blue-50 text-slate-300 hover:text-blue-500'
+              }`}
+              title={project.is_pinned ? "Unpin Project" : "Pin Project"}
+            >
+              <Pin className={`w-4 h-4 ${project.is_pinned ? 'fill-current rotate-45' : ''}`} />
+            </button>
+          )}
+          {(!isShared || project.role === 'owner') && (
+            <button
+              onClick={handleDelete}
+              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md
+                         hover:bg-red-50 text-slate-300 hover:text-red-500
+                         transition-all"
+              aria-label="Delete project"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Title + Idea */}
+      <h3 className="font-bold text-xl text-slate-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+        {project.title}
+      </h3>
+      <p className="text-sm text-slate-500 line-clamp-2 mb-8 flex-1 leading-relaxed">
+        {project.idea_text}
+      </p>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between text-xs text-slate-400 border-t border-gray-100 pt-5 mt-auto">
+        <span className="flex items-center gap-1.5 font-medium">
+          <Clock className="w-3.5 h-3.5" />
+          {new Date(project.updated_at).toLocaleDateString()}
+        </span>
+        <span className="flex items-center gap-1 text-indigo-600 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+          {hasPlan ? 'View Plan' : 'Open'}
+          <ChevronRight className="w-3.5 h-3.5" />
+        </span>
+      </div>
+    </motion.div>
+  )
+}
+
 export default function ProjectHubPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -112,46 +226,20 @@ export default function ProjectHubPage() {
 
   const handleCreate = async () => {
     if (!newTitle.trim() || !newIdea.trim()) return
+
     setCreating(true)
     try {
-      const res = await projectsApi.create({
-        title: newTitle.trim(),
-        idea_text: newIdea.trim(),
-      })
-      const newProject = res.data.data as Project
-      addProject(newProject)
+      const res = await projectsApi.create({ title: newTitle, idea_text: newIdea })
+      addProject(res.data)
       setShowCreate(false)
       setNewTitle('')
       setNewIdea('')
-      navigate(`/projects/${newProject.id}`)
+      navigate(`/projects/${res.data.id}`)
     } catch (err) {
       console.error('Failed to create project:', err)
+      alert('Failed to create project. Please try again.')
     } finally {
       setCreating(false)
-    }
-  }
-
-  const handleDelete = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (!confirm('Are you sure you want to delete this project?')) return
-    try {
-      await projectsApi.delete(id)
-      removeProject(id)
-    } catch (err) {
-      console.error('Failed to delete project:', err)
-    }
-  }
-
-  const handleTogglePin = async (project: Project, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const newPinnedStatus = !project.is_pinned
-    try {
-      updateProject(project.id, { is_pinned: newPinnedStatus })
-      await projectsApi.update(project.id, { is_pinned: newPinnedStatus })
-      window.dispatchEvent(new CustomEvent('project-pinned'))
-    } catch (err) {
-      console.error('Failed to toggle pin status:', err)
-      updateProject(project.id, { is_pinned: !newPinnedStatus })
     }
   }
 
@@ -163,6 +251,9 @@ export default function ProjectHubPage() {
       p.idea_text.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesStatus && matchesSearch
   })
+
+  const myProjects = filtered.filter(p => !p.role || p.role === 'owner')
+  const sharedProjects = filtered.filter(p => p.role && p.role !== 'owner')
 
   return (
     <div className="min-h-full p-6 lg:p-12 max-w-[1400px] mx-auto bg-gray-50/50">
@@ -278,84 +369,44 @@ export default function ProjectHubPage() {
           </button>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <AnimatePresence>
-            {filtered.map((project, idx) => {
-              const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.ideation
-              const hasPlan = !!project.project_plan
+        <div className="space-y-12">
+          {/* My Projects */}
+          {myProjects.length > 0 && (
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                My Projects
+                <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs font-semibold">
+                  {myProjects.length}
+                </span>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {myProjects.map((project, idx) => (
+                    <ProjectCard key={project.id} project={project} idx={idx} />
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
 
-              return (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: idx * 0.05 }}
-                  onClick={() => navigate(`/projects/${project.id}`)}
-                  className={`bg-white rounded-xl p-6 cursor-pointer group
-                             border border-gray-200 shadow-sm
-                             ${statusCfg?.hoverClass || 'hover:border-gray-400'}
-                             hover:shadow-md transition-all duration-200
-                             flex flex-col relative`}
-                >
-                  {/* Status + Delete */}
-                  <div className="flex items-center justify-between mb-5">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${statusCfg?.bg || 'bg-gray-100'}`}>
-                      {statusCfg?.icon}
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full
-                                    text-[10px] font-bold tracking-widest uppercase ${statusCfg?.bg || 'bg-gray-100'} ${statusCfg?.color || 'text-gray-600'}`}
-                      >
-                        {statusCfg?.label ?? project.status}
-                      </span>
-                      <button
-                        onClick={(e) => handleTogglePin(project, e)}
-                        className={`p-1.5 rounded-md transition-all ${
-                          project.is_pinned 
-                            ? 'text-blue-500 bg-blue-50 opacity-100' 
-                            : 'opacity-0 group-hover:opacity-100 hover:bg-blue-50 text-slate-300 hover:text-blue-500'
-                        }`}
-                        title={project.is_pinned ? "Unpin Project" : "Pin Project"}
-                      >
-                        <Pin className={`w-4 h-4 ${project.is_pinned ? 'fill-current rotate-45' : ''}`} />
-                      </button>
-                      <button
-                        onClick={(e) => handleDelete(project.id, e)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md
-                                   hover:bg-red-50 text-slate-300 hover:text-red-500
-                                   transition-all"
-                        aria-label="Delete project"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Title + Idea */}
-                  <h3 className="font-bold text-xl text-slate-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-sm text-slate-500 line-clamp-2 mb-8 flex-1 leading-relaxed">
-                    {project.idea_text}
-                  </p>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between text-xs text-slate-400 border-t border-gray-100 pt-5 mt-auto">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Clock className="w-3.5 h-3.5" />
-                      {new Date(project.updated_at).toLocaleDateString()}
-                    </span>
-                    <span className="flex items-center gap-1 text-indigo-600 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
-                      {hasPlan ? 'View Plan' : 'Open'}
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </AnimatePresence>
+          {/* Shared with Me */}
+          {sharedProjects.length > 0 && (
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                Shared with Me
+                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">
+                  {sharedProjects.length}
+                </span>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {sharedProjects.map((project, idx) => (
+                    <ProjectCard key={project.id} project={project} idx={idx} isShared={true} />
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

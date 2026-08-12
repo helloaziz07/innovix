@@ -31,6 +31,7 @@ export interface Project {
   is_pinned?: boolean
   created_at: string
   updated_at: string
+  role?: string
 }
 
 interface ProjectState {
