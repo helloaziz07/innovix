@@ -30,14 +30,14 @@ const STATUS_CONFIG: Record<
   { label: string; color: string; icon: React.ReactNode; bg: string; hoverClass: string }
 > = {
   planning: {
-    label: 'Planning',
+    label: 'Foundation',
     color: 'text-amber-600',
     icon: <Lightbulb className="w-5 h-5 text-amber-600" />,
     bg: 'bg-amber-100',
     hoverClass: 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400 hover:shadow-amber-400/20',
   },
   architecting: {
-    label: 'Architecting',
+    label: 'BluePrint',
     color: 'text-purple-600',
     icon: <Network className="w-5 h-5 text-purple-600" />,
     bg: 'bg-purple-100',
@@ -144,7 +144,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
       </div>
 
       {/* Title + Idea */}
-      <h3 className="font-bold text-xl text-slate-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+      <h3 className="font-bold text-xl text-slate-900 mb-2 line-clamp-2">
         {project.title}
       </h3>
       <p className="text-sm text-slate-500 line-clamp-2 mb-8 flex-1 leading-relaxed">
@@ -157,7 +157,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
           <Clock className="w-3.5 h-3.5" />
           {new Date(project.updated_at).toLocaleDateString()}
         </span>
-        <span className="flex items-center gap-1 text-indigo-600 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="flex items-center gap-1 text-blue-600 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
           {hasPlan ? 'View Plan' : 'Open'}
           <ChevronRight className="w-3.5 h-3.5" />
         </span>
@@ -166,7 +166,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
   )
 }
 
-export default function ProjectHubPage() {
+export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: boolean }) {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialStatus = searchParams.get('status') || 'all'
@@ -273,7 +273,11 @@ export default function ProjectHubPage() {
             >
               {status === 'all'
                 ? 'All Projects'
-                : status.charAt(0).toUpperCase() + status.slice(1)}
+                : status === 'planning'
+                ? 'Foundation'
+                : status === 'architecting'
+                ? 'BluePrint'
+                : 'Completed'}
             </button>
           ))}
         </div>
@@ -300,15 +304,17 @@ export default function ProjectHubPage() {
           />
         </div>
 
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg
-                     bg-indigo-600 text-white text-sm font-semibold
-                     hover:bg-indigo-700 transition-all shadow-sm shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          New Project
-        </button>
+        {!sharedOnly && (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+                       bg-indigo-600 text-white text-sm font-semibold
+                       hover:bg-indigo-700 transition-all shadow-sm shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            New Project
+          </button>
+        )}
       </motion.div>
 
       {/* Project Grid */}
@@ -330,7 +336,7 @@ export default function ProjectHubPage() {
             </div>
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : (sharedOnly ? sharedProjects.length === 0 : myProjects.length === 0) ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -341,23 +347,26 @@ export default function ProjectHubPage() {
           </div>
           <h3 className="text-xl font-semibold text-slate-900 mb-2">No projects yet</h3>
           <p className="text-sm text-slate-500 mb-6 max-w-sm">
-            Create your first project to get AI-generated plans with
-            architecture, tech stack, and development roadmaps.
+            {sharedOnly 
+              ? "No one has shared a project with you yet. When they do, it will appear here." 
+              : "Create your first project to get AI-generated plans with architecture, tech stack, and development roadmaps."}
           </p>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg
-                       bg-indigo-600 text-white text-sm font-semibold
-                       hover:bg-indigo-700 transition-all shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Create Project
-          </button>
+          {!sharedOnly && (
+            <button
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg
+                         bg-indigo-600 text-white text-sm font-semibold
+                         hover:bg-indigo-700 transition-all shadow-sm"
+            >
+              <Plus className="w-4 h-4" />
+              Create Project
+            </button>
+          )}
         </motion.div>
       ) : (
         <div className="space-y-12">
           {/* My Projects */}
-          {myProjects.length > 0 && (
+          {!sharedOnly && myProjects.length > 0 && (
             <div>
               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                 My Projects
@@ -376,10 +385,10 @@ export default function ProjectHubPage() {
           )}
 
           {/* Shared with Me */}
-          {sharedProjects.length > 0 && (
+          {sharedOnly && sharedProjects.length > 0 && (
             <div>
               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                Shared with Me
+                My Shared Projects
                 <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">
                   {sharedProjects.length}
                 </span>

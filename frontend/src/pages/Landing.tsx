@@ -166,9 +166,9 @@ export default function Landing() {
       {/* Navigation (Landing Page Variant) */}
       <nav className="fixed top-0 w-full z-50 glass-panel border-b border-slate-200 transition-all duration-300" id="main-nav">
         <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Box className="w-8 h-8 text-blue-600" />
-            <span className="text-3xl font-bold tracking-tight text-blue-600">Innovix</span>
+          <div className="flex items-center gap-3 cursor-pointer">
+            <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
+            <span className="text-xl font-bold text-slate-900 tracking-tight">Innovix</span>
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a className="font-medium text-sm text-slate-600 hover:text-blue-600 transition-colors" href="#features">Features</a>

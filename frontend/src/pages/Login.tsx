@@ -269,7 +269,7 @@ export default function Login() {
         
         {/* Top Logo */}
         <div className="relative z-10 flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
-          <Box className="w-8 h-8 text-blue-400" />
+          <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
           <h1 className="text-2xl font-bold text-white tracking-tight">Innovix</h1>
         </div>
         
@@ -294,7 +294,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile Logo (Only visible on small screens) */}
           <div className="lg:hidden flex justify-center items-center gap-3 mb-8 cursor-pointer" onClick={() => navigate('/')}>
-            <Box className="w-8 h-8 text-blue-600" />
+            <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
             <h1 className="text-2xl font-bold text-blue-600 tracking-tight">Innovix</h1>
           </div>
 

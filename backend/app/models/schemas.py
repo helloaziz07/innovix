@@ -65,6 +65,7 @@ class ProjectResponse(BaseModel):
     is_pinned: bool = False
     created_at: datetime
     updated_at: datetime
+    role: Optional[str] = None
 
 
 # ============================================

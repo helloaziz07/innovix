@@ -106,7 +106,7 @@ function MobileCompanion() {
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Ideate on the go. Sync instantly with your workspace.</p>
           <div className="w-full h-32 bg-slate-50 dark:bg-[#0B1120] rounded border border-slate-100 dark:border-[#1F2937] flex items-center justify-center relative overflow-hidden mb-4">
-            <img alt="Mobile App Preview" className="object-cover h-full w-full opacity-90 mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsESfssf30tn2ec17qkc1YWhM-1qj1jCQ8Zqa49sqq4cZctTWXO8Ax5c1d57icIzMYFMDwwXeUpRVCd6_1X5crH1hCwHpwlURRt4tMwy7kg0o2Q7hu_yIUY5doPzhcCo7oE3Q-87u3gIC9sZnEjf1UXo6omirqSD5m2hGS40fK15rzrrTUyNP7aLnSFRo6cRAi0KZPZ2PkJHzRftNy-r6kmNpLSl9zd5ZQ7rJsvH1yQpQvKAEMyWYD"/>
+            <img alt="Telegram WhatsApp Bots" className="object-contain h-full w-full opacity-90 dark:mix-blend-normal" src="/WhatsappAndTelegram.png"/>
           </div>
           <button 
             onClick={() => setShowModal(true)}

@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
-  LayoutDashboard, FolderKanban,
+  LayoutDashboard, FolderKanban, Users,
   LogOut, Sparkles, ChevronLeft, ChevronRight, Pin, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/projects', icon: FolderKanban, label: 'My Projects' },
+  { to: '/shared-projects', icon: Users, label: 'My shared projects' },
 ]
 
 export default function Layout() {
@@ -68,7 +69,7 @@ export default function Layout() {
         <div className={cn("h-16 flex items-center border-b border-border shrink-0 transition-all duration-300", collapsed ? "justify-center px-0" : "justify-between px-4")}>
           {!collapsed && (
             <div className="flex items-center gap-2 overflow-hidden">
-              <Sparkles className="w-6 h-6 text-blue-600 dark:text-blue-400 shrink-0" />
+              <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
               <span className="text-lg font-bold text-blue-600 dark:text-blue-400 truncate">Innovix</span>
             </div>
           )}
