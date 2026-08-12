@@ -68,6 +68,39 @@ class ProjectResponse(BaseModel):
 
 
 # ============================================
+# Team & Invitations
+# ============================================
+
+class ProjectMemberResponse(BaseModel):
+    """A member of a project."""
+    id: UUID
+    project_id: UUID
+    user_id: UUID
+    role: str
+    created_at: datetime
+    # We will enrich this with profile data in the API
+    user_email: Optional[str] = None
+    user_full_name: Optional[str] = None
+    user_avatar: Optional[str] = None
+
+class ProjectInvitationCreate(BaseModel):
+    """Request to create a new invitation."""
+    email: str
+    role: str = "viewer"
+
+class ProjectInvitationResponse(BaseModel):
+    """A pending invitation."""
+    id: UUID
+    project_id: UUID
+    email: str
+    role: str
+    token: str
+    status: str
+    created_at: datetime
+    expires_at: datetime
+
+
+# ============================================
 # DeepSearch
 # ============================================
 

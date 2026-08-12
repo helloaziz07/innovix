@@ -59,6 +59,14 @@ class Settings(BaseSettings):
     meta_access_token: Optional[str] = None
     meta_phone_number_id: Optional[str] = None
 
+    # --- Emails (SMTP) ---
+    smtp_email: Optional[str] = None
+    smtp_password: Optional[str] = None
+
+    # --- Emails (Resend) ---
+    resend_api_key: Optional[str] = None
+    resend_from_email: str = "Innovix <onboarding@resend.dev>"
+
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

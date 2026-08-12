@@ -43,3 +43,4 @@ twilio==9.6.2
 orjson==3.10.18
 pydantic[email]
 python-pptx==1.0.2
+resend==2.6.0

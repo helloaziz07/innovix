@@ -19,7 +19,12 @@ from app.models.schemas import (
     ProjectUpdate,
     ProjectResponse,
     MessageResponse,
+    ProjectMemberResponse,
+    ProjectInvitationCreate,
+    ProjectInvitationResponse,
 )
+import secrets
+from app.services.email_service import send_project_invitation
 from app.services.project_hub.generator import generate_project_plan, GenerationCancelled
 from app.services.project_hub.export_service import (
     export_to_markdown,
@@ -61,18 +66,29 @@ async def list_projects(
     is_pinned: Optional[bool] = Query(default=None),
 ):
     """List all projects for the current user with pagination."""
+    # Get projects where user is owner
     query = supabase_admin.table("projects").select("*").eq("user_id", user["id"])
-    
     if is_pinned is not None:
         query = query.eq("is_pinned", is_pinned)
+    owner_projects = query.execute().data or []
+    
+    # Get projects where user is a member
+    member_res = supabase_admin.table("project_members").select("project_id").eq("user_id", user["id"]).execute()
+    member_project_ids = [m["project_id"] for m in (member_res.data or [])]
+    
+    member_projects = []
+    if member_project_ids:
+        query2 = supabase_admin.table("projects").select("*").in_("id", member_project_ids)
+        if is_pinned is not None:
+            query2 = query2.eq("is_pinned", is_pinned)
+        member_projects = query2.execute().data or []
         
-    result = (
-        query
-        .order("updated_at", desc=True)
-        .range(offset, offset + limit - 1)
-        .execute()
-    )
-    return result.data
+    # Combine and deduplicate just in case
+    all_projects = {p["id"]: p for p in owner_projects + member_projects}.values()
+    
+    # Sort and paginate manually since we combined two lists
+    sorted_projects = sorted(all_projects, key=lambda x: x["updated_at"], reverse=True)
+    return sorted_projects[offset:offset+limit]
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
@@ -81,17 +97,20 @@ async def get_project(
     user: dict = Depends(get_current_user),
 ):
     """Get a single project by ID."""
-    result = (
-        supabase_admin.table("projects")
-        .select("*")
-        .eq("id", project_id)
-        .eq("user_id", user["id"])
-        .single()
-        .execute()
-    )
-    if not result.data:
-        raise HTTPException(status_code=404, detail="Project not found")
-    return result.data
+    # 1. Check if owner
+    result = supabase_admin.table("projects").select("*").eq("id", project_id).eq("user_id", user["id"]).single().execute()
+    if result.data:
+        return result.data
+        
+    # 2. Check if member
+    member_res = supabase_admin.table("project_members").select("*").eq("project_id", project_id).eq("user_id", user["id"]).single().execute()
+    if member_res.data:
+        # Fetch the project
+        proj_res = supabase_admin.table("projects").select("*").eq("id", project_id).single().execute()
+        if proj_res.data:
+            return proj_res.data
+            
+    raise HTTPException(status_code=404, detail="Project not found or you don't have access")
 
 
 @router.patch("/{project_id}", response_model=MessageResponse)
@@ -105,9 +124,22 @@ async def update_project(
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    supabase_admin.table("projects").update(update_data).eq(
-        "id", project_id
-    ).eq("user_id", user["id"]).execute()
+    # 1. Check if owner
+    result = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).execute()
+    has_access = False
+    
+    if result.data:
+        has_access = True
+    else:
+        # 2. Check if editor
+        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+        if member_res.data and member_res.data[0]["role"] == "editor":
+            has_access = True
+            
+    if not has_access:
+        raise HTTPException(status_code=403, detail="You do not have permission to update this project")
+
+    supabase_admin.table("projects").update(update_data).eq("id", project_id).execute()
 
     return MessageResponse(message="Project updated successfully")
 
@@ -454,3 +486,159 @@ async def narrate_project(
             "Content-Disposition": f'attachment; filename="{filename}"',
         },
     )
+
+
+# ============================================
+# Phase 4 — Team Collaboration & Members
+# ============================================
+
+@router.get("/{project_id}/members", response_model=dict)
+async def list_members_and_invites(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """
+    List all active members and pending invitations for a project.
+    Only accessible by the project owner (or existing members, based on RLS).
+    """
+    # 1. Fetch active members
+    members_res = (
+        supabase_admin.table("project_members")
+        .select("*, profiles(full_name, avatar_url)")
+        .eq("project_id", project_id)
+        .execute()
+    )
+    
+    # Also fetch the owner as an implicit member
+    project = (
+        supabase_admin.table("projects")
+        .select("user_id, profiles(full_name, avatar_url)")
+        .eq("id", project_id)
+        .single()
+        .execute()
+    )
+    
+    # 2. Fetch pending invites
+    invites_res = (
+        supabase_admin.table("project_invitations")
+        .select("*")
+        .eq("project_id", project_id)
+        .eq("status", "pending")
+        .execute()
+    )
+    
+    members = []
+    if project.data:
+        owner_profile = project.data.get("profiles", {}) or {}
+        members.append({
+            "id": project.data["user_id"],
+            "project_id": project_id,
+            "user_id": project.data["user_id"],
+            "role": "owner",
+            "created_at": "",
+            "user_email": None,
+            "user_full_name": owner_profile.get("full_name"),
+            "user_avatar": owner_profile.get("avatar_url")
+        })
+
+    for m in members_res.data or []:
+        prof = m.get("profiles", {}) or {}
+        members.append({
+            "id": m["id"],
+            "project_id": m["project_id"],
+            "user_id": m["user_id"],
+            "role": m["role"],
+            "created_at": m["created_at"],
+            "user_full_name": prof.get("full_name"),
+            "user_avatar": prof.get("avatar_url")
+        })
+        
+    return {
+        "members": members,
+        "invitations": invites_res.data or []
+    }
+
+
+@router.post("/{project_id}/invitations", response_model=ProjectInvitationResponse)
+async def create_invitation(
+    project_id: str,
+    invite: ProjectInvitationCreate,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Invite a user via email to collaborate on the project.
+    Generates a magic link and prints it using the Mock Email Service.
+    """
+    # Verify ownership
+    project_res = (
+        supabase_admin.table("projects")
+        .select("title")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    if not project_res.data:
+        raise HTTPException(status_code=403, detail="Only the project owner can send invites.")
+
+    project_title = project_res.data[0]["title"]
+    token = secrets.token_urlsafe(32)
+    
+    # Save invite to database
+    invite_data = {
+        "project_id": project_id,
+        "email": invite.email.lower(),
+        "role": invite.role,
+        "token": token
+    }
+    
+    result = supabase_admin.table("project_invitations").insert(invite_data).execute()
+    
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Failed to create invitation.")
+        
+    saved_invite = result.data[0]
+    
+    # Generate the frontend magic link URL
+    # E.g. http://localhost:5173/invite/{token}
+    # In production, this would use a settings.FRONTEND_URL
+    invite_url = f"http://localhost:5173/invite/{token}"
+    
+    # Fetch inviter profile
+    inviter_res = supabase_admin.table("profiles").select("full_name").eq("id", user["id"]).single().execute()
+    inviter_name = inviter_res.data.get("full_name") if inviter_res.data else "A teammate"
+    
+    # Trigger Mock Email Service
+    await send_project_invitation(
+        to_email=invite.email,
+        inviter_name=inviter_name,
+        project_title=project_title,
+        role=invite.role,
+        invite_url=invite_url
+    )
+    
+    return saved_invite
+
+
+@router.delete("/{project_id}/members/{user_id}", response_model=MessageResponse)
+async def remove_member(
+    project_id: str,
+    user_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Remove a member from the project.
+    Only accessible by the project owner.
+    """
+    # Verify ownership
+    project_res = (
+        supabase_admin.table("projects")
+        .select("id")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    if not project_res.data:
+        raise HTTPException(status_code=403, detail="Only the project owner can remove members.")
+        
+    supabase_admin.table("project_members").delete().eq("project_id", project_id).eq("user_id", user_id).execute()
+    return MessageResponse(message="Member removed successfully.")

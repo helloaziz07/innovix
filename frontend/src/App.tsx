@@ -14,6 +14,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
 import Layout from '@/pages/Layout'
+import AcceptInvite from '@/pages/AcceptInvite'
 import Dashboard from '@/pages/Dashboard'
 import ResetPassword from '@/pages/ResetPassword'
 import DeepSearchPage from '@/features/deepsearch/DeepSearchPage'
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/invite/:token" element={<AcceptInvite />} />
 
             {/* Protected Routes — wrapped in Layout */}
             <Route

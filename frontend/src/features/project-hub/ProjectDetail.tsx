@@ -18,6 +18,7 @@ import {
   Rocket,
   AlertTriangle,
   Pin,
+  Users,
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
@@ -28,6 +29,7 @@ import TimelineView from './TimelineView'
 import ExportButton from './ExportButton'
 import GenerationConfigModal from './GenerationConfigModal'
 import GenerationPipeline from './GenerationPipeline'
+import TeamSettingsModal from './TeamSettingsModal'
 
 /**
  * Error boundary for Mermaid diagram rendering.
@@ -123,6 +125,7 @@ export default function ProjectDetail() {
   }, [id, setActiveProject])
 
   const [isConfigModalOpen, setConfigModalOpen] = useState(false)
+  const [isTeamModalOpen, setTeamModalOpen] = useState(false)
   const [generationTarget, setGenerationTarget] = useState('full')
 
   useEffect(() => {
@@ -433,6 +436,17 @@ export default function ProjectDetail() {
                   )}
                   Regenerate
                 </button>
+                <button
+                  onClick={() => setTeamModalOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg
+                             bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm
+                             text-blue-600 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800
+                             transition-colors font-medium"
+                  title="Share Project"
+                >
+                  <Users className="w-4 h-4" />
+                  Share
+                </button>
               </>
             )}
           </div>
@@ -475,11 +489,44 @@ export default function ProjectDetail() {
 
           {/* Tab content */}
           <div className="min-h-[400px]">
-            {activeTab === 'overview' && <PlanViewer plan={plan as Record<string, unknown>} onNarrate={handleNarrate} isNarrating={isNarrating} />}
+            {activeTab === 'overview' && (
+              <PlanViewer 
+                plan={plan as Record<string, unknown>} 
+                onNarrate={handleNarrate} 
+                isNarrating={isNarrating} 
+                onUpdate={async (newPlan) => {
+                  if (!id || !activeProject) return
+                  // Optimistically update the UI
+                  updateProject(id, { project_plan: newPlan })
+                  try {
+                    // Update the backend
+                    await projectsApi.update(id, { project_plan: newPlan })
+                  } catch (err) {
+                    console.error("Failed to update project plan:", err)
+                    // Revert on error
+                    updateProject(id, { project_plan: plan })
+                  }
+                }}
+              />
+            )}
             {activeTab === 'architecture' && (
               <MermaidErrorBoundary>
                 <ArchitectureDiagram
                   architecture={(plan as Record<string, unknown>).architecture as Record<string, unknown> | undefined}
+                  onUpdate={async (newMermaid) => {
+                    if (!id || !activeProject) return
+                    const currentArch = (plan as Record<string, unknown>).architecture as Record<string, unknown> || {}
+                    const updatedArch = { ...currentArch, mermaid_diagram: newMermaid }
+                    const updatedPlan = { ...plan, architecture: updatedArch }
+                    
+                    updateProject(id, { project_plan: updatedPlan })
+                    try {
+                      await projectsApi.update(id, { project_plan: updatedPlan })
+                    } catch (err) {
+                      console.error("Failed to update architecture:", err)
+                      updateProject(id, { project_plan: plan })
+                    }
+                  }}
                 />
               </MermaidErrorBoundary>
             )}
@@ -488,6 +535,20 @@ export default function ProjectDetail() {
                 techStack={
                   (((plan as Record<string, unknown>).tech_stack as Array<{ layer: string; technology: string; justification: string; alternatives?: string[] }>) || [])
                 }
+                onUpdate={async (newStack) => {
+                  if (!id || !activeProject) return
+                  const updatedPlan = { ...plan, tech_stack: newStack }
+                  // Optimistically update the UI
+                  updateProject(id, { project_plan: updatedPlan })
+                  try {
+                    // Update the backend
+                    await projectsApi.update(id, { project_plan: updatedPlan })
+                  } catch (err) {
+                    console.error("Failed to update tech stack:", err)
+                    // Revert on error
+                    updateProject(id, { project_plan: plan })
+                  }
+                }}
               />
             )}
             {activeTab === 'timeline' && (
@@ -517,6 +578,15 @@ export default function ProjectDetail() {
             💡 Tip: Run a DeepSearch first to give the AI more context for better results.
           </p>
         </motion.div>
+      )}
+
+      {/* Team Settings Modal */}
+      {id && (
+        <TeamSettingsModal 
+          projectId={id}
+          isOpen={isTeamModalOpen}
+          onClose={() => setTeamModalOpen(false)}
+        />
       )}
     </div>
   )

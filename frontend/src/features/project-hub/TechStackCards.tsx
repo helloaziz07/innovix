@@ -5,7 +5,8 @@
  * with technology name, justification, and alternatives.
  */
 
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Monitor,
   Server,
@@ -15,6 +16,8 @@ import {
   Shield,
   Wrench,
   Puzzle,
+  X,
+  Plus
 } from 'lucide-react'
 
 interface TechItem {
@@ -26,6 +29,7 @@ interface TechItem {
 
 interface TechStackCardsProps {
   techStack: TechItem[]
+  onUpdate?: (newStack: TechItem[]) => void
 }
 
 const LAYER_CONFIG: Record<
@@ -81,7 +85,35 @@ function getLayerConfig(layer: string) {
   }
 }
 
-export default function TechStackCards({ techStack }: TechStackCardsProps) {
+export default function TechStackCards({ techStack, onUpdate }: TechStackCardsProps) {
+  const [isAdding, setIsAdding] = useState(false)
+  const [newTechLayer, setNewTechLayer] = useState('Frontend')
+  const [newTechName, setNewTechName] = useState('')
+  const [newTechJustification, setNewTechJustification] = useState('')
+
+  const handleDelete = (indexToDelete: number) => {
+    if (onUpdate) {
+      const updated = techStack.filter((_, idx) => idx !== indexToDelete)
+      onUpdate(updated)
+    }
+  }
+
+  const handleAddSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTechName.trim() || !onUpdate) return
+    
+    const newItem: TechItem = {
+      layer: newTechLayer,
+      technology: newTechName,
+      justification: newTechJustification || 'Manually added by user.',
+      alternatives: []
+    }
+    
+    onUpdate([...techStack, newItem])
+    setIsAdding(false)
+    setNewTechName('')
+    setNewTechJustification('')
+  }
   if (!techStack || techStack.length === 0) {
     return (
       <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
@@ -133,9 +165,24 @@ export default function TechStackCards({ techStack }: TechStackCardsProps) {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: groupIdx * 0.1 + idx * 0.05 }}
-                  className={`bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 border transition-all duration-300 ${config.borderColor}`}
+                  className={`bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-4 border transition-all duration-300 ${config.borderColor} relative group`}
                 >
-                  <h4 className="font-semibold text-sm mb-1.5">{item.technology}</h4>
+                  {/* Delete button (shows on hover) */}
+                  {onUpdate && (
+                    <button
+                      onClick={() => {
+                        // Find the absolute index in the original techStack array
+                        const originalIndex = techStack.findIndex(t => t.technology === item.technology && t.layer === item.layer)
+                        if (originalIndex !== -1) handleDelete(originalIndex)
+                      }}
+                      className="absolute top-3 right-3 p-1.5 rounded-md bg-red-50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20"
+                      title="Remove technology"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  <h4 className="font-semibold text-sm mb-1.5 pr-6">{item.technology}</h4>
                   <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                     {item.justification}
                   </p>
@@ -164,6 +211,89 @@ export default function TechStackCards({ techStack }: TechStackCardsProps) {
           </motion.div>
         )
       })}
+
+      {/* Add Technology Form */}
+      {onUpdate && (
+        <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6">
+          <AnimatePresence>
+            {!isAdding ? (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsAdding(true)}
+                className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium bg-blue-50 dark:bg-blue-500/10 px-4 py-2 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add Custom Technology
+              </motion.button>
+            ) : (
+              <motion.form
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                onSubmit={handleAddSubmit}
+                className="bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800 p-5 rounded-xl max-w-2xl"
+              >
+                <h4 className="text-sm font-semibold mb-4">Add Custom Technology</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Layer / Category</label>
+                    <select
+                      value={newTechLayer}
+                      onChange={(e) => setNewTechLayer(e.target.value)}
+                      className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
+                    >
+                      <option value="Frontend">Frontend</option>
+                      <option value="Backend">Backend</option>
+                      <option value="Database">Database</option>
+                      <option value="AI">AI & ML</option>
+                      <option value="DevOps">DevOps</option>
+                      <option value="Tools">Tools</option>
+                      <option value="Auth">Auth & Security</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Technology Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Supabase, Redis..."
+                      value={newTechName}
+                      onChange={(e) => setNewTechName(e.target.value)}
+                      className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Justification / Notes (Optional)</label>
+                    <textarea
+                      placeholder="Why are you choosing this?"
+                      value={newTechJustification}
+                      onChange={(e) => setNewTechJustification(e.target.value)}
+                      className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 resize-none h-20"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsAdding(false)}
+                    className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    Add Technology
+                  </button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   )
 }

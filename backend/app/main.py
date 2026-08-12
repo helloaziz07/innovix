@@ -21,6 +21,7 @@ from app.api.agents import router as agents_router
 from app.api.dashboard import router as dashboard_router
 from app.api.intelligence import router as intelligence_router
 from app.api.clusters import router as clusters_router
+from app.api.invitations import router as invitations_router
 
 
 @asynccontextmanager
@@ -83,6 +84,7 @@ app.include_router(agents_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(intelligence_router, prefix="/api")
 app.include_router(clusters_router, prefix="/api")
+app.include_router(invitations_router, prefix="/api")
 
 
 # --- Health Check ---

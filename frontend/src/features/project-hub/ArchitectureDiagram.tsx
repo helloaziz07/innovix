@@ -9,10 +9,11 @@
 
 import React, { useEffect, useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Layers, AlertTriangle, Cpu, ZoomIn, ZoomOut, Maximize2, X, Download } from 'lucide-react'
+import { Layers, AlertTriangle, Cpu, ZoomIn, ZoomOut, Maximize2, X, Download, Code2, Save, ExternalLink } from 'lucide-react'
 
 interface ArchitectureDiagramProps {
   architecture?: Record<string, unknown>
+  onUpdate?: (newMermaid: string) => void
 }
 
 /**
@@ -48,8 +49,15 @@ function sanitizeMermaid(raw: string): string {
   return code
 }
 
-export default function ArchitectureDiagram({ architecture }: ArchitectureDiagramProps) {
+export default function ArchitectureDiagram({ architecture, onUpdate }: ArchitectureDiagramProps) {
   const [renderError, setRenderError] = useState(false)
+  const [isCodeMode, setIsCodeMode] = useState(false)
+  const mermaidCode = architecture?.mermaid_diagram as string | undefined
+  const [editableCode, setEditableCode] = useState(mermaidCode || '')
+
+  useEffect(() => {
+    setEditableCode(mermaidCode || '')
+  }, [mermaidCode])
 
   const [mermaidLoaded, setMermaidLoaded] = useState(false)
   const [zoom, setZoom] = useState(1)
@@ -81,7 +89,6 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
     setIsDragging(false)
   }
 
-  const mermaidCode = architecture?.mermaid_diagram as string | undefined
   const components = architecture?.components as Record<string, unknown>[] | undefined
   const patterns = architecture?.design_patterns as Record<string, unknown>[] | undefined
   const deployNotes = architecture?.deployment_notes as string | undefined
@@ -90,7 +97,9 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
   const [svgContent, setSvgContent] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!mermaidCode) return
+    // Re-render when either the real mermaidCode or the editableCode changes (if in code mode)
+    const codeToRender = isCodeMode ? editableCode : mermaidCode
+    if (!codeToRender) return
 
     let cancelled = false
 
@@ -118,7 +127,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
 
         if (cancelled) return
 
-        const cleanCode = sanitizeMermaid(mermaidCode)
+        const cleanCode = sanitizeMermaid(codeToRender)
         const id = `mermaid-offscreen-${Date.now()}`
 
         // Render in a completely detached off-screen element
@@ -152,7 +161,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
 
     renderMermaid()
     return () => { cancelled = true }
-  }, [mermaidCode])
+  }, [mermaidCode, editableCode, isCodeMode])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [showDownloadMenu, setShowDownloadMenu] = useState(false)
@@ -166,6 +175,22 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
   const handleZoomOut = (e: React.MouseEvent) => {
     e.stopPropagation()
     setZoom((z) => Math.max(z - 0.2, 0.5))
+  }
+
+  const openExternalEditor = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!svgContent || !mermaidCode) return
+    
+    // We encode the mermaid string into base64 to pass it via URL to Mermaid Live Editor
+    // Mermaid Live allows an easy drag/drop/export flow using a base64 state object.
+    const state = {
+      code: mermaidCode,
+      mermaid: { theme: 'dark' },
+      autoSync: true,
+      updateDiagram: true
+    }
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(state))))
+    window.open(`https://mermaid.live/edit#base64:${b64}`, '_blank', 'noopener,noreferrer')
   }
 
   const downloadImage = (format: 'png' | 'jpeg', e?: React.MouseEvent) => {
@@ -272,6 +297,39 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
               System Architecture Diagram
             </span>
             <div className="flex items-center gap-2">
+              {onUpdate && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setIsCodeMode(!isCodeMode)
+                    // Reset editable code if cancelling
+                    if (isCodeMode) setEditableCode(mermaidCode || '')
+                  }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors ${
+                    isCodeMode
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-slate-50 dark:bg-slate-800/50 text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:bg-slate-800'
+                  }`}
+                  title="Edit Mermaid Code"
+                >
+                  <Code2 className="w-3 h-3" />
+                  {isCodeMode ? 'Cancel Edit' : 'Edit Code'}
+                </button>
+              )}
+              {isCodeMode && onUpdate && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onUpdate(editableCode)
+                    setIsCodeMode(false)
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs bg-green-600 text-white hover:bg-green-700 transition-colors"
+                  title="Save Changes"
+                >
+                  <Save className="w-3 h-3" />
+                  Save
+                </button>
+              )}
               <button
                 onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs
@@ -307,6 +365,13 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                   >
                     <Download className="w-4 h-4" />
                   </button>
+                  <button 
+                    onClick={openExternalEditor}
+                    className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm mt-2" 
+                    title="Open in Visual Editor"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
                   {showDownloadMenu && (
                     <div className="absolute top-0 right-10 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
                       <button 
@@ -331,22 +396,39 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                   )}
                 </div>
               </div>
-              <div
-                ref={containerRef}
-                onMouseDown={(e) => handleMouseDown(e, containerRef)}
-                onMouseMove={(e) => handleMouseMove(e, containerRef)}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                className={`p-6 flex justify-center items-center min-h-[300px] w-full 
-                           [&_svg]:max-w-none [&_svg]:h-auto transition-colors select-none overflow-auto
-                           ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-              >
+              <div className={`p-0 flex ${isCodeMode ? 'flex-col md:flex-row' : ''} w-full bg-slate-50 dark:bg-[#0B1120]`}>
+                {isCodeMode && (
+                  <div className="w-full md:w-1/2 min-h-[300px] border-r border-slate-200 dark:border-slate-800 p-4">
+                    <h4 className="text-xs font-semibold mb-2 text-slate-500 uppercase">Mermaid Code</h4>
+                    <textarea
+                      value={editableCode}
+                      onChange={(e) => setEditableCode(e.target.value)}
+                      className="w-full h-full min-h-[400px] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 font-mono text-xs text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 resize-none"
+                      spellCheck={false}
+                    />
+                  </div>
+                )}
+                <div
+                  ref={containerRef}
+                  onMouseDown={(e) => handleMouseDown(e, containerRef)}
+                  onMouseMove={(e) => handleMouseMove(e, containerRef)}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  className={`flex-1 p-6 flex justify-center items-center min-h-[400px] 
+                             [&_svg]:max-w-none [&_svg]:h-auto transition-colors select-none overflow-auto
+                             ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                >
                 {mermaidLoaded && svgContent ? (
-                  <div className="min-w-fit min-h-fit flex items-center justify-center p-8">
-                    <motion.div
-                      animate={{ scale: zoom }}
-                      transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
-                      style={{ transformOrigin: 'center center' }}
+                  <div 
+                    className="p-8 transition-all" 
+                    style={{ 
+                      zoom: zoom,
+                      // For browsers that don't support zoom, we fallback to scale, but scrollbars might not work perfectly there.
+                      // Most modern browsers (Chrome/Edge/Safari/FF126+) support zoom.
+                    }}
+                  >
+                    <div
+                      className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
                       dangerouslySetInnerHTML={{ __html: svgContent }}
                     />
                   </div>
@@ -356,6 +438,7 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                     Rendering diagram...
                   </div>
                 )}
+                </div>
               </div>
             </div>
           ) : (
@@ -531,9 +614,16 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                       </div>
                     )}
                   </div>
+                  <button 
+                    onClick={openExternalEditor}
+                    className="p-2 flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm ml-1" 
+                    title="Open in Visual Editor"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors"
+                    className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors ml-2"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -548,11 +638,11 @@ export default function ArchitectureDiagram({ architecture }: ArchitectureDiagra
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
               >
-                <div className="min-h-full min-w-max flex items-center justify-center p-8">
-                  <motion.div
-                    animate={{ scale: zoom }}
-                    transition={isDragging ? { duration: 0 } : { type: 'spring', stiffness: 300, damping: 30 }}
-                    style={{ transformOrigin: 'center center' }}
+                <div 
+                  className="p-8 transition-all"
+                  style={{ zoom: zoom }}
+                >
+                  <div
                     className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
                     dangerouslySetInnerHTML={{ __html: svgContent }}
                   />

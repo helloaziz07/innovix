@@ -23,12 +23,16 @@ import {
   Briefcase,
   Volume2,
   Square,
+  Edit2,
+  Save,
+  X as XIcon
 } from 'lucide-react'
 
 interface PlanViewerProps {
   plan: Record<string, any>
   onNarrate?: () => void
   isNarrating?: boolean
+  onUpdate?: (newPlan: Record<string, any>) => void
 }
 
 interface SectionProps {
@@ -73,7 +77,13 @@ function CollapsibleSection({ title, icon, defaultOpen = false, children }: Sect
   )
 }
 
-export default function PlanViewer({ plan, onNarrate, isNarrating }: PlanViewerProps) {
+export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate }: PlanViewerProps) {
+  const [isEditing, setIsEditing] = useState(false)
+  
+  // Local state for edits
+  const [editSummary, setEditSummary] = useState('')
+  const [editPerspective, setEditPerspective] = useState('')
+
   const pv = plan.problem_validation as Record<string, any> | undefined
   const solutions = plan.existing_solutions as Record<string, any>[] | undefined
   const innovations = plan.innovation_opportunities as Record<string, any>[] | undefined
@@ -82,8 +92,60 @@ export default function PlanViewer({ plan, onNarrate, isNarrating }: PlanViewerP
   const risks = plan.risks as Record<string, any>[] | undefined
   const docs = plan.documentation as Record<string, any> | undefined
 
+  const handleEditToggle = () => {
+    if (!isEditing && pv) {
+      setEditSummary(pv.summary || '')
+      setEditPerspective(pv.business_perspective || '')
+    }
+    setIsEditing(!isEditing)
+  }
+
+  const handleSave = () => {
+    if (!onUpdate || !pv) return
+    const updatedPlan = {
+      ...plan,
+      problem_validation: {
+        ...pv,
+        summary: editSummary,
+        business_perspective: editPerspective
+      }
+    }
+    onUpdate(updatedPlan)
+    setIsEditing(false)
+  }
+
   return (
     <div className="space-y-3">
+      {onUpdate && (
+        <div className="flex justify-end mb-2">
+          {!isEditing ? (
+            <button
+              onClick={handleEditToggle}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors font-medium"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+              Edit Overview
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleEditToggle}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <XIcon className="w-3.5 h-3.5" />
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-green-600 text-white hover:bg-green-700 transition-colors font-medium"
+              >
+                <Save className="w-3.5 h-3.5" />
+                Save Changes
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       {/* Problem Validation */}
       {pv && (
         <CollapsibleSection
@@ -92,7 +154,15 @@ export default function PlanViewer({ plan, onNarrate, isNarrating }: PlanViewerP
           defaultOpen={true}
         >
           <div className="flex items-start justify-between gap-4 mb-3">
-            <p className="text-muted-foreground">{pv.summary as string}</p>
+            {isEditing ? (
+              <textarea
+                value={editSummary}
+                onChange={(e) => setEditSummary(e.target.value)}
+                className="w-full min-h-[100px] text-sm bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500/50 resize-y"
+              />
+            ) : (
+              <p className="text-muted-foreground">{pv.summary as string}</p>
+            )}
             {onNarrate && (
               <button
                 onClick={onNarrate}
@@ -165,10 +235,18 @@ export default function PlanViewer({ plan, onNarrate, isNarrating }: PlanViewerP
           icon={<Briefcase className="w-4 h-4 text-emerald-400" />}
           defaultOpen={true}
         >
-          <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-              {String(pv.business_perspective)}
-            </p>
+          <div className={`p-3 rounded-lg ${isEditing ? 'bg-transparent' : 'bg-emerald-500/5 border border-emerald-500/10'}`}>
+            {isEditing ? (
+              <textarea
+                value={editPerspective}
+                onChange={(e) => setEditPerspective(e.target.value)}
+                className="w-full min-h-[120px] text-sm bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500/50 resize-y"
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {String(pv.business_perspective)}
+              </p>
+            )}
           </div>
         </CollapsibleSection>
       )}
