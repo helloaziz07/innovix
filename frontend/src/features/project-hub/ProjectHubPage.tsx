@@ -29,33 +29,19 @@ const STATUS_CONFIG: Record<
   string,
   { label: string; color: string; icon: React.ReactNode; bg: string; hoverClass: string }
 > = {
-  ideation: {
-    label: 'Ideation',
+  planning: {
+    label: 'Planning',
     color: 'text-amber-600',
     icon: <Lightbulb className="w-5 h-5 text-amber-600" />,
     bg: 'bg-amber-100',
     hoverClass: 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400 hover:shadow-amber-400/20',
   },
-  researching: {
-    label: 'Researching',
-    color: 'text-blue-600',
-    icon: <Search className="w-5 h-5 text-blue-600" />,
-    bg: 'bg-blue-100',
-    hoverClass: 'hover:border-blue-400 hover:ring-1 hover:ring-blue-400 hover:shadow-blue-400/20',
-  },
-  planning: {
-    label: 'Planning',
+  architecting: {
+    label: 'Architecting',
     color: 'text-purple-600',
     icon: <Network className="w-5 h-5 text-purple-600" />,
     bg: 'bg-purple-100',
     hoverClass: 'hover:border-purple-400 hover:ring-1 hover:ring-purple-400 hover:shadow-purple-400/20',
-  },
-  building: {
-    label: 'Building',
-    color: 'text-indigo-600',
-    icon: <Wrench className="w-5 h-5 text-indigo-600" />,
-    bg: 'bg-indigo-100',
-    hoverClass: 'hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400 hover:shadow-indigo-400/20',
   },
   completed: {
     label: 'Completed',
@@ -70,7 +56,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
   const navigate = useNavigate()
   const { updateProject, removeProject } = useProjectStore()
   
-  const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.ideation
+  const statusCfg = STATUS_CONFIG[project.status] || STATUS_CONFIG.planning
   const hasPlan = !!project.project_plan
 
   const handleTogglePin = async (e: React.MouseEvent) => {
@@ -274,7 +260,7 @@ export default function ProjectHubPage() {
 
         {/* Status filter pills */}
         <div className="flex gap-2 flex-wrap">
-          {['all', 'ideation', 'researching', 'planning', 'building', 'completed'].map((status) => (
+          {['all', 'planning', 'architecting', 'completed'].map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}

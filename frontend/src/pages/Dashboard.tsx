@@ -38,8 +38,8 @@ function ProjectOverviewCards({ stats }: { stats: any }) {
   const navigate = useNavigate()
   const cards = [
     { label: 'Total Projects', value: stats.total_projects || 0, icon: Layers, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-[#3B82F6]/10', status: 'all' },
-    { label: 'Ideation', value: stats.projects_by_status?.ideation || 0, icon: Lightbulb, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-[#A855F7]/10', status: 'ideation' },
-    { label: 'In Planning', value: stats.projects_by_status?.planning || 0, icon: Network, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-[#6366F1]/10', status: 'planning' },
+    { label: 'Planning', value: stats.projects_by_status?.planning || 0, icon: Lightbulb, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-[#F59E0B]/10', status: 'planning' },
+    { label: 'Architecting', value: stats.projects_by_status?.architecting || 0, icon: Network, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-[#A855F7]/10', status: 'architecting' },
     { label: 'Completed', value: stats.projects_by_status?.completed || 0, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-[#10B981]/10', status: 'completed' },
   ]
 
@@ -197,10 +197,8 @@ function MobileCompanion() {
 
 const getHoverClass = (status: string) => {
   switch (status?.toLowerCase()) {
-    case 'ideation': return 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400'
-    case 'researching': return 'hover:border-blue-400 hover:ring-1 hover:ring-blue-400'
-    case 'planning': return 'hover:border-purple-400 hover:ring-1 hover:ring-purple-400'
-    case 'building': return 'hover:border-indigo-400 hover:ring-1 hover:ring-indigo-400'
+    case 'planning': return 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400'
+    case 'architecting': return 'hover:border-purple-400 hover:ring-1 hover:ring-purple-400'
     case 'completed': return 'hover:border-emerald-400 hover:ring-1 hover:ring-emerald-400'
     default: return 'hover:border-gray-400 hover:ring-1 hover:ring-gray-400'
   }
@@ -503,7 +501,7 @@ export default function Dashboard() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <h3 className="font-semibold text-sm mb-0.5 truncate text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{proj.title}</h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{proj.status || 'ideation'}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{proj.status || 'planning'}</p>
                         </div>
                         <button
                           onClick={(e) => handleTogglePin(proj, e)}

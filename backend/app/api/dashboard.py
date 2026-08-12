@@ -41,7 +41,7 @@ async def get_dashboard(user: dict = Depends(get_current_user)):
 
         status_counts = {}
         for p in projects:
-            s = p.get("status", "ideation")
+            s = p.get("status", "planning")
             status_counts[s] = status_counts.get(s, 0) + 1
 
         # ---- Recent searches ----
@@ -96,7 +96,7 @@ async def get_dashboard(user: dict = Depends(get_current_user)):
             recent_projects_list.append({
                 "id": p.get("id"),
                 "title": p.get("title", ""),
-                "status": p.get("status", "ideation"),
+                "status": p.get("status", "planning"),
             })
 
         return DashboardResponse(
@@ -197,8 +197,8 @@ def _build_recommendations(
     elif total_searches == 0:
         recs.append("🔍 Run your first DeepSearch to discover papers, repos, and articles")
     else:
-        if status_counts.get("ideation", 0) > 0:
-            recs.append("💡 You have projects in ideation — generate a plan to move them forward")
+        if status_counts.get("planning", 0) > 0:
+            recs.append("💡 You have projects in planning — generate a plan to move them forward")
         if status_counts.get("planning", 0) > 0:
             recs.append("📋 Review your project plans and export them as PDF")
 

@@ -57,7 +57,7 @@ class ProjectResponse(BaseModel):
     user_id: UUID
     title: str
     idea_text: str
-    status: str = "ideation"
+    status: str = "planning"
     project_plan: Optional[dict] = None
     tech_stack: Optional[Any] = None
     architecture: Optional[dict] = None

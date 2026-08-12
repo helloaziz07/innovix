@@ -93,9 +93,6 @@ async def generate_project_plan(
     _check_cancelled()
     await _emit("fetching_research", "Research context loaded.", 10)
 
-    # Update project status → researching
-    await _update_project_status(project_id, "researching")
-
     # Initialize empty partials
     architecture = {}
     roadmap = {}
@@ -112,7 +109,7 @@ async def generate_project_plan(
         # Save early
         await _emit("saving", "Saving partial plan to database...", 92)
         full_plan = {**main_plan}
-        await _persist_plan(project_id, full_plan)
+        await _persist_plan(project_id, full_plan, target_phase)
         await _emit("complete", "Project plan generated successfully!", 100)
         return full_plan
 
@@ -132,7 +129,7 @@ async def generate_project_plan(
             **main_plan,
             "architecture": architecture,
         }
-        await _persist_plan(project_id, full_plan)
+        await _persist_plan(project_id, full_plan, target_phase)
         await _emit("complete", "Project plan generated successfully!", 100)
         return full_plan
 
@@ -157,7 +154,7 @@ async def generate_project_plan(
         "risks": roadmap.get("risks", []),
     }
 
-    await _persist_plan(project_id, full_plan)
+    await _persist_plan(project_id, full_plan, target_phase)
     await _emit("complete", "Project plan generated successfully!", 100)
 
     return full_plan
@@ -304,12 +301,15 @@ async def _update_project_status(project_id: str, status: str) -> None:
         logger.warning(f"[ProjectHub] Failed to update status: {e}")
 
 
-async def _persist_plan(project_id: str, plan: Dict[str, Any]) -> None:
+async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str) -> None:
     """
     Store the generated plan in the project's JSONB columns
-    and update status to 'planning'.
+    and update status based on target_phase.
     """
     try:
+        new_status = "completed" if target_phase in ["full", "roadmap"] else (
+            "architecting" if target_phase == "architecture" else "planning"
+        )
         update_data = {
             "project_plan": plan,
             "tech_stack": plan.get("tech_stack", []),
@@ -321,7 +321,7 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any]) -> None:
                 "mvp_ready_by_week": plan.get("mvp_ready_by_week", 4),
                 "risks": plan.get("risks", []),
             },
-            "status": "planning",
+            "status": new_status,
         }
 
         await asyncio.to_thread(

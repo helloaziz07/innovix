@@ -159,7 +159,7 @@ Topic: {query}""",
 
             lines = ["📂 *Your Projects:*\n"]
             status_emoji = {
-                "ideation": "💡",
+                "planning": "💡",
                 "researching": "🔍",
                 "planning": "📋",
                 "building": "🔨",
@@ -167,7 +167,7 @@ Topic: {query}""",
             }
             for i, p in enumerate(projects, 1):
                 emoji = status_emoji.get(p.get("status", ""), "📌")
-                lines.append(f"{i}. {emoji} *{p['title']}* — _{p.get('status', 'ideation')}_")
+                lines.append(f"{i}. {emoji} *{p['title']}* — _{p.get('status', 'planning')}_")
 
             lines.append(f"\n📊 Total: {len(projects)} project(s)")
             lines.append("Use `/status <project name>` for details.")
@@ -214,11 +214,11 @@ Topic: {query}""",
 
             # Build status summary
             plan = matched.get("project_plan", {}) or {}
-            status_emoji = {"ideation": "💡", "researching": "🔍", "planning": "📋", "building": "🔨", "completed": "✅"}
+            status_emoji = {"planning": "💡", "architecting": "📋", "completed": "✅"}
 
             lines = [
                 f"📊 *{matched['title']}*",
-                f"Status: {status_emoji.get(matched.get('status', ''), '📌')} {matched.get('status', 'ideation')}",
+                f"Status: {status_emoji.get(matched.get('status', ''), '📌')} {matched.get('status', 'planning')}",
                 f"Created: {matched.get('created_at', '')[:10]}",
                 f"Updated: {matched.get('updated_at', '')[:10]}",
             ]

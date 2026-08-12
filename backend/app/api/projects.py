@@ -49,7 +49,7 @@ async def create_project(
         "user_id": user["id"],
         "title": project.title,
         "idea_text": project.idea_text,
-        "status": "ideation",
+        "status": "planning",
     }
     result = supabase_admin.table("projects").insert(project_data).execute()
     return MessageResponse(

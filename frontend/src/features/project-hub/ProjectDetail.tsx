@@ -149,11 +149,11 @@ export default function ProjectDetail() {
     }
   }
 
-  // Auto-trigger pipeline for newly created projects (status = 'ideation', no plan yet)
+  // Auto-trigger pipeline for newly created projects (status = 'planning', no plan yet)
   useEffect(() => {
     if (
       activeProject &&
-      activeProject.status === 'ideation' &&
+      activeProject.status === 'planning' &&
       !activeProject.project_plan &&
       !isGeneratingPlan &&
       id

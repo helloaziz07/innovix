@@ -23,7 +23,7 @@ export interface Project {
   user_id: string
   title: string
   idea_text: string
-  status: 'ideation' | 'researching' | 'planning' | 'building' | 'completed'
+  status: 'planning' | 'architecting' | 'completed'
   project_plan: Record<string, unknown> | null
   tech_stack: Record<string, unknown>[] | null
   architecture: Record<string, unknown> | null
