@@ -388,7 +388,7 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
           {sharedOnly && sharedProjects.length > 0 && (
             <div>
               <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                My Shared Projects
+                Shared Projects
                 <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">
                   {sharedProjects.length}
                 </span>
