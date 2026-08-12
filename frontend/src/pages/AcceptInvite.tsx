@@ -56,7 +56,7 @@ export default function AcceptInvite() {
       setAccepting(true)
       await invitationsApi.accept(token)
       // Redirect to the project
-      navigate(`/project/${details?.project_id}`)
+      navigate(`/projects/${details?.project_id}`)
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to accept invitation.')
       setAccepting(false)

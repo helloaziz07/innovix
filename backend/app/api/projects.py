@@ -84,10 +84,10 @@ async def list_projects(
         member_projects = query2.execute().data or []
         
     # Combine and deduplicate just in case
-    all_projects = {p["id"]: p for p in owner_projects + member_projects}.values()
+    all_projects = list({p["id"]: p for p in owner_projects + member_projects}.values())
     
     # Sort and paginate manually since we combined two lists
-    sorted_projects = sorted(all_projects, key=lambda x: x["updated_at"], reverse=True)
+    sorted_projects = sorted(all_projects, key=lambda x: x.get("updated_at") or "", reverse=True)
     return sorted_projects[offset:offset+limit]
 
 
