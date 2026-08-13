@@ -103,6 +103,11 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
         </div>
       )}
 
+      {/* Unread Activity Badge */}
+      {project.has_unread_changes && (
+        <div className="absolute top-4 left-4 w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse z-10" title="New Activity" />
+      )}
+
       {/* Status + Delete */}
       <div className="flex items-center justify-between mb-5">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center ${statusCfg?.bg || 'bg-gray-100'}`}>

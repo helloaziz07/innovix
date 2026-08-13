@@ -65,7 +65,20 @@ class ProjectResponse(BaseModel):
     is_pinned: bool = False
     created_at: datetime
     updated_at: datetime
+    last_viewed_at: Optional[datetime] = None
     role: Optional[str] = None
+    has_unread_changes: Optional[bool] = False
+
+class ActivityLogResponse(BaseModel):
+    id: UUID
+    project_id: UUID
+    user_id: UUID
+    action: str
+    component: str
+    metadata: Optional[dict] = None
+    created_at: datetime
+    user_full_name: Optional[str] = None
+    user_avatar: Optional[str] = None
 
 
 # ============================================

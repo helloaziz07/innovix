@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     # --- Emails (SMTP) ---
     smtp_email: Optional[str] = None
     smtp_password: Optional[str] = None
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    smtp_from_email: Optional[str] = None
 
     # --- Emails (Resend) ---
     resend_api_key: Optional[str] = None

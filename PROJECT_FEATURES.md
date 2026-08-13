@@ -20,7 +20,8 @@
 - [11. Export & Document Generation](#11-export--document-generation)
 - [12. Security & Production Hardening](#12-security--production-hardening)
 - [13. UI/UX Design System](#13-uiux-design-system)
-- [14. Planned / Upcoming Features](#14-planned--upcoming-features)
+- [14. Collaborative Workspace Tracking](#14-collaborative-workspace-tracking)
+- [15. Planned / Upcoming Features](#15-planned--upcoming-features)
 
 ---
 
@@ -351,7 +352,22 @@ Multiple export formats for project plans and workspace content.
 
 ---
 
-## 14. Planned / Upcoming Features
+## 14. Collaborative Workspace Tracking
+
+**Status:** ✅ Implemented
+
+Provides audit logging and notification badges for shared projects so members can stay updated on changes made by others.
+
+| Feature | Description | Files |
+|---------|-------------|-------|
+| Audit Activity Logs | The backend automatically logs important project events (e.g., plan generated, project updated, member invited) in `project_activity_logs`. | `projects.py`, `schemas.py` |
+| View Tracking | Tracks the last time a user viewed a specific project using the `project_user_views` table via `POST /api/projects/{id}/view`. | `projects.py` |
+| Unread Changes Badge | Compares the project's `updated_at` with the user's `last_viewed_at` timestamp. If `updated_at` is newer, an unread pulse badge is shown on the dashboard and project hub. | `projects.py`, `Dashboard.tsx`, `ProjectHubPage.tsx` |
+| Activity Feed Sidebar | A slide-out panel on the Project Details page showing a chronological feed of all project changes, identifying *who* made *what* change and *when*. | `ActivityFeed.tsx`, `ProjectDetail.tsx` |
+
+---
+
+## 15. Planned / Upcoming Features
 
 | Feature | Description | Priority |
 |---------|-------------|----------|

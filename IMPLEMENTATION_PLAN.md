@@ -532,6 +532,7 @@ Using Meta WhatsApp Cloud API:
 - [ ] Prompt injection sanitization (needs design decisions)
 - [ ] Retry logic on external APIs (`tenacity` — needs dependency)
 - [ ] Pagination on list endpoints (needs frontend changes)
+- [x] Collaborative Workspaces (Invite members, activity feed, view tracking)
 
 ---
 

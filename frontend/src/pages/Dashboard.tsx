@@ -491,9 +491,12 @@ export default function Dashboard() {
                   className="h-full"
                 >
                   <Card
-                    className={`bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937] cursor-pointer group h-full hover:shadow-md transition-all ${getHoverClass(proj.status)}`}
+                    className={`bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937] cursor-pointer group h-full hover:shadow-md transition-all relative overflow-hidden ${getHoverClass(proj.status)}`}
                     onClick={() => navigate(`/projects/${proj.id}`)}
                   >
+                    {proj.has_unread_changes && (
+                      <div className="absolute top-3 left-3 w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse z-10" title="New Activity" />
+                    )}
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">

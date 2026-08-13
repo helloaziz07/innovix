@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Pin,
   Users,
+  Activity
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
@@ -30,6 +31,7 @@ import ExportButton from './ExportButton'
 import GenerationConfigModal from './GenerationConfigModal'
 import GenerationPipeline from './GenerationPipeline'
 import TeamSettingsModal from './TeamSettingsModal'
+import ActivityFeed from './ActivityFeed'
 
 /**
  * Error boundary for Mermaid diagram rendering.
@@ -108,6 +110,7 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isActivityOpen, setIsActivityOpen] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const fetchProject = useCallback(async () => {
@@ -116,6 +119,13 @@ export default function ProjectDetail() {
     try {
       const res = await projectsApi.get(id)
       setActiveProject(res.data)
+      
+      // Mark project as viewed to clear unread badges
+      try {
+        await projectsApi.markViewed(id)
+      } catch (err) {
+        console.warn('Failed to mark project as viewed:', err)
+      }
     } catch (err) {
       setError('Failed to load project')
       console.error(err)
@@ -331,7 +341,8 @@ export default function ProjectDetail() {
   const hasPlan = plan && !plan.error
 
   return (
-    <div className="min-h-full p-6 lg:p-8 relative">
+    <div className="flex h-full w-full overflow-hidden">
+      <div className="flex-1 overflow-y-auto min-h-full p-6 lg:p-8 relative">
       {/* Config Modal */}
       <GenerationConfigModal
         isOpen={isConfigModalOpen}
@@ -446,6 +457,19 @@ export default function ProjectDetail() {
                 >
                   <Users className="w-4 h-4" />
                   Share
+                </button>
+                <button
+                  onClick={() => setIsActivityOpen(!isActivityOpen)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg
+                             border text-sm font-medium transition-colors ${
+                               isActivityOpen 
+                                ? 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white'
+                                : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                             }`}
+                  title="View Activity"
+                >
+                  <Activity className="w-4 h-4" />
+                  Activity
                 </button>
               </>
             )}
@@ -587,6 +611,12 @@ export default function ProjectDetail() {
           isOpen={isTeamModalOpen}
           onClose={() => setTeamModalOpen(false)}
         />
+      )}
+      </div>
+
+      {/* Activity Feed Sidebar */}
+      {isActivityOpen && (
+        <ActivityFeed projectId={id!} />
       )}
     </div>
   )

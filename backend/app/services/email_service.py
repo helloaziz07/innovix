@@ -79,16 +79,23 @@ If you don't have an account yet, you will be prompted to create one.
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = f"You're invited to join {project_title} on Innovix"
-            msg["From"] = f"Innovix <{settings.smtp_email}>"
+            from_email = settings.smtp_from_email or (
+                settings.resend_from_email if settings.smtp_email == "resend" else settings.smtp_email
+            )
+            msg["From"] = from_email if "<" in from_email else f"Innovix <{from_email}>"
             msg["To"] = to_email
             
             # Attach HTML content
             part = MIMEText(html_body, "html")
             msg.attach(part)
             
-            # Connect to Gmail SMTP server
-            server = smtplib.SMTP("smtp.gmail.com", 587)
-            server.starttls()
+            # Connect to SMTP server
+            if settings.smtp_port == 465:
+                server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port)
+            else:
+                server = smtplib.SMTP(settings.smtp_host, settings.smtp_port)
+                server.starttls()
+                
             server.login(settings.smtp_email, settings.smtp_password)
             server.send_message(msg)
             server.quit()

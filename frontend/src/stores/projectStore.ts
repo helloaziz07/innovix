@@ -31,6 +31,8 @@ export interface Project {
   is_pinned?: boolean
   created_at: string
   updated_at: string
+  last_viewed_at?: string | null
+  has_unread_changes?: boolean
   role?: string
 }
 

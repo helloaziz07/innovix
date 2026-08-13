@@ -22,6 +22,7 @@ from app.models.schemas import (
     ProjectMemberResponse,
     ProjectInvitationCreate,
     ProjectInvitationResponse,
+    ActivityLogResponse
 )
 import secrets
 from app.services.email_service import send_project_invitation
@@ -37,6 +38,19 @@ from app.services.sarvam.tts_service import synthesize_speech, is_available as s
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/projects", tags=["Project HUB"])
+
+def log_activity(project_id: str, user_id: str, action: str, component: str, metadata: dict = None):
+    try:
+        supabase_admin.table("project_activity_logs").insert({
+            "project_id": str(project_id),
+            "user_id": str(user_id),
+            "action": action,
+            "component": component,
+            "metadata": metadata or {}
+        }).execute()
+    except Exception as e:
+        logger.error(f"Failed to log activity: {e}")
+
 
 
 @router.post("/", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
@@ -91,6 +105,21 @@ async def list_projects(
     # Combine and deduplicate just in case
     all_projects = list({p["id"]: p for p in owner_projects + member_projects}.values())
     
+    # Fetch user's project views for unread badges
+    views_map = {}
+    try:
+        views_res = supabase_admin.table("project_user_views").select("project_id, last_viewed_at").eq("user_id", user["id"]).execute()
+        views_map = {v["project_id"]: v["last_viewed_at"] for v in (views_res.data or [])}
+    except Exception as e:
+        logger.warning(f"Could not fetch project views: {e}")
+
+    for p in all_projects:
+        p["last_viewed_at"] = views_map.get(p["id"])
+        if p.get("updated_at") and p.get("last_viewed_at"):
+            p["has_unread_changes"] = p["updated_at"] > p["last_viewed_at"]
+        elif p.get("updated_at") and not p.get("last_viewed_at"):
+            p["has_unread_changes"] = True
+    
     # Sort and paginate manually since we combined two lists
     sorted_projects = sorted(all_projects, key=lambda x: x.get("updated_at") or "", reverse=True)
     return sorted_projects[offset:offset+limit]
@@ -107,6 +136,20 @@ async def get_project(
     if result.data:
         project_data = result.data[0]
         project_data["role"] = "owner"
+        
+        # Fetch last_viewed_at
+        try:
+            view_res = supabase_admin.table("project_user_views").select("last_viewed_at").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+            if view_res.data:
+                project_data["last_viewed_at"] = view_res.data[0]["last_viewed_at"]
+                if project_data.get("updated_at"):
+                    project_data["has_unread_changes"] = project_data["updated_at"] > project_data["last_viewed_at"]
+            else:
+                project_data["has_unread_changes"] = True
+        except Exception as e:
+            logger.warning(f"Could not fetch view status: {e}")
+            project_data["has_unread_changes"] = False
+            
         return project_data
         
     # 2. Check if member
@@ -117,6 +160,20 @@ async def get_project(
         if proj_res.data:
             project_data = proj_res.data[0]
             project_data["role"] = member_res.data[0]["role"]
+            
+            # Fetch last_viewed_at
+            try:
+                view_res = supabase_admin.table("project_user_views").select("last_viewed_at").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+                if view_res.data:
+                    project_data["last_viewed_at"] = view_res.data[0]["last_viewed_at"]
+                    if project_data.get("updated_at"):
+                        project_data["has_unread_changes"] = project_data["updated_at"] > project_data["last_viewed_at"]
+                else:
+                    project_data["has_unread_changes"] = True
+            except Exception as e:
+                logger.warning(f"Could not fetch view status: {e}")
+                project_data["has_unread_changes"] = False
+                
             return project_data
             
     raise HTTPException(status_code=404, detail="Project not found or you don't have access")
@@ -149,6 +206,18 @@ async def update_project(
         raise HTTPException(status_code=403, detail="You do not have permission to update this project")
 
     supabase_admin.table("projects").update(update_data).eq("id", project_id).execute()
+    
+    # Log Activity
+    if "project_plan" in update_data:
+        log_activity(project_id, user["id"], "updated", "Project Plan")
+    elif "architecture" in update_data:
+        log_activity(project_id, user["id"], "updated", "System Architecture")
+    elif "timeline" in update_data:
+        log_activity(project_id, user["id"], "updated", "Development Roadmap")
+    elif "status" in update_data:
+        log_activity(project_id, user["id"], "updated", f"Status to {update_data['status']}")
+    else:
+        log_activity(project_id, user["id"], "updated", "Project Details")
 
     return MessageResponse(message="Project updated successfully")
 
@@ -256,6 +325,8 @@ async def generate_plan(
                 detail=plan["error"],
             )
 
+        log_activity(project_id, user["id"], "regenerated", "Full Project Plan")
+
         return MessageResponse(
             message="Project plan generated successfully",
             data=plan,
@@ -269,7 +340,6 @@ async def generate_plan(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Plan generation failed: {str(e)}",
         )
-
 
 @router.post("/{project_id}/generate-plan-stream")
 async def generate_plan_stream(
@@ -651,3 +721,70 @@ async def remove_member(
         
     supabase_admin.table("project_members").delete().eq("project_id", project_id).eq("user_id", user_id).execute()
     return MessageResponse(message="Member removed successfully.")
+
+
+@router.post("/{project_id}/view", response_model=MessageResponse)
+async def mark_project_viewed(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Mark a project as viewed by the user to clear unread badges."""
+    # Supabase upsert requires id or unique constraint match. We'll try to find it first.
+    res = supabase_admin.table("project_user_views").select("id").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+    if res.data:
+        supabase_admin.table("project_user_views").update({"last_viewed_at": "now()"}).eq("id", res.data[0]["id"]).execute()
+    else:
+        supabase_admin.table("project_user_views").insert({
+            "project_id": project_id,
+            "user_id": user["id"]
+        }).execute()
+        
+    return MessageResponse(message="Project marked as viewed")
+
+
+@router.get("/{project_id}/activity", response_model=list[ActivityLogResponse])
+async def get_project_activity(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Fetch the chronological activity feed for a project."""
+    # 1. Check access
+    res = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).execute()
+    has_access = bool(res.data)
+    if not has_access:
+        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+        if member_res.data:
+            has_access = True
+            
+    if not has_access:
+        raise HTTPException(status_code=403, detail="Not authorized to view activity")
+        
+    # 2. Fetch logs
+    logs_res = (
+        supabase_admin.table("project_activity_logs")
+        .select("*")
+        .eq("project_id", project_id)
+        .order("created_at", desc=True)
+        .limit(50)
+        .execute()
+    )
+    
+    logs = logs_res.data or []
+    if not logs:
+        return []
+        
+    # 3. Enrich with user profile data
+    user_ids = list(set([log["user_id"] for log in logs]))
+    profiles_res = supabase_admin.table("profiles").select("id, full_name, avatar_url").in_("id", user_ids).execute()
+    profile_map = {p["id"]: p for p in (profiles_res.data or [])}
+    
+    enriched_logs = []
+    for log in logs:
+        p = profile_map.get(log["user_id"], {})
+        enriched_logs.append({
+            **log,
+            "user_full_name": p.get("full_name") or "Unknown User",
+            "user_avatar": p.get("avatar_url")
+        })
+        
+    return enriched_logs
