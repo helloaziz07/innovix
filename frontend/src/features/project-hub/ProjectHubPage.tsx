@@ -12,15 +12,14 @@ import {
   Plus,
   Rocket,
   Search,
-  FolderOpen,
   Clock,
   ChevronRight,
   Lightbulb,
-  Wrench,
   CheckCircle2,
   Network,
   Pin,
-  Trash2
+  Trash2,
+  FolderOpen
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore, type Project } from '@/stores/projectStore'
@@ -90,7 +89,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: idx * 0.05 }}
-      onClick={() => navigate(`/projects/${project.id}`)}
+      onClick={() => navigate(isShared ? `/shared-projects/${project.id}` : `/projects/${project.id}`)}
       className={`bg-white rounded-xl p-6 cursor-pointer group
                  border border-gray-200 shadow-sm
                  ${statusCfg?.hoverClass || 'hover:border-gray-400'}
@@ -176,8 +175,6 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
     isLoading,
     setLoading,
     addProject,
-    removeProject,
-    updateProject,
   } = useProjectStore()
 
   const [showCreate, setShowCreate] = useState(false)

@@ -317,10 +317,10 @@ export default function ProjectDetail() {
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
           <p className="text-muted-foreground">Project not found</p>
           <button
-            onClick={() => navigate('/projects')}
+            onClick={() => navigate(window.location.pathname.startsWith('/shared-projects') ? '/shared-projects' : '/projects')}
             className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:text-blue-300"
           >
-            ← Back to Projects
+            ← Back to {window.location.pathname.startsWith('/shared-projects') ? 'Shared Projects' : 'Projects'}
           </button>
         </div>
       </div>
@@ -361,12 +361,12 @@ export default function ProjectDetail() {
         className="mb-6"
       >
         <button
-          onClick={() => navigate('/projects')}
+          onClick={() => navigate(window.location.pathname.startsWith('/shared-projects') ? '/shared-projects' : '/projects')}
           className="flex items-center gap-1.5 text-sm text-muted-foreground
                      hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Projects
+          Back to {window.location.pathname.startsWith('/shared-projects') ? 'Shared Projects' : 'Projects'}
         </button>
 
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">

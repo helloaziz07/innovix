@@ -1,4 +1,4 @@
-import { Box, User, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 /**
  * Innovix — Auth Page (Login + Sign Up + Forgot Password)
  *

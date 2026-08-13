@@ -1,4 +1,4 @@
-import { Box, Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, Brain, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight, X } from 'lucide-react';
+import { Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, Brain, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
