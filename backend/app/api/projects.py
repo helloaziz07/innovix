@@ -149,6 +149,18 @@ async def get_project(
         except Exception as e:
             logger.warning(f"Could not fetch view status: {e}")
             project_data["has_unread_changes"] = False
+        
+        # Fetch latest activity
+        try:
+            act_res = supabase_admin.table("project_activity_logs").select("*, profiles(full_name, avatar_url)").eq("project_id", project_id).order("created_at", desc=True).limit(1).execute()
+            if act_res.data:
+                latest = act_res.data[0]
+                prof = latest.pop("profiles", {}) or {}
+                latest["user_full_name"] = prof.get("full_name")
+                latest["user_avatar"] = prof.get("avatar_url")
+                project_data["last_activity"] = latest
+        except Exception as e:
+            logger.warning(f"Could not fetch last activity: {e}")
             
         return project_data
         
@@ -178,6 +190,64 @@ async def get_project(
             
     raise HTTPException(status_code=404, detail="Project not found or you don't have access")
 
+def compute_plan_diff(old_plan: dict, new_plan: dict) -> list[str]:
+    if not old_plan or not isinstance(old_plan, dict):
+        return ["Initialized Project Plan"]
+    if not new_plan or not isinstance(new_plan, dict):
+        return ["Removed Project Plan"]
+        
+    changes = []
+    
+    # Overview
+    old_overview = old_plan.get("overview") or {}
+    new_overview = new_plan.get("overview") or {}
+    if old_overview != new_overview and isinstance(old_overview, dict) and isinstance(new_overview, dict):
+        overview_changed = False
+        for k, v in new_overview.items():
+            if old_overview.get(k) != v:
+                formatted_k = str(k).replace("_", " ").title()
+                changes.append(f"Updated {formatted_k}")
+                overview_changed = True
+        if not overview_changed:
+            changes.append("Updated Overview section")
+            
+    # Architecture
+    old_arch = old_plan.get("architecture") or {}
+    new_arch = new_plan.get("architecture") or {}
+    if old_arch != new_arch and isinstance(old_arch, dict) and isinstance(new_arch, dict):
+        if old_arch.get("mermaid_diagram") != new_arch.get("mermaid_diagram"):
+            changes.append("Updated Architecture Diagram")
+        else:
+            changes.append("Updated Architecture details")
+            
+    # Tech Stack
+    old_ts = old_plan.get("tech_stack") or []
+    new_ts = new_plan.get("tech_stack") or []
+    if old_ts != new_ts and isinstance(old_ts, list) and isinstance(new_ts, list):
+        old_layers_tech = {item.get("layer"): item.get("technology") for item in old_ts if isinstance(item, dict)}
+        new_layers_tech = {item.get("layer"): item.get("technology") for item in new_ts if isinstance(item, dict)}
+        
+        tech_stack_changed = False
+        for layer, new_tech in new_layers_tech.items():
+            old_tech = old_layers_tech.get(layer)
+            if old_tech and old_tech != new_tech:
+                changes.append(f"Changed {layer} to {new_tech}")
+                tech_stack_changed = True
+            elif not old_tech:
+                changes.append(f"Added {layer} stack: {new_tech}")
+                tech_stack_changed = True
+        
+        if not tech_stack_changed:
+            changes.append("Updated Tech Stack details")
+            
+    # Timeline
+    old_timeline = old_plan.get("timeline") or []
+    new_timeline = new_plan.get("timeline") or []
+    if old_timeline != new_timeline:
+        changes.append("Adjusted Timeline / Milestones")
+    
+    return changes if changes else ["Saved Project Plan"]
+
 
 @router.patch("/{project_id}", response_model=MessageResponse)
 async def update_project(
@@ -190,14 +260,18 @@ async def update_project(
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    # 1. Check if owner
-    result = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).limit(1).execute()
+    # 1. Fetch old project
+    result = supabase_admin.table("projects").select("*").eq("id", project_id).limit(1).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    old_project = result.data[0]
+
+    # 2. Check access
     has_access = False
-    
-    if result.data:
+    if old_project["user_id"] == user["id"]:
         has_access = True
     else:
-        # 2. Check if editor
         member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).limit(1).execute()
         if member_res.data and member_res.data[0]["role"] == "editor":
             has_access = True
@@ -209,7 +283,22 @@ async def update_project(
     
     # Log Activity
     if "project_plan" in update_data:
-        log_activity(project_id, user["id"], "updated", "Project Plan")
+        old_plan = old_project.get("project_plan") or {}
+        new_plan = update_data.get("project_plan") or {}
+        changes = compute_plan_diff(old_plan, new_plan)
+        
+        primary_component = "Project Plan"
+        if len(changes) > 0:
+            if "Overview" in changes[0]:
+                primary_component = "the Overview"
+            elif "Architecture" in changes[0]:
+                primary_component = "the Architecture Diagram"
+            elif "Tech Stack" in changes[0] or "Changed" in changes[0] or "Added" in changes[0]:
+                primary_component = "the Tech Stack"
+            elif "Timeline" in changes[0]:
+                primary_component = "the Development Roadmap"
+                
+        log_activity(project_id, user["id"], "updated", primary_component, {"changes": changes})
     elif "architecture" in update_data:
         log_activity(project_id, user["id"], "updated", "System Architecture")
     elif "timeline" in update_data:

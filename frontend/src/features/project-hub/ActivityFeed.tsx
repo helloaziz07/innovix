@@ -11,6 +11,9 @@ interface ActivityLog {
   created_at: string
   user_full_name: string
   user_avatar?: string
+  metadata?: {
+    changes?: string[]
+  }
 }
 
 interface ActivityFeedProps {
@@ -115,6 +118,16 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                     </span>
                     <span className="break-words">{log.component}</span>
                   </div>
+                  
+                  {log.metadata?.changes && log.metadata.changes.length > 0 && (
+                    <div className="mt-1.5 pl-2 border-l-2 border-slate-200 dark:border-slate-700 space-y-1">
+                      {log.metadata.changes.map((change, idx) => (
+                        <p key={idx} className="text-[11px] text-slate-500 dark:text-slate-400">
+                          • {change}
+                        </p>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
               </div>
