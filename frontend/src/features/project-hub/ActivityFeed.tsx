@@ -13,6 +13,9 @@ interface ActivityLog {
   created_at: string
   user_full_name: string
   user_avatar?: string
+  metadata?: {
+    changes?: string[]
+  }
 }
 
 interface ActivityFeedProps {
@@ -178,7 +181,6 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                       </button>
                     )}
                   </div>
-
                   {/* Diff Viewer */}
                   {expandedLogs.has(log.id) && log.metadata?.changes && (
                     <div className="mt-2 text-xs border border-slate-200 dark:border-slate-700 rounded-md p-2 bg-slate-50 dark:bg-slate-800/50">

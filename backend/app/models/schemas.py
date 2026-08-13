@@ -68,6 +68,7 @@ class ProjectResponse(BaseModel):
     last_viewed_at: Optional[datetime] = None
     role: Optional[str] = None
     has_unread_changes: Optional[bool] = False
+    last_activity: Optional[dict] = None
 
 class ActivityLogResponse(BaseModel):
     id: UUID

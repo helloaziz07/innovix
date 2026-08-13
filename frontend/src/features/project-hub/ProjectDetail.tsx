@@ -396,9 +396,21 @@ export default function ProjectDetail() {
                 <Pin className={`w-4 h-4 ${activeProject.is_pinned ? 'fill-current rotate-45' : ''}`} />
               </button>
             </div>
-            <p className="text-sm text-muted-foreground max-w-2xl">
+            <p className="text-sm text-muted-foreground max-w-2xl mb-3">
               {activeProject.idea_text}
             </p>
+            {activeProject.last_activity && (
+              <div className="flex items-center gap-1.5 text-xs text-slate-500/80 font-medium bg-slate-100/50 dark:bg-slate-800/30 w-fit px-2.5 py-1.5 rounded-md border border-slate-200/50 dark:border-slate-700/50">
+                {activeProject.last_activity.user_avatar ? (
+                  <img src={activeProject.last_activity.user_avatar} alt="Avatar" className="w-4 h-4 rounded-full border border-slate-200 shadow-sm" />
+                ) : (
+                  <User className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  Last edited by {activeProject.last_activity.user_full_name?.split(' ')[0] || 'someone'} {formatRelativeTime(activeProject.last_activity.created_at)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Action buttons */}
