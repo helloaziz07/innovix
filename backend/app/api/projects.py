@@ -53,6 +53,25 @@ def log_activity(project_id: str, user_id: str, action: str, component: str, met
 
 
 
+def get_dict_differences(old_val: any, new_val: any, path: str = "") -> list:
+    changes = []
+    if isinstance(old_val, dict) and isinstance(new_val, dict):
+        for k in set(old_val.keys()).union(new_val.keys()):
+            new_path = f"{path}.{k}" if path else k
+            if k not in old_val:
+                changes.append({"field": new_path, "type": "added", "new": new_val[k]})
+            elif k not in new_val:
+                changes.append({"field": new_path, "type": "removed", "old": old_val[k]})
+            else:
+                changes.extend(get_dict_differences(old_val[k], new_val[k], new_path))
+    elif isinstance(old_val, list) and isinstance(new_val, list):
+        if old_val != new_val:
+             changes.append({"field": path, "type": "modified", "old": old_val, "new": new_val})
+    else:
+        if old_val != new_val:
+            changes.append({"field": path, "type": "modified", "old": old_val, "new": new_val})
+    return changes
+
 @router.post("/", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     project: ProjectCreate,
@@ -190,14 +209,18 @@ async def update_project(
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    # 1. Check if owner
-    result = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).limit(1).execute()
-    has_access = False
+    # 1. Fetch current project to check access and compute diff
+    result = supabase_admin.table("projects").select("*").eq("id", project_id).limit(1).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
+    current_project = result.data[0]
     
-    if result.data:
+    # 2. Check access
+    has_access = False
+    if current_project["user_id"] == user["id"]:
         has_access = True
     else:
-        # 2. Check if editor
         member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).limit(1).execute()
         if member_res.data and member_res.data[0]["role"] == "editor":
             has_access = True
@@ -205,19 +228,29 @@ async def update_project(
     if not has_access:
         raise HTTPException(status_code=403, detail="You do not have permission to update this project")
 
+    # 3. Compute diff
+    diff_changes = []
+    for key, new_val in update_data.items():
+        if key == "updated_at":
+            continue
+        old_val = current_project.get(key)
+        diff_changes.extend(get_dict_differences(old_val, new_val, path=key))
+        
+    metadata = {"changes": diff_changes} if diff_changes else {}
+
     supabase_admin.table("projects").update(update_data).eq("id", project_id).execute()
     
     # Log Activity
     if "project_plan" in update_data:
-        log_activity(project_id, user["id"], "updated", "Project Plan")
+        log_activity(project_id, user["id"], "updated", "Project Plan", metadata)
     elif "architecture" in update_data:
-        log_activity(project_id, user["id"], "updated", "System Architecture")
+        log_activity(project_id, user["id"], "updated", "System Architecture", metadata)
     elif "timeline" in update_data:
-        log_activity(project_id, user["id"], "updated", "Development Roadmap")
+        log_activity(project_id, user["id"], "updated", "Development Roadmap", metadata)
     elif "status" in update_data:
-        log_activity(project_id, user["id"], "updated", f"Status to {update_data['status']}")
+        log_activity(project_id, user["id"], "updated", f"Status to {update_data['status']}", metadata)
     else:
-        log_activity(project_id, user["id"], "updated", "Project Details")
+        log_activity(project_id, user["id"], "updated", "Project Details", metadata)
 
     return MessageResponse(message="Project updated successfully")
 
@@ -788,3 +821,24 @@ async def get_project_activity(
         })
         
     return enriched_logs
+
+
+@router.delete("/{project_id}/activity", response_model=MessageResponse)
+async def clear_project_activity(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Clear all activity logs for a project (Owner only)."""
+    # Verify ownership
+    project_res = (
+        supabase_admin.table("projects")
+        .select("id")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    if not project_res.data:
+        raise HTTPException(status_code=403, detail="Only the project owner can clear activity logs.")
+        
+    supabase_admin.table("project_activity_logs").delete().eq("project_id", project_id).execute()
+    return MessageResponse(message="Activity logs cleared successfully.")

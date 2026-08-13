@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Activity, Clock, User, RefreshCw } from 'lucide-react'
+import { Activity, Clock, User, RefreshCw, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
+import { useProjectStore } from '@/stores/projectStore'
 
 interface ActivityLog {
   id: string
@@ -8,6 +9,7 @@ interface ActivityLog {
   user_id: string
   action: string
   component: string
+  metadata?: any
   created_at: string
   user_full_name: string
   user_avatar?: string
@@ -20,6 +22,8 @@ interface ActivityFeedProps {
 export default function ActivityFeed({ projectId }: ActivityFeedProps) {
   const [logs, setLogs] = useState<ActivityLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
+  const activeProject = useProjectStore((state) => state.activeProject)
 
   const fetchLogs = async () => {
     try {
@@ -33,9 +37,29 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
     }
   }
 
+  const handleClearActivity = async () => {
+    if (!window.confirm('Are you sure you want to clear all activity logs? This cannot be undone.')) return;
+    try {
+      await projectsApi.clearActivity(projectId);
+      setLogs([]);
+    } catch (error) {
+      console.error('Failed to clear activity:', error);
+      alert('Failed to clear activity. Make sure you are the project owner.');
+    }
+  }
+
   useEffect(() => {
     fetchLogs()
   }, [projectId])
+
+  const toggleExpand = (id: string) => {
+    setExpandedLogs(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString)
@@ -57,6 +81,24 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
     }
   }
 
+  const formatFieldName = (fieldPath: string) => {
+    if (!fieldPath) return 'Unknown Change'
+    const parts = fieldPath.split('.')
+    const meaningfulParts = parts.filter(p => p !== 'project_plan' && isNaN(Number(p)))
+    if (meaningfulParts.length === 0) return 'Project Update'
+    
+    const part = meaningfulParts[0]
+    return part
+      .replace(/_/g, ' ')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/^./, str => str.toUpperCase())
+      .trim()
+  }
+
+  const getCartoonAvatar = (name: string) => {
+    return `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(name)}&backgroundColor=transparent`
+  }
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-border w-80 shrink-0">
       <div className="p-4 border-b border-border flex items-center justify-between sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">
@@ -64,13 +106,24 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
           <Activity className="w-5 h-5" />
           <h2 className="font-semibold">Project Activity</h2>
         </div>
-        <button 
-          onClick={fetchLogs}
-          className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title="Refresh activity"
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
+        <div className="flex items-center gap-1">
+          {activeProject?.role === 'owner' && logs.length > 0 && (
+            <button 
+              onClick={handleClearActivity}
+              className="p-1.5 text-red-400 hover:text-red-600 dark:hover:text-red-300 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              title="Clear activity history"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+          <button 
+            onClick={fetchLogs}
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Refresh activity"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
@@ -92,11 +145,7 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                 
                 {/* Avatar Icon */}
                 <div className="flex items-center justify-center w-9 h-9 rounded-full border-[3px] border-white dark:border-slate-900 bg-slate-100 dark:bg-slate-800 shrink-0 z-10 relative overflow-hidden">
-                  {log.user_avatar ? (
-                    <img src={log.user_avatar} alt={log.user_full_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-4 h-4 text-slate-400" />
-                  )}
+                  <img src={getCartoonAvatar(log.user_full_name)} alt={log.user_full_name} className="w-full h-full object-cover scale-110 mt-1" />
                 </div>
                 
                 {/* Content */}
@@ -109,12 +158,73 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                       {formatRelativeTime(log.created_at)}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400 leading-snug">
-                    <span className={`inline-block px-1 py-0 rounded text-[10px] font-medium mr-1.5 ${getActionColor(log.action)}`}>
-                      {log.action}
-                    </span>
-                    <span className="break-words">{log.component}</span>
+                  <div className="text-xs text-slate-600 dark:text-slate-400 leading-snug flex items-center justify-between">
+                    <div>
+                      <span className={`inline-block px-1 py-0 rounded text-[10px] font-medium mr-1.5 ${getActionColor(log.action)}`}>
+                        {log.action}
+                      </span>
+                      <span className="break-words">{log.component}</span>
+                    </div>
+                    {log.metadata?.changes && log.metadata.changes.length > 0 && (
+                      <button 
+                        onClick={() => toggleExpand(log.id)}
+                        className="text-[10px] text-blue-500 hover:text-blue-600 flex items-center gap-0.5 bg-blue-50 dark:bg-blue-500/10 px-1.5 py-0.5 rounded transition-colors"
+                      >
+                        {expandedLogs.has(log.id) ? (
+                          <><ChevronUp className="w-3 h-3"/> Hide</>
+                        ) : (
+                          <><ChevronDown className="w-3 h-3"/> View</>
+                        )}
+                      </button>
+                    )}
                   </div>
+
+                  {/* Diff Viewer */}
+                  {expandedLogs.has(log.id) && log.metadata?.changes && (
+                    <div className="mt-2 text-xs border border-slate-200 dark:border-slate-700 rounded-md p-2 bg-slate-50 dark:bg-slate-800/50">
+                      <div className="font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1 text-[11px]">
+                        <Activity className="w-3 h-3" /> Changes
+                      </div>
+                      <div className="space-y-2">
+                        {log.metadata.changes.map((change: any, idx: number) => {
+                          if (typeof change === 'string') {
+                            return (
+                              <div key={idx} className="text-[10px] text-slate-600 dark:text-slate-400">
+                                • {change}
+                              </div>
+                            )
+                          }
+                          return (
+                            <div key={idx}>
+                              <span className="font-mono text-[9px] bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded text-violet-600 dark:text-violet-400 block w-fit mb-1 font-semibold uppercase tracking-wider">
+                                {formatFieldName(change.field)}
+                              </span>
+                              {change.type === 'modified' && (
+                                <div className="flex flex-col gap-1">
+                                  <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                    {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                                  </div>
+                                  <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                    {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
+                                  </div>
+                                </div>
+                              )}
+                              {change.type === 'added' && (
+                                <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                  + {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
+                                </div>
+                              )}
+                              {change.type === 'removed' && (
+                                <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                  - {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
               </div>

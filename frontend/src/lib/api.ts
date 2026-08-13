@@ -91,6 +91,7 @@ export const projectsApi = {
   // --- Activity Tracking ---
   markViewed: (id: string) => api.post(`/projects/${id}/view`),
   getActivity: (id: string) => api.get(`/projects/${id}/activity`),
+  clearActivity: (id: string) => api.delete(`/projects/${id}/activity`),
 }
 
 /** Invitations */
