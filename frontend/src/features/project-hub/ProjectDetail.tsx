@@ -19,7 +19,8 @@ import {
   AlertTriangle,
   Pin,
   Users,
-  Activity
+  Activity,
+  User
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
@@ -85,6 +86,17 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: 'techstack', label: 'Tech Stack', icon: <Wrench className="w-4 h-4" /> },
   { key: 'timeline', label: 'Timeline', icon: <CalendarDays className="w-4 h-4" /> },
 ]
+
+const formatRelativeTime = (dateString: string) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  if (diffInSeconds < 60) return 'just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+  return `${Math.floor(diffInSeconds / 86400)}d ago`
+}
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()

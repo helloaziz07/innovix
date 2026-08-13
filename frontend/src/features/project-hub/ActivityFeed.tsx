@@ -189,6 +189,8 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                       </div>
                       <div className="space-y-2">
                         {log.metadata.changes.map((change: any, idx: number) => {
+                          if (!change) return null;
+                          
                           if (typeof change === 'string') {
                             return (
                               <div key={idx} className="text-[10px] text-slate-600 dark:text-slate-400">
@@ -196,31 +198,38 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                               </div>
                             )
                           }
-                          return (
-                            <div key={idx}>
-                              <span className="font-mono text-[9px] bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded text-violet-600 dark:text-violet-400 block w-fit mb-1 font-semibold uppercase tracking-wider">
-                                {formatFieldName(change.field)}
-                              </span>
-                              {change.type === 'modified' && (
-                                <div className="flex flex-col gap-1">
-                                  <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                    {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                          
+                          if (typeof change === 'object' && ('type' in change || 'field' in change)) {
+                            return (
+                              <div key={idx}>
+                                <span className="font-mono text-[9px] bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded text-violet-600 dark:text-violet-400 block w-fit mb-1 font-semibold uppercase tracking-wider">
+                                  {formatFieldName(String(change.field || ''))}
+                                </span>
+                                {change.type === 'modified' ? (
+                                  <div className="flex flex-col gap-1">
+                                    <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                      {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                                    </div>
+                                    <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                      {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
+                                    </div>
                                   </div>
+                                ) : change.type === 'added' ? (
                                   <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                    {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
+                                    + {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
                                   </div>
-                                </div>
-                              )}
-                              {change.type === 'added' && (
-                                <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                  + {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
-                                </div>
-                              )}
-                              {change.type === 'removed' && (
-                                <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                  - {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
-                                </div>
-                              )}
+                                ) : change.type === 'removed' ? (
+                                  <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
+                                    - {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                                  </div>
+                                ) : null}
+                              </div>
+                            )
+                          }
+                          
+                          return (
+                            <div key={idx} className="text-[10px] text-slate-600 dark:text-slate-400">
+                              • {JSON.stringify(change)}
                             </div>
                           )
                         })}
