@@ -6,7 +6,7 @@
  * Includes ThemeToggle, LanguageSwitcher, and i18n-translated labels.
  */
 
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -68,10 +68,10 @@ export default function Layout() {
         {/* Logo */}
         <div className={cn("h-16 flex items-center border-b border-border shrink-0 transition-all duration-300", collapsed ? "justify-center px-0" : "justify-between px-4")}>
           {!collapsed && (
-            <div className="flex items-center gap-2 overflow-hidden">
+            <Link to="/dashboard" className="flex items-center gap-2 overflow-hidden hover:opacity-80 transition-opacity">
               <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
               <span className="text-lg font-bold text-blue-600 dark:text-blue-400 truncate">Innovix</span>
-            </div>
+            </Link>
           )}
           
           <button

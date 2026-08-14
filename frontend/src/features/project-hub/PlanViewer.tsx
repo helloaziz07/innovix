@@ -33,6 +33,7 @@ interface PlanViewerProps {
   onNarrate?: () => void
   isNarrating?: boolean
   onUpdate?: (newPlan: Record<string, any>) => void
+  readOnly?: boolean
 }
 
 interface SectionProps {
@@ -77,7 +78,7 @@ function CollapsibleSection({ title, icon, defaultOpen = false, children }: Sect
   )
 }
 
-export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate }: PlanViewerProps) {
+export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, readOnly }: PlanViewerProps) {
   const [isEditing, setIsEditing] = useState(false)
   
   // Local state for edits
@@ -118,7 +119,7 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate }: P
     <div className="space-y-3">
       {onUpdate && (
         <div className="flex justify-end mb-2">
-          {!isEditing ? (
+          {!readOnly && !isEditing ? (
             <button
               onClick={handleEditToggle}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors font-medium"
@@ -126,7 +127,7 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate }: P
               <Edit2 className="w-3.5 h-3.5" />
               Edit Overview
             </button>
-          ) : (
+          ) : isEditing ? (
             <div className="flex items-center gap-2">
               <button
                 onClick={handleEditToggle}

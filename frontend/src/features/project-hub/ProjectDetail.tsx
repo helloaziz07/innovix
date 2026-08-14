@@ -428,49 +428,53 @@ export default function ProjectDetail() {
           {/* Action buttons */}
           <div className="flex items-center gap-2 flex-shrink-0">
             {!hasPlan ? (
-              <button
-                onClick={() => setConfigModalOpen(true)}
-                disabled={isGeneratingPlan}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-                           bg-gradient-to-r from-violet-600 to-purple-600
-                           text-white text-sm font-medium
-                           hover:from-blue-600 hover:to-indigo-600
-                           disabled:opacity-50 disabled:cursor-not-allowed
-                           transition-all shadow-lg shadow-violet-500/20"
-                id="generate-plan-btn"
-              >
-                {isGeneratingPlan ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating Plan...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    Generate Plan
-                  </>
-                )}
-              </button>
-            ) : (
-              <>
-                <ExportButton projectId={activeProject.id} projectTitle={activeProject.title} />
+              activeProject.role !== 'viewer' ? (
                 <button
                   onClick={() => setConfigModalOpen(true)}
                   disabled={isGeneratingPlan}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg
-                             bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm
-                             text-muted-foreground hover:bg-slate-100 dark:bg-slate-800
-                             hover:text-foreground transition-colors
-                             disabled:opacity-50"
-                  title="Re-generate plan"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl
+                             bg-gradient-to-r from-violet-600 to-purple-600
+                             text-white text-sm font-medium
+                             hover:from-blue-600 hover:to-indigo-600
+                             disabled:opacity-50 disabled:cursor-not-allowed
+                             transition-all shadow-lg shadow-violet-500/20"
+                  id="generate-plan-btn"
                 >
                   {isGeneratingPlan ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating Plan...
+                    </>
                   ) : (
-                    <Sparkles className="w-4 h-4" />
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      Generate Plan
+                    </>
                   )}
-                  Regenerate
                 </button>
+              ) : null
+            ) : (
+              <>
+                <ExportButton projectId={activeProject.id} projectTitle={activeProject.title} />
+                {activeProject.role !== 'viewer' && (
+                  <button
+                    onClick={() => setConfigModalOpen(true)}
+                    disabled={isGeneratingPlan}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg
+                               bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-sm
+                               text-muted-foreground hover:bg-slate-100 dark:bg-slate-800
+                               hover:text-foreground transition-colors
+                               disabled:opacity-50"
+                    title="Re-generate plan"
+                  >
+                    {isGeneratingPlan ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                    Regenerate
+                  </button>
+                )}
                 <button
                   onClick={() => setTeamModalOpen(true)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg
@@ -542,7 +546,8 @@ export default function ProjectDetail() {
                 plan={plan as Record<string, unknown>} 
                 onNarrate={handleNarrate} 
                 isNarrating={isNarrating} 
-                onUpdate={async (newPlan) => {
+                readOnly={activeProject.role === 'viewer'}
+                onUpdate={activeProject.role === 'viewer' ? undefined : async (newPlan) => {
                   if (!id || !activeProject) return
                   // Optimistically update the UI
                   updateProject(id, { project_plan: newPlan })
@@ -570,7 +575,7 @@ export default function ProjectDetail() {
               <MermaidErrorBoundary>
                 <ArchitectureDiagram
                   architecture={(plan as Record<string, unknown>).architecture as Record<string, unknown> | undefined}
-                  onUpdate={async (newMermaid) => {
+                  onUpdate={activeProject.role === 'viewer' ? undefined : async (newMermaid) => {
                     if (!id || !activeProject) return
                     const currentArch = (plan as Record<string, unknown>).architecture as Record<string, unknown> || {}
                     const updatedArch = { ...currentArch, mermaid_diagram: newMermaid }
@@ -592,7 +597,7 @@ export default function ProjectDetail() {
                 techStack={
                   (((plan as Record<string, unknown>).tech_stack as Array<{ layer: string; technology: string; justification: string; alternatives?: string[] }>) || [])
                 }
-                onUpdate={async (newStack) => {
+                onUpdate={activeProject.role === 'viewer' ? undefined : async (newStack) => {
                   if (!id || !activeProject) return
                   const updatedPlan = { ...plan, tech_stack: newStack }
                   // Optimistically update the UI
