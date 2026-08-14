@@ -37,7 +37,7 @@ def get_project_plan_prompt(idea: str, research_summary: str, sources_text: str,
 
 ## Instructions
 Generate a complete, structured project plan as a JSON object. Each section must be detailed and actionable.
-CRITICAL: For arrays like `existing_solutions`, `innovation_opportunities`, `tech_stack`, `api_datasets`, and `github_repos`, you MUST extract and provide at least 5 to 8 high-quality items each based on the research. Do not be lazy.
+CRITICAL: For arrays like `existing_solutions`, `innovation_opportunities`, `api_datasets`, and `github_repos`, you MUST extract and provide at least 5 to 8 high-quality items each based on the research. Do not be lazy.
 CRITICAL: The ENTIRE JSON output MUST be written in English, regardless of the language of the user's idea. Do not translate the JSON keys or values.
 
 Return ONLY a valid JSON object (no markdown code fences) with this exact structure:
@@ -67,14 +67,6 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
             "description": "What's missing and how to differentiate",
             "impact": "high/medium/low",
             "feasibility": "high/medium/low"
-        }}
-    ],
-    "tech_stack": [
-        {{
-            "layer": "Frontend/Backend/Database/AI/DevOps/etc.",
-            "technology": "Technology name",
-            "justification": "Why this choice",
-            "alternatives": ["Alt 1", "Alt 2"]
         }}
     ],
     "api_datasets": [

@@ -65,7 +65,7 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm }: Ge
                   </div>
                   <div>
                     <h3 className={cn("font-semibold mb-1", mode === 'full' ? "text-blue-500 dark:text-blue-400" : "text-gray-700 dark:text-slate-200")}>
-                      Want to build Full plan
+                      Want to build the full plan from scratch
                     </h3>
                     <p className="text-sm text-gray-500 dark:text-slate-400">
                       Generates the entire project specification including the main plan, system architecture, and development roadmap.
@@ -112,8 +112,9 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm }: Ge
                             onChange={(e) => setTargetPhase(e.target.value)}
                             className="w-full bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 text-sm text-gray-900 dark:text-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                           >
-                            <option value="main_plan">Foundation ( Project Overview )</option>
-                            <option value="architecture">BluePrint ( Architecture and Tech Stack )</option>
+                            <option value="main_plan">Option 1: Foundation (Overview Only)</option>
+                            <option value="architecture">Option 2: Blueprint (Overview + Architecture + Tech Stack)</option>
+                            <option value="roadmap">Option 3: Timeline & Roadmap Only</option>
                           </select>
                         </motion.div>
                       )}

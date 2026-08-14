@@ -30,14 +30,39 @@ async def get_dashboard(user: dict = Depends(get_current_user)):
         user_id = user["id"]
 
         # ---- Projects ----
-        projects_result = (
+        # Get projects where user is owner
+        owner_projects_result = (
             supabase_admin.table("projects")
             .select("id, title, status, updated_at")
             .eq("user_id", user_id)
             .order("updated_at", desc=True)
             .execute()
         )
-        projects = projects_result.data or []
+        owner_projects = owner_projects_result.data or []
+
+        # Get projects where user is a member
+        member_res = (
+            supabase_admin.table("project_members")
+            .select("project_id")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        member_project_ids = [m["project_id"] for m in (member_res.data or [])]
+        
+        member_projects = []
+        if member_project_ids:
+            member_projects_result = (
+                supabase_admin.table("projects")
+                .select("id, title, status, updated_at")
+                .in_("id", member_project_ids)
+                .order("updated_at", desc=True)
+                .execute()
+            )
+            member_projects = member_projects_result.data or []
+
+        # Combine and deduplicate
+        all_projects_map = {p["id"]: p for p in owner_projects + member_projects}
+        projects = sorted(list(all_projects_map.values()), key=lambda x: x.get("updated_at") or "", reverse=True)
 
         status_counts = {}
         for p in projects:

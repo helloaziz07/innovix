@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/projects', icon: FolderKanban, label: 'My Projects' },
+  { to: '/projects', icon: FolderKanban, label: 'Project Hub' },
 ]
 
 export default function Layout() {

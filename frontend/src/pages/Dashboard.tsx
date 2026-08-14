@@ -14,7 +14,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { dashboardApi, projectsApi } from '@/lib/api'
 import { 
   Rocket, 
-  Lightbulb,
+  Blocks,
   ArrowRight,
   Network,
   Layers,
@@ -38,8 +38,8 @@ function ProjectOverviewCards({ stats }: { stats: any }) {
   const navigate = useNavigate()
   const cards = [
     { label: 'Total Projects', value: stats.total_projects || 0, icon: Layers, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-[#3B82F6]/10', status: 'all' },
-    { label: 'Planning', value: stats.projects_by_status?.planning || 0, icon: Lightbulb, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-[#F59E0B]/10', status: 'planning' },
-    { label: 'Architecting', value: stats.projects_by_status?.architecting || 0, icon: Network, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-[#A855F7]/10', status: 'architecting' },
+    { label: 'Foundation', value: stats.projects_by_status?.planning || 0, icon: Blocks, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-[#F59E0B]/10', status: 'planning' },
+    { label: 'BluePrint', value: stats.projects_by_status?.architecting || 0, icon: Network, color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-[#A855F7]/10', status: 'architecting' },
     { label: 'Completed', value: stats.projects_by_status?.completed || 0, icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-[#10B981]/10', status: 'completed' },
   ]
 
@@ -549,7 +549,7 @@ export default function Dashboard() {
           {/* AI Suggestions */}
           <div>
             <h2 className="text-sm font-semibold flex items-center gap-2 mb-3 text-slate-900 dark:text-white">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <Sparkles className="w-4 h-4 text-amber-500" />
               AI Suggestions
             </h2>
             <Card className="bg-white dark:bg-[#111827] shadow-sm border border-slate-100 dark:border-[#1F2937]">

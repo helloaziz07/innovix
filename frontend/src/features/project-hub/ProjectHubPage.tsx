@@ -5,8 +5,8 @@
  * create project modal, and navigation to project details.
  */
 
-import { useState, useEffect, useCallback } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus,
@@ -14,7 +14,7 @@ import {
   Search,
   Clock,
   ChevronRight,
-  Lightbulb,
+  Blocks,
   CheckCircle2,
   Network,
   Pin,
@@ -31,7 +31,7 @@ const STATUS_CONFIG: Record<
   planning: {
     label: 'Foundation',
     color: 'text-amber-600',
-    icon: <Lightbulb className="w-5 h-5 text-amber-600" />,
+    icon: <Blocks className="w-5 h-5 text-amber-600" />,
     bg: 'bg-amber-100',
     hoverClass: 'hover:border-amber-400 hover:ring-1 hover:ring-amber-400 hover:shadow-amber-400/20',
   },
@@ -186,9 +186,9 @@ export default function ProjectHubPage() {
   const [newTitle, setNewTitle] = useState('')
   const [newIdea, setNewIdea] = useState('')
   const [creating, setCreating] = useState(false)
+  const [activeTab, setActiveTab] = useState<'individual' | 'shared-by-me' | 'shared-to-me'>('individual')
   const [filterStatus, setFilterStatus] = useState<string>(initialStatus)
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<'individual' | 'shared-by-me' | 'shared-to-me'>('individual')
 
   const fetchProjects = useCallback(async () => {
     setLoading(true)
@@ -212,6 +212,17 @@ export default function ProjectHubPage() {
       setFilterStatus(status)
     }
   }, [searchParams])
+
+  const isMounted = useRef(false)
+
+  // Reset filter to 'all' whenever the user switches tabs (skip initial mount)
+  useEffect(() => {
+    if (isMounted.current) {
+      setFilterStatus('all')
+    } else {
+      isMounted.current = true
+    }
+  }, [activeTab])
 
   const handleCreate = async () => {
     if (!newTitle.trim() || !newIdea.trim()) return
@@ -257,7 +268,7 @@ export default function ProjectHubPage() {
       >
         <div>
           <h1 className="text-[32px] font-bold text-slate-900 tracking-tight mb-1">
-            Projects Directory
+            Project Hub
           </h1>
           <p className="text-slate-500">
             Manage and track your active ideation pipelines.
@@ -292,9 +303,9 @@ export default function ProjectHubPage() {
       {/* Tabs */}
       <div className="flex gap-6 border-b border-gray-200 mb-8 mt-2">
         {[
-          { id: 'individual', label: 'Individual Projects' },
-          { id: 'shared-by-me', label: 'Shared By Me' },
-          { id: 'shared-to-me', label: 'Shared to Me' }
+          { id: 'individual', label: `My Projects (${individualProjects.length})` },
+          { id: 'shared-by-me', label: `Shared By Me (${sharedByMe.length})` },
+          { id: 'shared-to-me', label: `Shared to Me (${sharedToMe.length})` }
         ].map(tab => (
           <button
             key={tab.id}

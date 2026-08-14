@@ -24,6 +24,17 @@ import {
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
+import { useAuthStore } from '@/stores/authStore'
+import { supabase } from '@/lib/supabase'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+
+interface ActiveUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url?: string;
+  active_tab?: string;
+}
 import PlanViewer from './PlanViewer'
 import ArchitectureDiagram from './ArchitectureDiagram'
 import TechStackCards from './TechStackCards'
@@ -116,6 +127,10 @@ export default function ProjectDetail() {
     resetPipeline,
   } = useProjectStore()
 
+  const { user } = useAuthStore()
+  const [activeUsers, setActiveUsers] = useState<ActiveUser[]>([])
+  const channelRef = useRef<RealtimeChannel | null>(null)
+
   // TTS State
   const [isNarrating, setIsNarrating] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
@@ -155,6 +170,61 @@ export default function ProjectDetail() {
     return () => setActiveProject(null)
   }, [fetchProject, setActiveProject])
 
+  // Realtime Presence and Sync
+  useEffect(() => {
+    if (!id || !user) return
+
+    const channel = supabase.channel(`project-${id}`, {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    })
+
+    channelRef.current = channel
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const newState = channel.presenceState()
+        const users = Object.values(newState).map((presence: any) => presence[0] as ActiveUser)
+        setActiveUsers(users)
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects', filter: `id=eq.${id}` }, () => {
+        // Silently fetch the updated project to sync state
+        fetchProject()
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            id: user.id,
+            name: user.full_name || user.email,
+            email: user.email,
+            avatar_url: user.avatar_url,
+            active_tab: activeTab,
+          })
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [id, user, fetchProject]) // intentionally omitting activeTab to avoid re-subscribing the whole channel
+
+  // Update presence when tab changes
+  useEffect(() => {
+    if (!channelRef.current || !user) return
+    
+    // Only track if channel is already active (to avoid errors before connection)
+    channelRef.current.track({
+      id: user.id,
+      name: user.full_name || user.email,
+      email: user.email,
+      avatar_url: user.avatar_url,
+      active_tab: activeTab,
+    }).catch(console.warn)
+  }, [activeTab, user])
+
   const handleTogglePin = async () => {
     if (!activeProject || !id) return
     const newPinnedStatus = !activeProject.is_pinned
@@ -188,6 +258,36 @@ export default function ProjectDetail() {
   const handleGeneratePlan = async (targetPhase: string = 'full') => {
     setConfigModalOpen(false)
     if (!id || isGeneratingPlan) return
+
+    // Safety checks for specific phases
+    let hasDataForPhase = false;
+    let phaseName = "";
+
+    if (targetPhase === 'full') {
+      hasDataForPhase = (activeProject?.project_plan && Object.keys(activeProject.project_plan).length > 0) || 
+                        (activeProject?.architecture && Object.keys(activeProject.architecture).length > 0) || 
+                        (activeProject?.timeline && Object.keys(activeProject.timeline).length > 0);
+      phaseName = "project";
+    } else if (targetPhase === 'main_plan') {
+      hasDataForPhase = activeProject?.project_plan && Object.keys(activeProject.project_plan).length > 0;
+      phaseName = "Foundation (Overview)";
+    } else if (targetPhase === 'architecture') {
+      hasDataForPhase = activeProject?.architecture && Object.keys(activeProject.architecture).length > 0;
+      phaseName = "Blueprint (Architecture & Tech Stack)";
+    } else if (targetPhase === 'roadmap') {
+      hasDataForPhase = activeProject?.timeline && Object.keys(activeProject.timeline).length > 0;
+      phaseName = "Timeline & Roadmap";
+    }
+
+    if (hasDataForPhase) {
+      const msg = targetPhase === 'full' 
+        ? "You have already generated parts of this project. Building the full plan from scratch will overwrite all your manual edits. Are you sure you want to continue?"
+        : `You have already generated the ${phaseName} for this project. Regenerating it will overwrite all your manual edits in this section. Are you sure you want to continue?`;
+        
+      const confirmed = window.confirm(msg);
+      if (!confirmed) return;
+    }
+
     setGenerationTarget(targetPhase)
     setGeneratingPlan(true)
     setError('')
@@ -486,6 +586,35 @@ export default function ProjectDetail() {
                   <Users className="w-4 h-4" />
                   Share
                 </button>
+                {/* Active Users */}
+                {activeUsers.length > 0 && (
+                  <div className="flex -space-x-2 mr-2">
+                    {activeUsers.map((u) => (
+                      <div key={u.id} className="relative group">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 border-2 border-white dark:border-slate-900 flex items-center justify-center overflow-hidden shadow-sm">
+                          {u.avatar_url ? (
+                            <img src={u.avatar_url} alt={u.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                              {u.name.substring(0, 2).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-[1.5px] border-white dark:border-slate-900 rounded-full animate-pulse"></span>
+                        
+                        {/* Tooltip */}
+                        <div className="absolute top-full mt-1.5 right-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs px-2 py-1.5 rounded whitespace-nowrap z-50 pointer-events-none flex flex-col items-center leading-tight shadow-xl">
+                          <span className="font-semibold">{u.name}</span>
+                          {u.active_tab && (
+                            <span className="text-slate-300 text-[10px] capitalize font-medium mt-0.5">
+                              Viewing {u.active_tab.replace('_', ' ')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <button
                   onClick={() => setIsActivityOpen(!isActivityOpen)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg

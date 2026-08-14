@@ -6,39 +6,47 @@ Called separately from the main plan to keep context focused and diagram quality
 """
 
 
-def get_architecture_prompt(idea: str, tech_stack_json: str) -> str:
+def get_architecture_prompt(idea: str) -> str:
     """
     Build the architecture generation prompt.
 
     Args:
         idea: The user's project idea.
-        tech_stack_json: JSON string of the recommended tech stack from the plan.
 
     Returns:
         The full prompt string to send to Gemini.
     """
-    return f"""You are a senior software architect. Design the system architecture for the following project.
+    return f"""You are a senior software architect. Design the system architecture and tech stack for the following project.
 
 ## Project Idea
 "{idea}"
 
-## Recommended Tech Stack
-{tech_stack_json}
-
 ## Instructions
 Generate a system architecture with two parts:
 
-1. **Mermaid Diagram** — A `graph TB` or `graph LR` Mermaid diagram showing:
+1. **Tech Stack** — A curated list of technologies to use for this project.
+   - You MUST extract and provide at least 5 to 8 high-quality items. Do not be lazy.
+   - For each technology, include the layer (e.g., Frontend, Backend, Database), a justification, and alternatives.
+
+2. **Mermaid Diagram** — A `graph TB` or `graph LR` Mermaid diagram showing:
    - Major components/services (frontend, backend, database, external APIs, etc.)
    - Data flow arrows between components
    - Group related components in subgraphs with descriptive labels
    - Use meaningful node labels (not just abbreviations)
 
-2. **Component Breakdown** — A list of components with descriptions.
+3. **Component Breakdown** — A list of components with descriptions.
 
 Return ONLY a valid JSON object (no markdown code fences):
 
 {{
+    "tech_stack": [
+        {{
+            "layer": "Frontend/Backend/Database/AI/DevOps/etc.",
+            "technology": "Technology name",
+            "justification": "Why this choice",
+            "alternatives": ["Alt 1", "Alt 2"]
+        }}
+    ],
     "mermaid_diagram": "graph TB\\n    subgraph \\"Frontend\\"\\n        ...",
     "components": [
         {{

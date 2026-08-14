@@ -93,17 +93,22 @@ async def generate_project_plan(
     _check_cancelled()
     await _emit("fetching_research", "Research context loaded.", 10)
 
-    # Initialize empty partials
-    architecture = {}
-    roadmap = {}
+    # Initialize partials from existing project data
+    main_plan = project.get("project_plan") or {}
+    architecture = project.get("architecture") or {}
+    tech_stack = project.get("tech_stack") or []
+    roadmap = project.get("timeline") or {}
 
     # ─── Stage 2: Main Plan (Gemini call 1) ─────────────────
-    await _emit("main_plan", "Analyzing idea and generating plan structure...", 15)
-    _check_cancelled()
-    main_plan = await _generate_main_plan(idea, research_summary, sources_text, gap_analysis)
-    logger.info(f"[ProjectHub] Main plan generated for project {project_id}")
-    _check_cancelled()
-    await _emit("main_plan", "Plan structure complete.", 40 if target_phase == "full" else 90)
+    if not main_plan or target_phase == "main_plan" or target_phase == "full":
+        await _emit("main_plan", "Analyzing idea and generating plan structure...", 15)
+        _check_cancelled()
+        main_plan = await _generate_main_plan(idea, research_summary, sources_text, gap_analysis)
+        logger.info(f"[ProjectHub] Main plan generated for project {project_id}")
+        _check_cancelled()
+        await _emit("main_plan", "Plan structure complete.", 40 if target_phase == "full" else 90)
+    else:
+        await _emit("main_plan", "Using existing Foundation plan...", 40)
 
     if target_phase == "main_plan":
         # Save early
@@ -114,19 +119,25 @@ async def generate_project_plan(
         return full_plan
 
     # ─── Stage 3: Architecture (Gemini call 2) ──────────────
-    await _emit("architecture", "Designing system architecture...", 45)
-    _check_cancelled()
-    tech_stack_json = json.dumps(main_plan.get("tech_stack", []), indent=2)
-    architecture = await _generate_architecture(idea, tech_stack_json)
-    logger.info(f"[ProjectHub] Architecture generated for project {project_id}")
-    _check_cancelled()
-    await _emit("architecture", "Architecture design complete.", 70 if target_phase == "full" else 90)
+    if not architecture or target_phase == "architecture" or target_phase == "full":
+        await _emit("architecture", "Designing system architecture...", 45)
+        _check_cancelled()
+        architecture = await _generate_architecture(idea)
+        logger.info(f"[ProjectHub] Architecture generated for project {project_id}")
+        _check_cancelled()
+        await _emit("architecture", "Architecture design complete.", 70 if target_phase == "full" else 90)
+        
+        # Extract tech_stack from the newly generated architecture
+        tech_stack = architecture.pop("tech_stack", [])
+    else:
+        await _emit("architecture", "Using existing Architecture & Tech Stack...", 70)
 
     if target_phase == "architecture":
         # Save early
         await _emit("saving", "Saving partial plan to database...", 92)
         full_plan = {
             **main_plan,
+            "tech_stack": tech_stack,
             "architecture": architecture,
         }
         await _persist_plan(project_id, full_plan, target_phase)
@@ -134,18 +145,23 @@ async def generate_project_plan(
         return full_plan
 
     # ─── Stage 4: Roadmap (Gemini call 3) ───────────────────
-    await _emit("roadmap", "Building development roadmap...", 75)
-    _check_cancelled()
-    architecture_json = json.dumps(architecture.get("components", []), indent=2)
-    roadmap = await _generate_roadmap(idea, tech_stack_json, architecture_json)
-    logger.info(f"[ProjectHub] Roadmap generated for project {project_id}")
-    _check_cancelled()
-    await _emit("roadmap", "Roadmap complete.", 90)
+    if not roadmap or target_phase == "roadmap" or target_phase == "full":
+        await _emit("roadmap", "Building development roadmap...", 75)
+        _check_cancelled()
+        tech_stack_json = json.dumps(tech_stack, indent=2)
+        architecture_json = json.dumps(architecture.get("components", []), indent=2)
+        roadmap = await _generate_roadmap(idea, tech_stack_json, architecture_json)
+        logger.info(f"[ProjectHub] Roadmap generated for project {project_id}")
+        _check_cancelled()
+        await _emit("roadmap", "Roadmap complete.", 90)
+    else:
+        await _emit("roadmap", "Using existing Roadmap...", 90)
 
     # ─── Stage 5: Persist ───────────────────────────────────
     await _emit("saving", "Saving plan to database...", 92)
     full_plan = {
         **main_plan,
+        "tech_stack": tech_stack,
         "architecture": architecture,
         "roadmap": roadmap.get("roadmap", []),
         "timeline": roadmap.get("timeline", []),
@@ -171,17 +187,29 @@ async def _get_project(project_id: str, user_id: str) -> dict:
             supabase_admin.table("projects")
             .select("*")
             .eq("id", project_id)
-            .eq("user_id", user_id)
-            .single()
             .execute()
         )
         if not result.data:
-            raise ValueError(f"Project {project_id} not found or access denied")
-        return result.data
+            raise ValueError(f"Project {project_id} not found")
+            
+        project = result.data[0]
+        if project.get("user_id") != user_id:
+            member_res = (
+                supabase_admin.table("project_members")
+                .select("*")
+                .eq("project_id", project_id)
+                .eq("user_id", user_id)
+                .limit(1)
+                .execute()
+            )
+            if not member_res.data:
+                raise ValueError(f"Project {project_id} not found or access denied")
+                
+        return project
     except Exception as e:
-        if "not found" in str(e).lower() or "access denied" in str(e).lower():
-            raise ValueError(f"Project {project_id} not found or access denied")
-        raise
+        if isinstance(e, ValueError):
+            raise
+        raise ValueError(f"Project {project_id} not found or access denied")
 
 
 async def _get_research_context(project_id: str) -> tuple[str, str, str]:
@@ -240,9 +268,9 @@ async def _generate_main_plan(
     return await _call_gemini_json(prompt, max_tokens=4000)
 
 
-async def _generate_architecture(idea: str, tech_stack_json: str) -> Dict[str, Any]:
+async def _generate_architecture(idea: str) -> Dict[str, Any]:
     """Generate architecture via Gemini (Step 2)."""
-    prompt = get_architecture_prompt(idea, tech_stack_json)
+    prompt = get_architecture_prompt(idea)
     return await _call_gemini_json(prompt, max_tokens=3000)
 
 

@@ -64,6 +64,7 @@ class ProjectResponse(BaseModel):
     architecture: Optional[dict] = None
     timeline: Optional[dict] = None
     is_pinned: bool = False
+    is_shared: bool = False
     created_at: datetime
     updated_at: datetime
     last_viewed_at: Optional[datetime] = None

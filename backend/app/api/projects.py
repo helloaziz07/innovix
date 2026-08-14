@@ -690,14 +690,26 @@ async def narrate_project(
         supabase_admin.table("projects")
         .select("*")
         .eq("id", project_id)
-        .eq("user_id", user["id"])
-        .single()
         .execute()
     )
     if not result.data:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    project = result.data
+    project = result.data[0]
+
+    # Check authorization (owner or member)
+    if project.get("user_id") != user["id"]:
+        member_res = (
+            supabase_admin.table("project_members")
+            .select("*")
+            .eq("project_id", project_id)
+            .eq("user_id", user["id"])
+            .limit(1)
+            .execute()
+        )
+        if not member_res.data:
+            raise HTTPException(status_code=403, detail="Not authorized to access this project")
+
     if not project.get("project_plan"):
         raise HTTPException(status_code=400, detail="No plan generated yet.")
 
@@ -713,7 +725,12 @@ async def narrate_project(
             detail="Speech synthesis failed. Check Sarvam API key and try again.",
         )
 
-    filename = f"{project.get('title', 'project').replace(' ', '_')}_narration.wav"
+    raw_title = project.get('title', 'project')
+    safe_title = "".join(c for c in raw_title if ord(c) < 128).strip()
+    if not safe_title:
+        safe_title = "project"
+    filename = f"{safe_title.replace(' ', '_')}_narration.wav"
+    
     return Response(
         content=audio_bytes,
         media_type="audio/wav",
