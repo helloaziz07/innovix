@@ -90,9 +90,9 @@ function ProjectCard({ project, idx }: { project: Project, idx: number }) {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: idx * 0.05 }}
       onClick={() => navigate(`/projects/${project.id}`)}
-      className={`bg-white rounded-xl p-6 cursor-pointer group
-                 border border-gray-200 shadow-sm
-                 ${statusCfg?.hoverClass || 'hover:border-gray-400'}
+      className={`bg-white dark:bg-[#111827] rounded-xl p-6 cursor-pointer group
+                 border border-gray-200 dark:border-slate-800 shadow-sm
+                 ${statusCfg?.hoverClass || 'hover:border-gray-400 dark:hover:border-slate-600'}
                  hover:shadow-md transition-all duration-200
                  flex flex-col relative overflow-hidden`}
     >
@@ -110,13 +110,13 @@ function ProjectCard({ project, idx }: { project: Project, idx: number }) {
 
       {/* Status + Delete */}
       <div className="flex items-center justify-between mb-5">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${statusCfg?.bg || 'bg-gray-100'}`}>
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${statusCfg?.bg || 'bg-gray-100 dark:bg-slate-800'}`}>
           {statusCfg?.icon}
         </div>
         <div className="flex items-center gap-3">
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full
-                        text-[10px] font-bold tracking-widest uppercase ${statusCfg?.bg || 'bg-gray-100'} ${statusCfg?.color || 'text-gray-600'}`}
+                        text-[10px] font-bold tracking-widest uppercase ${statusCfg?.bg || 'bg-gray-100 dark:bg-slate-800'} ${statusCfg?.color || 'text-gray-600 dark:text-slate-300'}`}
           >
             {statusCfg?.label ?? project.status}
           </span>
@@ -148,20 +148,20 @@ function ProjectCard({ project, idx }: { project: Project, idx: number }) {
       </div>
 
       {/* Title + Idea */}
-      <h3 className="font-bold text-xl text-slate-900 mb-2 line-clamp-2">
+      <h3 className="font-bold text-xl text-slate-900 dark:text-white mb-2 line-clamp-2">
         {project.title}
       </h3>
-      <p className="text-sm text-slate-500 line-clamp-2 mb-8 flex-1 leading-relaxed">
+      <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-8 flex-1 leading-relaxed">
         {project.idea_text}
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-xs text-slate-400 border-t border-gray-100 pt-5 mt-auto">
+      <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 border-t border-gray-100 dark:border-slate-800/50 pt-5 mt-auto">
         <span className="flex items-center gap-1.5 font-medium">
           <Clock className="w-3.5 h-3.5" />
           {new Date(project.updated_at).toLocaleDateString()}
         </span>
-        <span className="flex items-center gap-1 text-blue-600 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity">
           {hasPlan ? 'View Plan' : 'Open'}
           <ChevronRight className="w-3.5 h-3.5" />
         </span>
@@ -259,7 +259,7 @@ export default function ProjectHubPage() {
   const currentProjects = activeTab === 'individual' ? individualProjects : activeTab === 'shared-by-me' ? sharedByMe : sharedToMe
 
   return (
-    <div className="min-h-full p-6 lg:p-12 max-w-[1400px] mx-auto bg-gray-50/50">
+    <div className="min-h-full p-6 lg:p-12 max-w-[1400px] mx-auto bg-gray-50/50 dark:bg-transparent">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -267,10 +267,10 @@ export default function ProjectHubPage() {
         className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10"
       >
         <div>
-          <h1 className="text-[32px] font-bold text-slate-900 tracking-tight mb-1">
+          <h1 className="text-[32px] font-bold text-slate-900 dark:text-white tracking-tight mb-1">
             Project Hub
           </h1>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-slate-400">
             Manage and track your active ideation pipelines.
           </p>
         </div>
@@ -284,8 +284,8 @@ export default function ProjectHubPage() {
               className={`px-4 py-2 rounded-lg text-sm transition-all border
                 ${
                   filterStatus === status
-                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-semibold'
-                    : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50 font-medium'
+                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-semibold dark:bg-indigo-500 dark:border-indigo-500'
+                    : 'bg-white border-gray-200 text-slate-600 hover:bg-gray-50 font-medium dark:bg-[#111827] dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800/80'
                 }`}
             >
               {status === 'all'
@@ -301,7 +301,7 @@ export default function ProjectHubPage() {
       </motion.div>
 
       {/* Tabs */}
-      <div className="flex gap-6 border-b border-gray-200 mb-8 mt-2">
+      <div className="flex gap-6 border-b border-gray-200 dark:border-slate-800 mb-8 mt-2">
         {[
           { id: 'individual', label: `My Projects (${individualProjects.length})` },
           { id: 'shared-by-me', label: `Shared By Me (${sharedByMe.length})` },
@@ -312,8 +312,8 @@ export default function ProjectHubPage() {
             onClick={() => setActiveTab(tab.id as any)}
             className={`pb-3 -mb-[1px] text-sm font-semibold transition-colors border-b-2 ${
               activeTab === tab.id
-                ? 'text-indigo-600 border-indigo-600'
-                : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'
+                ? 'text-indigo-600 border-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
+                : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:border-slate-600'
             }`}
           >
             {tab.label}
@@ -336,9 +336,9 @@ export default function ProjectHubPage() {
             placeholder="Search projects..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white border border-gray-200
-                       text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none
-                       focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all shadow-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-white dark:bg-[#111827] border border-gray-200 dark:border-slate-800
+                       text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none
+                       focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-500/40 focus:border-indigo-500 transition-all shadow-sm"
           />
         </div>
 
@@ -378,13 +378,13 @@ export default function ProjectHubPage() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 text-center bg-white border border-gray-200 rounded-xl shadow-sm"
+          className="flex flex-col items-center justify-center py-20 text-center bg-white dark:bg-[#111827] border border-gray-200 dark:border-slate-800 rounded-xl shadow-sm"
         >
-          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-            <FolderOpen className="w-8 h-8 text-slate-400" />
+          <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-4">
+            <FolderOpen className="w-8 h-8 text-slate-400 dark:text-slate-500" />
           </div>
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">No projects yet</h3>
-          <p className="text-sm text-slate-500 mb-6 max-w-sm">
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">No projects yet</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
             {activeTab === 'shared-to-me' 
               ? "No one has shared a project with you yet. When they do, it will appear here." 
               : activeTab === 'shared-by-me'
@@ -428,15 +428,15 @@ export default function ProjectHubPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl"
+              className="bg-white dark:bg-[#111827] border dark:border-slate-800 rounded-2xl p-6 w-full max-w-lg shadow-2xl"
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
                   <Rocket className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">New Project</h2>
-                  <p className="text-sm text-slate-500">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">New Project</h2>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     Describe your idea and we'll generate a complete plan
                   </p>
                 </div>
@@ -444,7 +444,7 @@ export default function ProjectHubPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
                     Project Title
                   </label>
                   <input
@@ -452,8 +452,8 @@ export default function ProjectHubPage() {
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="e.g., AI-Powered Study Planner"
-                    className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-200
-                               text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none
+                    className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-[#111827] border border-gray-200 dark:border-slate-700
+                               text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none
                                focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
                     id="new-project-title"
                     autoFocus
@@ -461,7 +461,7 @@ export default function ProjectHubPage() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-semibold text-slate-700 mb-1.5 block">
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
                     Your Idea
                   </label>
                   <textarea
@@ -469,8 +469,8 @@ export default function ProjectHubPage() {
                     onChange={(e) => setNewIdea(e.target.value)}
                     placeholder="Describe your project idea in detail — what problem it solves, who it's for, any specific features you have in mind..."
                     rows={4}
-                    className="w-full px-4 py-2.5 rounded-lg bg-white border border-gray-200
-                               text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none
+                    className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-[#111827] border border-gray-200 dark:border-slate-700
+                               text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none
                                focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors resize-none"
                     id="new-project-idea"
                   />
@@ -479,8 +479,7 @@ export default function ProjectHubPage() {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => setShowCreate(false)}
-                    className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-gray-200
-                               text-sm font-medium text-slate-600 hover:bg-gray-50 transition-colors"
+                    className="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     Cancel
                   </button>

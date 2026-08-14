@@ -101,9 +101,10 @@ export default function TechStackCards({ techStack, onUpdate }: TechStackCardsPr
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTechName.trim() || !onUpdate) return
+    const layerToUse = existingLayers.includes(newTechLayer) ? newTechLayer : existingLayers[0] || 'Frontend'
     
     const newItem: TechItem = {
-      layer: newTechLayer,
+      layer: layerToUse,
       technology: newTechName,
       justification: newTechJustification || 'Manually added by user.',
       alternatives: []
@@ -131,8 +132,23 @@ export default function TechStackCards({ techStack, onUpdate }: TechStackCardsPr
     return acc
   }, {})
 
+  const existingLayers = Array.from(new Set(techStack.map(t => t.layer || 'Other'))).sort()
+  const activeNewTechLayer = existingLayers.includes(newTechLayer) ? newTechLayer : existingLayers[0] || 'Frontend'
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+    <div className="space-y-6">
+      {onUpdate && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium bg-blue-50 dark:bg-blue-500/10 px-4 py-2 rounded-lg transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Custom Technology
+          </button>
+        </div>
+      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
       {Object.entries(grouped).map(([layer, items], groupIdx) => {
         const config = getLayerConfig(layer)
 
@@ -211,46 +227,44 @@ export default function TechStackCards({ techStack, onUpdate }: TechStackCardsPr
           </motion.div>
         )
       })}
+      </div>
 
-      {/* Add Technology Form */}
-      {onUpdate && (
-        <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-6">
-          <AnimatePresence>
-            {!isAdding ? (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsAdding(true)}
-                className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium bg-blue-50 dark:bg-blue-500/10 px-4 py-2 rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Add Custom Technology
-              </motion.button>
-            ) : (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
+      {/* Add Technology Modal */}
+      <AnimatePresence>
+        {isAdding && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="w-full max-w-lg"
+            >
+              <form
                 onSubmit={handleAddSubmit}
-                className="bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800 p-5 rounded-xl max-w-2xl"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-2xl relative"
               >
-                <h4 className="text-sm font-semibold mb-4">Add Custom Technology</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setIsAdding(false)}
+                  className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-full transition-colors z-10"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                  <h4 className="text-xl font-bold text-slate-900 dark:text-white">Add Custom Technology</h4>
+                </div>
+                
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-[10px] uppercase font-bold text-slate-500 block mb-1">Layer / Category</label>
                     <select
-                      value={newTechLayer}
+                      value={activeNewTechLayer}
                       onChange={(e) => setNewTechLayer(e.target.value)}
                       className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
                     >
-                      <option value="Frontend">Frontend</option>
-                      <option value="Backend">Backend</option>
-                      <option value="Database">Database</option>
-                      <option value="AI">AI & ML</option>
-                      <option value="DevOps">DevOps</option>
-                      <option value="Tools">Tools</option>
-                      <option value="Auth">Auth & Security</option>
+                      {existingLayers.map(layer => (
+                        <option key={layer} value={layer}>{layer}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -274,26 +288,26 @@ export default function TechStackCards({ techStack, onUpdate }: TechStackCardsPr
                     />
                   </div>
                 </div>
-                <div className="flex gap-2 justify-end">
+                <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex gap-3 justify-end">
                   <button
                     type="button"
                     onClick={() => setIsAdding(false)}
-                    className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+                    className="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                    className="px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm"
                   >
                     Add Technology
                   </button>
                 </div>
-              </motion.form>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
