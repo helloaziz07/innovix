@@ -46,7 +46,7 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
     "problem_validation": {{
         "is_worth_solving": true/false,
         "market_size": "Description of market size and potential",
-        "business_perspective": "Analyze monetization potential (subscriptions, selling, etc.). ONLY provide a Business POV if the idea can actually make money. If there is absolutely no business perspective or monetization potential, output EXACTLY: 'No business perspective exists'.",
+        "business_perspective": "Provide a highly detailed, structured business analysis focusing specifically on REVENUE and PROFITABILITY. Explain EXACTLY how the core features of this project will generate revenue and help the user become profitable. Use bullet points with clear headings (e.g., 'Revenue Generation Strategy', 'Path to Profitability', 'Monetization Models'). Provide deep, actionable details. ONLY provide a Business POV if the idea can actually make money. If there is absolutely no business perspective or monetization potential, output EXACTLY: 'No scope of Business Perspective'.",
         "target_users": ["User type 1", "User type 2", ...],
         "pain_points": ["Pain point 1", "Pain point 2", ...],
         "summary": "2-3 sentence validation summary"

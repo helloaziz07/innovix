@@ -132,7 +132,7 @@ export default function TechStackCards({ techStack, onUpdate }: TechStackCardsPr
   }, {})
 
   return (
-    <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
       {Object.entries(grouped).map(([layer, items], groupIdx) => {
         const config = getLayerConfig(layer)
 
@@ -158,7 +158,7 @@ export default function TechStackCards({ techStack, onUpdate }: TechStackCardsPr
             </div>
 
             {/* Tech Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="flex flex-col gap-3">
               {items.map((item, idx) => (
                 <motion.div
                   key={idx}
