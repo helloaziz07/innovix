@@ -337,7 +337,7 @@ Takes DeepSearch results + user idea as input, generates:
 - `GET /api/projects` — List user's projects
 
 #### [NEW] `frontend/src/features/project-hub/`
-- `ProjectHubPage.tsx` — Grid view of all user projects with status cards, dynamic hover styles, pin and trash actions
+- `ProjectHubPage.tsx` — 3-tab layout (Individual, Shared By Me, Shared to Me) with grid view of all user projects, dynamic hover styles, pin and trash actions
 - `ProjectDetail.tsx` — Full project view with tabs and Audio Narrator Listen/Stop control
 - `GenerationConfigModal.tsx` — Pre-generation scoped config popup
 - `GenerationPipeline.tsx` — Real-time visual tracking stepper

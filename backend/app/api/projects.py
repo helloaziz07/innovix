@@ -120,7 +120,8 @@ async def list_projects(
     shared_owner_ids = set()
     if owner_project_ids:
         shared_res = supabase_admin.table("project_members").select("project_id").in_("project_id", owner_project_ids).execute()
-        shared_owner_ids = {m["project_id"] for m in (shared_res.data or [])}
+        invites_res = supabase_admin.table("project_invitations").select("project_id").in_("project_id", owner_project_ids).execute()
+        shared_owner_ids = {m["project_id"] for m in (shared_res.data or [])} | {i["project_id"] for i in (invites_res.data or [])}
 
     for p in owner_projects:
         p["role"] = "owner"

@@ -92,6 +92,8 @@ Takes a project idea (optionally enriched with DeepSearch results) and generates
 | Feature | Description | Files |
 |---------|-------------|-------|
 | Project CRUD | Full create, read, update, delete operations for projects with status tracking | `projects.py`, `ProjectHubPage.tsx` |
+| 3-Tab Project Hub | Centralized 3-tab layout (Individual, Shared By Me, Shared to Me) for all projects | `ProjectHubPage.tsx` |
+| Instant Share Transfer | Backend dynamically checks `project_members` and `project_invitations` so projects move to "Shared By Me" the moment an invite is sent | `projects.py` |
 | Pinned Projects | Users can pin projects to the sidebar for quick access. Pin button available on project cards in My Projects and Dashboard. | `Layout.tsx`, `Dashboard.tsx`, `ProjectHubPage.tsx` |
 | Stage 1 — Main Plan | Gemini generates: problem validation, existing solution comparison, innovation opportunities, recommended tech stack, API/dataset recommendations, relevant GitHub repos, documentation links | `generator.py`, `project_plan_prompt.py` |
 | Stage 2 — Architecture | Gemini generates: a complete Mermaid system architecture diagram, component breakdown with responsibilities, and design patterns | `generator.py`, `architecture_prompt.py` |
