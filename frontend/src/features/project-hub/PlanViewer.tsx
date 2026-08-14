@@ -144,7 +144,7 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
                 Save Changes
               </button>
             </div>
-          )}
+          ) : null}
         </div>
       )}
       {/* Problem Validation */}
