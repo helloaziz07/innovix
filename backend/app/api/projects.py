@@ -66,7 +66,19 @@ def get_dict_differences(old_val: any, new_val: any, path: str = "") -> list:
                 changes.extend(get_dict_differences(old_val[k], new_val[k], new_path))
     elif isinstance(old_val, list) and isinstance(new_val, list):
         if old_val != new_val:
-             changes.append({"field": path, "type": "modified", "old": old_val, "new": new_val})
+            # Smart list diffing if lists contain objects with a distinguishing key (like tech_stack)
+            if all(isinstance(x, dict) and "layer" in x for x in old_val) and all(isinstance(x, dict) and "layer" in x for x in new_val):
+                old_dict = {x["layer"]: x for x in old_val}
+                new_dict = {x["layer"]: x for x in new_val}
+                for k in set(old_dict.keys()).union(new_dict.keys()):
+                    if k not in old_dict:
+                        changes.append({"field": path, "type": "added", "new": new_dict[k]})
+                    elif k not in new_dict:
+                        changes.append({"field": path, "type": "removed", "old": old_dict[k]})
+                    elif old_dict[k] != new_dict[k]:
+                        changes.append({"field": path, "type": "modified", "old": old_dict[k], "new": new_dict[k]})
+            else:
+                changes.append({"field": path, "type": "modified", "old": old_val, "new": new_val})
     else:
         if old_val != new_val:
             changes.append({"field": path, "type": "modified", "old": old_val, "new": new_val})
@@ -300,8 +312,24 @@ async def update_project(
 
     # 3. Compute diff
     diff_changes = []
+    
+    # Handle partial project_plan updates perfectly
+    if "project_plan_update" in update_data:
+        plan_updates = update_data.pop("project_plan_update")
+        if plan_updates:
+            current_plan = current_project.get("project_plan") or {}
+            new_plan = current_plan.copy()
+            for k, v in plan_updates.items():
+                new_plan[k] = v
+            update_data["project_plan"] = new_plan
+            
+            # Compute deep diffs ONLY for the explicitly updated sections
+            for k, v in plan_updates.items():
+                old_val = current_plan.get(k)
+                diff_changes.extend(get_dict_differences(old_val, v, path=f"project_plan.{k}"))
+                
     for key, new_val in update_data.items():
-        if key == "updated_at":
+        if key in ("updated_at", "project_plan"):
             continue
         old_val = current_project.get(key)
         diff_changes.extend(get_dict_differences(old_val, new_val, path=key))

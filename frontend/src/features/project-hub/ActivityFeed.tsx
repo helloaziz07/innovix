@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Activity, Clock, User, RefreshCw, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
+import { diffWordsWithSpace } from 'diff'
 
 interface ActivityLog {
   id: string
@@ -100,6 +101,63 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
 
   const getCartoonAvatar = (name: string) => {
     return `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(name)}&backgroundColor=transparent`
+  }
+
+  const renderDiffValue = (val: any) => {
+    if (typeof val === 'object' && val !== null) {
+      if ('layer' in val && 'technology' in val) {
+        return (
+          <div className="space-y-0.5 mt-1 inline-block w-full align-top">
+            <div className="flex flex-wrap gap-x-1.5">
+              <span className="font-semibold opacity-75">Layer:</span> <span>{val.layer}</span>
+            </div>
+            <div className="flex flex-wrap gap-x-1.5">
+              <span className="font-semibold opacity-75">Tech:</span> <span>{val.technology}</span>
+            </div>
+            {val.alternatives && Array.isArray(val.alternatives) && val.alternatives.length > 0 && (
+              <div className="flex flex-wrap gap-x-1.5">
+                <span className="font-semibold opacity-75">Alternatives:</span> <span>{val.alternatives.join(', ')}</span>
+              </div>
+            )}
+            {val.justification && (
+              <div className="flex flex-col gap-0.5 mt-1">
+                <span className="font-semibold opacity-75">Justification:</span>
+                <span className="text-[9px] opacity-90 leading-tight">{val.justification}</span>
+              </div>
+            )}
+          </div>
+        )
+      }
+      return (
+        <div className="space-y-0.5 mt-1 inline-block w-full align-top">
+          {Object.entries(val).map(([k, v], i) => (
+            <div key={i} className="flex flex-wrap gap-x-1.5">
+              <span className="font-semibold opacity-75 capitalize">{k.replace(/_/g, ' ')}:</span> 
+              <span className="break-all">{Array.isArray(v) ? v.join(', ') : typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    return <span className="inline-block">{String(val)}</span>
+  }
+
+  const renderTextDiff = (oldText: string, newText: string) => {
+    const diff = diffWordsWithSpace(oldText, newText)
+    
+    return (
+      <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto border border-border/50 font-sans leading-relaxed">
+        {diff.map((part, index) => {
+          if (part.added) {
+            return <ins key={index} className="text-green-600 dark:text-green-400 bg-green-500/20 no-underline rounded-[2px]">{part.value}</ins>
+          }
+          if (part.removed) {
+            return <del key={index} className="text-red-600 dark:text-red-400 bg-red-500/20 rounded-[2px] line-through opacity-80">{part.value}</del>
+          }
+          return <span key={index} className="text-slate-700 dark:text-slate-300">{part.value}</span>
+        })}
+      </div>
+    )
   }
 
   return (
@@ -206,21 +264,25 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
                                   {formatFieldName(String(change.field || ''))}
                                 </span>
                                 {change.type === 'modified' ? (
-                                  <div className="flex flex-col gap-1">
-                                    <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                      {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                                  typeof change.old === 'string' && typeof change.new === 'string' ? (
+                                    renderTextDiff(change.old, change.new)
+                                  ) : (
+                                    <div className="flex flex-col gap-1">
+                                      <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto flex items-start gap-1">
+                                        <span className="font-bold shrink-0 opacity-70">-</span> <div className="flex-1">{renderDiffValue(change.old)}</div>
+                                      </div>
+                                      <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto flex items-start gap-1">
+                                        <span className="font-bold shrink-0 opacity-70">+</span> <div className="flex-1">{renderDiffValue(change.new)}</div>
+                                      </div>
                                     </div>
-                                    <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                      {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
-                                    </div>
-                                  </div>
+                                  )
                                 ) : change.type === 'added' ? (
-                                  <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                    + {typeof change.new === 'object' ? JSON.stringify(change.new) : String(change.new)}
+                                  <div className="text-green-600 dark:text-green-400 bg-green-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto flex items-start gap-1">
+                                    <span className="font-bold shrink-0 opacity-70">+</span> <div className="flex-1">{renderDiffValue(change.new)}</div>
                                   </div>
                                 ) : change.type === 'removed' ? (
-                                  <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto">
-                                    - {typeof change.old === 'object' ? JSON.stringify(change.old) : String(change.old)}
+                                  <div className="text-red-600 dark:text-red-400 bg-red-500/10 p-1.5 rounded break-words whitespace-pre-wrap text-[10px] max-h-48 overflow-y-auto flex items-start gap-1">
+                                    <span className="font-bold shrink-0 opacity-70">-</span> <div className="flex-1">{renderDiffValue(change.old)}</div>
                                   </div>
                                 ) : null}
                               </div>

@@ -45,6 +45,7 @@ class ProjectUpdate(BaseModel):
     title: Optional[str] = None
     status: Optional[str] = None
     project_plan: Optional[dict] = None
+    project_plan_update: Optional[dict] = None
     tech_stack: Optional[Any] = None
     architecture: Optional[dict] = None
     timeline: Optional[dict] = None

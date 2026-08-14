@@ -547,8 +547,17 @@ export default function ProjectDetail() {
                   // Optimistically update the UI
                   updateProject(id, { project_plan: newPlan })
                   try {
-                    // Update the backend
-                    await projectsApi.update(id, { project_plan: newPlan })
+                    // Send only changed fields to the backend to prevent concurrent editing overwrites
+                    const project_plan_update = Object.keys(newPlan).reduce((acc: any, key) => {
+                      if (JSON.stringify((newPlan as any)[key]) !== JSON.stringify((plan as any)[key])) {
+                        acc[key] = (newPlan as any)[key]
+                      }
+                      return acc
+                    }, {})
+                    
+                    if (Object.keys(project_plan_update).length > 0) {
+                      await projectsApi.update(id, { project_plan_update })
+                    }
                   } catch (err) {
                     console.error("Failed to update project plan:", err)
                     // Revert on error
@@ -569,7 +578,7 @@ export default function ProjectDetail() {
                     
                     updateProject(id, { project_plan: updatedPlan })
                     try {
-                      await projectsApi.update(id, { project_plan: updatedPlan })
+                      await projectsApi.update(id, { project_plan_update: { architecture: updatedArch } })
                     } catch (err) {
                       console.error("Failed to update architecture:", err)
                       updateProject(id, { project_plan: plan })
@@ -589,8 +598,8 @@ export default function ProjectDetail() {
                   // Optimistically update the UI
                   updateProject(id, { project_plan: updatedPlan })
                   try {
-                    // Update the backend
-                    await projectsApi.update(id, { project_plan: updatedPlan })
+                    // Update the backend safely using partial updates
+                    await projectsApi.update(id, { project_plan_update: { tech_stack: newStack } })
                   } catch (err) {
                     console.error("Failed to update tech stack:", err)
                     // Revert on error
