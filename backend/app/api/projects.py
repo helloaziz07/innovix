@@ -116,8 +116,15 @@ async def list_projects(
     if is_pinned is not None:
         query = query.eq("is_pinned", is_pinned)
     owner_projects = query.execute().data or []
+    owner_project_ids = [p["id"] for p in owner_projects]
+    shared_owner_ids = set()
+    if owner_project_ids:
+        shared_res = supabase_admin.table("project_members").select("project_id").in_("project_id", owner_project_ids).execute()
+        shared_owner_ids = {m["project_id"] for m in (shared_res.data or [])}
+
     for p in owner_projects:
         p["role"] = "owner"
+        p["is_shared"] = p["id"] in shared_owner_ids
     
     # Get projects where user is a member
     member_res = supabase_admin.table("project_members").select("project_id, role").eq("user_id", user["id"]).execute()
@@ -132,6 +139,7 @@ async def list_projects(
         member_projects = query2.execute().data or []
         for p in member_projects:
             p["role"] = member_roles.get(p["id"], "viewer")
+            p["is_shared"] = True
         
     # Combine and deduplicate just in case
     all_projects = list({p["id"]: p for p in owner_projects + member_projects}.values())

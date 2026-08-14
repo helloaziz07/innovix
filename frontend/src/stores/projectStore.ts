@@ -34,6 +34,7 @@ export interface Project {
   last_viewed_at?: string | null
   has_unread_changes?: boolean
   role?: string
+  is_shared?: boolean
 }
 
 interface ProjectState {

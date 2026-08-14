@@ -51,7 +51,7 @@ const STATUS_CONFIG: Record<
   },
 }
 
-function ProjectCard({ project, idx, isShared = false }: { project: Project, idx: number, isShared?: boolean }) {
+function ProjectCard({ project, idx }: { project: Project, idx: number }) {
   const navigate = useNavigate()
   const { updateProject, removeProject } = useProjectStore()
   
@@ -89,7 +89,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: idx * 0.05 }}
-      onClick={() => navigate(isShared ? `/shared-projects/${project.id}` : `/projects/${project.id}`)}
+      onClick={() => navigate(`/projects/${project.id}`)}
       className={`bg-white rounded-xl p-6 cursor-pointer group
                  border border-gray-200 shadow-sm
                  ${statusCfg?.hoverClass || 'hover:border-gray-400'}
@@ -97,7 +97,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
                  flex flex-col relative overflow-hidden`}
     >
       {/* Role Badge (if shared) */}
-      {isShared && project.role && (
+      {project.role && project.role !== 'owner' && (
         <div className="absolute top-0 right-0 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-bl-xl z-10">
           {project.role}
         </div>
@@ -120,7 +120,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
           >
             {statusCfg?.label ?? project.status}
           </span>
-          {!isShared && (
+          {(!project.role || project.role === 'owner') && (
             <button
               onClick={handleTogglePin}
               className={`p-1.5 rounded-md transition-all ${
@@ -133,7 +133,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
               <Pin className={`w-4 h-4 ${project.is_pinned ? 'fill-current rotate-45' : ''}`} />
             </button>
           )}
-          {(!isShared || project.role === 'owner') && (
+          {(!project.role || project.role === 'owner') && (
             <button
               onClick={handleDelete}
               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md
@@ -170,7 +170,7 @@ function ProjectCard({ project, idx, isShared = false }: { project: Project, idx
   )
 }
 
-export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: boolean }) {
+export default function ProjectHubPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialStatus = searchParams.get('status') || 'all'
@@ -188,6 +188,7 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
   const [creating, setCreating] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>(initialStatus)
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState<'individual' | 'shared-by-me' | 'shared-to-me'>('individual')
 
   const fetchProjects = useCallback(async () => {
     setLoading(true)
@@ -240,8 +241,11 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
     return matchesStatus && matchesSearch
   })
 
-  const myProjects = filtered.filter(p => !p.role || p.role === 'owner')
-  const sharedProjects = filtered.filter(p => p.role && p.role !== 'owner')
+  const individualProjects = filtered.filter(p => (!p.role || p.role === 'owner') && !p.is_shared)
+  const sharedByMe = filtered.filter(p => (!p.role || p.role === 'owner') && p.is_shared)
+  const sharedToMe = filtered.filter(p => p.role && p.role !== 'owner')
+
+  const currentProjects = activeTab === 'individual' ? individualProjects : activeTab === 'shared-by-me' ? sharedByMe : sharedToMe
 
   return (
     <div className="min-h-full p-6 lg:p-12 max-w-[1400px] mx-auto bg-gray-50/50">
@@ -285,6 +289,27 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
         </div>
       </motion.div>
 
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-gray-200 mb-8 mt-2">
+        {[
+          { id: 'individual', label: 'Individual Projects' },
+          { id: 'shared-by-me', label: 'Shared By Me' },
+          { id: 'shared-to-me', label: 'Shared to Me' }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            className={`pb-3 -mb-[1px] text-sm font-semibold transition-colors border-b-2 ${
+              activeTab === tab.id
+                ? 'text-indigo-600 border-indigo-600'
+                : 'text-slate-500 border-transparent hover:text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Search and Action Row */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -306,7 +331,7 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
           />
         </div>
 
-        {!sharedOnly && (
+        {activeTab !== 'shared-to-me' && (
           <button
             onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg
@@ -338,7 +363,7 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
             </div>
           ))}
         </div>
-      ) : (sharedOnly ? sharedProjects.length === 0 : myProjects.length === 0) ? (
+      ) : currentProjects.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -349,11 +374,13 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
           </div>
           <h3 className="text-xl font-semibold text-slate-900 mb-2">No projects yet</h3>
           <p className="text-sm text-slate-500 mb-6 max-w-sm">
-            {sharedOnly 
+            {activeTab === 'shared-to-me' 
               ? "No one has shared a project with you yet. When they do, it will appear here." 
+              : activeTab === 'shared-by-me'
+              ? "You haven't shared any projects with teammates yet."
               : "Create your first project to get AI-generated plans with architecture, tech stack, and development roadmaps."}
           </p>
-          {!sharedOnly && (
+          {activeTab !== 'shared-to-me' && (
             <button
               onClick={() => setShowCreate(true)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-lg
@@ -366,44 +393,12 @@ export default function ProjectHubPage({ sharedOnly = false }: { sharedOnly?: bo
           )}
         </motion.div>
       ) : (
-        <div className="space-y-12">
-          {/* My Projects */}
-          {!sharedOnly && myProjects.length > 0 && (
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                My Projects
-                <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs font-semibold">
-                  {myProjects.length}
-                </span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <AnimatePresence>
-                  {myProjects.map((project, idx) => (
-                    <ProjectCard key={project.id} project={project} idx={idx} />
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-          )}
-
-          {/* Shared with Me */}
-          {sharedOnly && sharedProjects.length > 0 && (
-            <div>
-              <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                Shared Projects
-                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-semibold">
-                  {sharedProjects.length}
-                </span>
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <AnimatePresence>
-                  {sharedProjects.map((project, idx) => (
-                    <ProjectCard key={project.id} project={project} idx={idx} isShared={true} />
-                  ))}
-                </AnimatePresence>
-              </div>
-            </div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {currentProjects.map((project, idx) => (
+              <ProjectCard key={project.id} project={project} idx={idx} />
+            ))}
+          </AnimatePresence>
         </div>
       )}
 

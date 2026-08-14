@@ -83,9 +83,7 @@ export default function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/deepsearch" element={<DeepSearchPage />} />
               <Route path="/projects" element={<ProjectHubPage />} />
-              <Route path="/shared-projects" element={<ProjectHubPage sharedOnly={true} />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
-              <Route path="/shared-projects/:id" element={<ProjectDetail />} />
               <Route path="/agents" element={<AgentsPage />} />
             </Route>
 

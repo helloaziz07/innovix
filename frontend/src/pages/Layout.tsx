@@ -21,7 +21,6 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/projects', icon: FolderKanban, label: 'My Projects' },
-  { to: '/shared-projects', icon: Users, label: 'Shared projects' },
 ]
 
 export default function Layout() {
