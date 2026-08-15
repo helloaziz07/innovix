@@ -120,3 +120,11 @@ tmp/
 # Docker
 docker-compose.override.yml
 .docker/
+
+# ==============================================================================
+# Project Documentation (Internal)
+# ==============================================================================
+IMPLEMENTATION_PLAN.md
+Polished_features.md
+PROJECT_FEATURES.md
+CHANGELOG.md
