@@ -44,6 +44,7 @@ import GenerationConfigModal from './GenerationConfigModal'
 import GenerationPipeline from './GenerationPipeline'
 import TeamSettingsModal from './TeamSettingsModal'
 import ActivityFeed from './ActivityFeed'
+import ProjectSidekick from './ProjectSidekick'
 
 /**
  * Error boundary for Mermaid diagram rendering.
@@ -824,6 +825,9 @@ export default function ProjectDetail() {
       {isActivityOpen && (
         <ActivityFeed projectId={id!} />
       )}
+      
+      {/* AI Sidekick */}
+      {id && <ProjectSidekick projectId={id} />}
     </div>
   )
 }

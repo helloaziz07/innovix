@@ -23,7 +23,8 @@ from app.models.schemas import (
     ProjectInvitationCreate,
     ProjectInvitationResponse,
     ActivityLogResponse,
-    MagicEditRequest
+    MagicEditRequest,
+    ChatRequest
 )
 import secrets
 from app.services.email_service import send_project_invitation
@@ -1048,3 +1049,96 @@ async def clear_project_activity(
         
     supabase_admin.table("project_activity_logs").delete().eq("project_id", project_id).execute()
     return MessageResponse(message="Activity logs cleared successfully.")
+
+
+@router.post("/{project_id}/chat")
+async def chat_with_project(
+    project_id: str,
+    request: ChatRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Chat with the AI about the current project using SSE streaming."""
+    # 1. Fetch project data
+    project_res = (
+        supabase_admin.table("projects")
+        .select("*")
+        .eq("id", project_id)
+        .execute()
+    )
+    if not project_res.data:
+        raise HTTPException(status_code=404, detail="Project not found.")
+        
+    project = project_res.data[0]
+    
+    # 2. Check access
+    has_access = False
+    if project["user_id"] == user["id"]:
+        has_access = True
+    else:
+        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).limit(1).execute()
+        if member_res.data:
+            has_access = True
+            
+    if not has_access:
+        raise HTTPException(status_code=403, detail="You do not have access to this project.")
+        
+    # 3. Construct Context
+    context_data = {
+        "title": project.get("title", ""),
+        "idea": project.get("idea_text", ""),
+        "overview": project.get("project_plan", {}).get("overview", {}),
+        "tech_stack": project.get("project_plan", {}).get("tech_stack", []),
+        "architecture": project.get("project_plan", {}).get("architecture", {}),
+        "timeline": project.get("project_plan", {}).get("timeline", []),
+    }
+    
+    system_instruction = f"""You are Innovix Sidekick, an expert AI assistant dedicated to helping the user with their software project.
+Here is the current state of the project you are assisting with:
+```json
+{json.dumps(context_data, indent=2)}
+```
+
+INSTRUCTIONS:
+1. Use the provided project context to answer the user's questions specifically and accurately.
+2. If they ask for recommendations (e.g., database schema, deployment strategy), tailor your advice to their chosen Tech Stack and Architecture.
+3. Be concise, professional, and highly technical when appropriate. Format responses nicely using Markdown.
+"""
+
+    gemini_client = genai.Client(api_key=settings.gemini_api_key)
+    
+    # Convert history
+    history = []
+    # Gemini requires 'user' or 'model' as roles
+    for msg in request.messages[:-1]:
+        role = "user" if msg.role == "user" else "model"
+        history.append({"role": role, "parts": [{"text": msg.content}]})
+        
+    latest_message = request.messages[-1].content
+
+    async def event_generator():
+        try:
+            chat = gemini_client.chats.create(
+                model="gemini-3.5-flash-lite",
+                config={"system_instruction": system_instruction}
+            )
+            
+            # Send history if any (Wait, gemini_client.chats.create doesn't natively take history array like this in this exact SDK version, let's just pass history in the create call if possible, or append it to the prompt)
+            # A safer approach for stateless API is to pass the history as part of the messages or prompt.
+            # Actually, `genai.Client` chats.create takes history.
+            chat = gemini_client.chats.create(
+                model="gemini-3.5-flash-lite",
+                config={"system_instruction": system_instruction},
+                history=history
+            )
+
+            response_stream = chat.send_message_stream(latest_message)
+            for chunk in response_stream:
+                if chunk.text:
+                    yield f"data: {json.dumps({'text': chunk.text})}\n\n"
+                    
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            logger.error(f"Chat stream error: {e}")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

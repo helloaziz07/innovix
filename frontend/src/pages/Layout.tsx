@@ -19,8 +19,8 @@ import { projectsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/projects', icon: FolderKanban, label: 'Project Hub' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', id: 'nav-dashboard' },
+  { to: '/projects', icon: FolderKanban, label: 'Project Hub', id: 'nav-projects' },
 ]
 
 export default function Layout() {
@@ -88,6 +88,7 @@ export default function Layout() {
             <NavLink
               key={navItem.to}
               to={navItem.to}
+              id={navItem.id}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all duration-200',

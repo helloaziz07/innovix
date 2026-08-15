@@ -290,12 +290,15 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
     }
   }
 
-  if (!architecture) {
+  if (!architecture || Object.keys(architecture).length === 0) {
     return (
-      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center">
-        <Layers className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-        <p className="text-sm text-muted-foreground">
-          No architecture data available. Generate a plan first.
+      <div className="flex flex-col items-center justify-center py-24 px-4 text-center bg-slate-50/50 dark:bg-[#111827]/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+        <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100 dark:border-slate-700">
+          <Layers className="w-8 h-8 text-slate-400" />
+        </div>
+        <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300 mb-1.5">No Architecture Data</h3>
+        <p className="text-sm text-slate-500 max-w-sm">
+          Generate a full project plan to visualize your system's layout.
         </p>
       </div>
     )

@@ -223,6 +223,18 @@ class StreamToken(BaseModel):
 
 
 # ============================================
+# Chat Sidekick
+# ============================================
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatRequest(BaseModel):
+    messages: List[ChatMessage]
+
+
+# ============================================
 # Common
 # ============================================
 

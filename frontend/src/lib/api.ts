@@ -94,6 +94,19 @@ export const projectsApi = {
   markViewed: (id: string) => api.post(`/projects/${id}/view`),
   getActivity: (id: string) => api.get(`/projects/${id}/activity`),
   clearActivity: (id: string) => api.delete(`/projects/${id}/activity`),
+  chatStream: async (id: string, messages: { role: string; content: string }[], signal?: AbortSignal): Promise<Response> => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token || ''
+    return fetch(`${API_BASE}/api/projects/${id}/chat`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ messages }),
+      signal,
+    })
+  },
 }
 
 /** Invitations */
