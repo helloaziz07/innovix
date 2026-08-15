@@ -19,8 +19,8 @@ import { projectsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', id: 'nav-dashboard' },
-  { to: '/projects', icon: FolderKanban, label: 'Project Hub', id: 'nav-projects' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/projects', icon: FolderKanban, label: 'Project Hub' },
 ]
 
 export default function Layout() {
@@ -41,7 +41,7 @@ export default function Layout() {
 
   useEffect(() => {
     fetchPinnedProjects()
-    
+
     // Listen for custom event when a project is pinned/unpinned
     const handleProjectPinned = () => {
       fetchPinnedProjects()
@@ -72,7 +72,7 @@ export default function Layout() {
               <span className="text-lg font-bold text-blue-600 dark:text-blue-400 truncate">Innovix</span>
             </Link>
           )}
-          
+
           <button
             onClick={() => setCollapsed(!collapsed)}
             className={cn("p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors shrink-0", collapsed && "mx-auto")}
@@ -88,7 +88,6 @@ export default function Layout() {
             <NavLink
               key={navItem.to}
               to={navItem.to}
-              id={navItem.id}
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all duration-200',
