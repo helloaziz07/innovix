@@ -93,8 +93,8 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
     if (e.touches.length !== 1 || !ref.current) return
     setIsDragging(true)
     setDragStart({ 
-      x: e.touches[0].clientX, 
-      y: e.touches[0].clientY, 
+      x: e.touches[0]!.clientX, 
+      y: e.touches[0]!.clientY, 
       scrollLeft: ref.current.scrollLeft, 
       scrollTop: ref.current.scrollTop 
     })
@@ -102,8 +102,8 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
 
   const handleTouchMove = (e: React.TouchEvent, ref: React.RefObject<HTMLDivElement>) => {
     if (!isDragging || e.touches.length !== 1 || !ref.current) return
-    const dx = e.touches[0].clientX - dragStart.x
-    const dy = e.touches[0].clientY - dragStart.y
+    const dx = e.touches[0]!.clientX - dragStart.x
+    const dy = e.touches[0]!.clientY - dragStart.y
     ref.current.scrollLeft = dragStart.scrollLeft - dx
     ref.current.scrollTop = dragStart.scrollTop - dy
   }

@@ -199,9 +199,9 @@ export default function ProjectDetail() {
         if (status === 'SUBSCRIBED') {
           await channel.track({
             id: user.id,
-            name: user.full_name || user.email,
+            name: user.user_metadata?.full_name || user.email,
             email: user.email,
-            avatar_url: user.avatar_url,
+            avatar_url: user.user_metadata?.avatar_url,
             active_tab: activeTab,
           })
         }
@@ -219,9 +219,9 @@ export default function ProjectDetail() {
     // Only track if channel is already active (to avoid errors before connection)
     channelRef.current.track({
       id: user.id,
-      name: user.full_name || user.email,
+      name: user.user_metadata?.full_name || user.email,
       email: user.email,
-      avatar_url: user.avatar_url,
+      avatar_url: user.user_metadata?.avatar_url,
       active_tab: activeTab,
     }).catch(console.warn)
   }, [activeTab, user])
@@ -265,15 +265,15 @@ export default function ProjectDetail() {
     let phaseName = "";
 
     if (targetPhase === 'full') {
-      hasDataForPhase = (activeProject?.project_plan && Object.keys(activeProject.project_plan).length > 0) || 
+      hasDataForPhase = !!((activeProject?.project_plan && Object.keys(activeProject.project_plan).length > 0) || 
                         (activeProject?.architecture && Object.keys(activeProject.architecture).length > 0) || 
-                        (activeProject?.timeline && Object.keys(activeProject.timeline).length > 0);
+                        (activeProject?.timeline && Object.keys(activeProject.timeline).length > 0));
       phaseName = "project";
     } else if (targetPhase === 'main_plan') {
-      hasDataForPhase = activeProject?.project_plan && Object.keys(activeProject.project_plan).length > 0;
+      hasDataForPhase = !!(activeProject?.project_plan && Object.keys(activeProject.project_plan).length > 0);
       phaseName = "Foundation (Overview)";
     } else if (targetPhase === 'architecture') {
-      hasDataForPhase = activeProject?.architecture && Object.keys(activeProject.architecture).length > 0;
+      hasDataForPhase = !!(activeProject?.architecture && Object.keys(activeProject.architecture).length > 0);
       phaseName = "Blueprint (Architecture & Tech Stack)";
     } else if (targetPhase === 'roadmap') {
       const tl = activeProject?.timeline as Record<string, any> | undefined;
@@ -517,15 +517,15 @@ export default function ProjectDetail() {
             <p className="text-sm text-muted-foreground max-w-2xl mb-3">
               {activeProject.idea_text}
             </p>
-            {activeProject.last_activity && (
+            {(activeProject as any).last_activity && (
               <div className="flex items-center gap-1.5 text-xs text-slate-500/80 font-medium bg-slate-100/50 dark:bg-slate-800/30 w-fit px-2.5 py-1.5 rounded-md border border-slate-200/50 dark:border-slate-700/50">
-                {activeProject.last_activity.user_avatar ? (
-                  <img src={activeProject.last_activity.user_avatar} alt="Avatar" className="w-4 h-4 rounded-full border border-slate-200 shadow-sm" />
+                {(activeProject as any).last_activity.user_avatar ? (
+                  <img src={(activeProject as any).last_activity.user_avatar} alt="Avatar" className="w-4 h-4 rounded-full border border-slate-200 shadow-sm" />
                 ) : (
                   <User className="w-3.5 h-3.5" />
                 )}
                 <span>
-                  Last edited by {activeProject.last_activity.user_full_name?.split(' ')[0] || 'someone'} {formatRelativeTime(activeProject.last_activity.created_at)}
+                  Last edited by {(activeProject as any).last_activity.user_full_name?.split(' ')[0] || 'someone'} {formatRelativeTime((activeProject as any).last_activity.created_at)}
                 </span>
               </div>
             )}

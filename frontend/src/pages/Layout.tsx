@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
-  LayoutDashboard, FolderKanban, Users,
+  LayoutDashboard, FolderKanban,
   LogOut, Pin, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react'
 import { useState, useEffect } from 'react'

@@ -5,8 +5,8 @@
  * create project modal, and navigation to project details.
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Plus,

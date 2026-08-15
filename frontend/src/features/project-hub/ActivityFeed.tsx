@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Activity, Clock, User, RefreshCw, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { Activity, Clock, RefreshCw, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
 import { diffWordsWithSpace } from 'diff'
@@ -14,9 +14,6 @@ interface ActivityLog {
   created_at: string
   user_full_name: string
   user_avatar?: string
-  metadata?: {
-    changes?: string[]
-  }
 }
 
 interface ActivityFeedProps {
@@ -92,7 +89,7 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
     if (meaningfulParts.length === 0) return 'Project Update'
     
     const part = meaningfulParts[0]
-    return part
+    return (part || '')
       .replace(/_/g, ' ')
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/^./, str => str.toUpperCase())
