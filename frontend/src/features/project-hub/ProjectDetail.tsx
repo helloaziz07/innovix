@@ -275,7 +275,11 @@ export default function ProjectDetail() {
       hasDataForPhase = activeProject?.architecture && Object.keys(activeProject.architecture).length > 0;
       phaseName = "Blueprint (Architecture & Tech Stack)";
     } else if (targetPhase === 'roadmap') {
-      hasDataForPhase = activeProject?.timeline && Object.keys(activeProject.timeline).length > 0;
+      const tl = activeProject?.timeline as Record<string, any> | undefined;
+      hasDataForPhase = !!(tl && (
+        (Array.isArray(tl.roadmap) && tl.roadmap.length > 0) ||
+        (Array.isArray(tl.timeline) && tl.timeline.length > 0)
+      ));
       phaseName = "Timeline & Roadmap";
     }
 
@@ -450,7 +454,7 @@ export default function ProjectDetail() {
   }
 
   const plan = activeProject.project_plan as Record<string, unknown> | null
-  const hasPlan = plan && !plan.error
+  const hasPlan = !!(plan && !plan.error && Object.keys(plan).length > 0)
 
   return (
     <div className="flex h-full w-full overflow-hidden">
@@ -460,6 +464,7 @@ export default function ProjectDetail() {
         isOpen={isConfigModalOpen}
         onClose={() => setConfigModalOpen(false)}
         onConfirm={handleGeneratePlan}
+        hasExistingPlan={hasPlan}
       />
 
       {/* Pipeline Tracker Overlay */}
@@ -648,19 +653,22 @@ export default function ProjectDetail() {
 
 
       {/* Plan content */}
-      {hasPlan && !isGeneratingPlan && (
+      {(hasPlan || isGeneratingPlan) && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl w-fit border border-slate-200 dark:border-slate-800">
+          <div className="flex gap-1 mb-6 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl w-full md:w-fit border border-slate-200 dark:border-slate-800 overflow-x-auto whitespace-nowrap hide-scrollbar max-w-full">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
+                onClick={() => !isGeneratingPlan && setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all
                   ${activeTab === tab.key
                     ? 'bg-violet-600/20 text-blue-500 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-500/30'
                     : 'text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:bg-slate-800/50'
-                  }`}
+                  }
+                  ${isGeneratingPlan ? 'opacity-50 cursor-not-allowed' : ''}
+                `}
+                disabled={isGeneratingPlan}
               >
                 {tab.icon}
                 {tab.label}
@@ -670,80 +678,111 @@ export default function ProjectDetail() {
 
           {/* Tab content */}
           <div className="min-h-[400px]">
-            {activeTab === 'overview' && (
-              <PlanViewer 
-                plan={plan as Record<string, unknown>} 
-                onNarrate={handleNarrate} 
-                isNarrating={isNarrating} 
-                readOnly={activeProject.role === 'viewer'}
-                onUpdate={activeProject.role === 'viewer' ? undefined : async (newPlan) => {
-                  if (!id || !activeProject) return
-                  // Optimistically update the UI
-                  updateProject(id, { project_plan: newPlan })
-                  try {
-                    // Send only changed fields to the backend to prevent concurrent editing overwrites
-                    const project_plan_update = Object.keys(newPlan).reduce((acc: any, key) => {
-                      if (JSON.stringify((newPlan as any)[key]) !== JSON.stringify((plan as any)[key])) {
-                        acc[key] = (newPlan as any)[key]
+            {isGeneratingPlan ? (
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} 
+                className="w-full bg-white dark:bg-[#111827] rounded-xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm space-y-8"
+              >
+                <div className="space-y-4">
+                  <div className="h-6 w-48 bg-slate-200 dark:bg-slate-700 rounded-md animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-11/12 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-9/12 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-5 border border-slate-100 dark:border-slate-800 rounded-xl space-y-3">
+                    <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-4" />
+                    <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-5/6 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                  </div>
+                  <div className="p-5 border border-slate-100 dark:border-slate-800 rounded-xl space-y-3">
+                    <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse mb-4" />
+                    <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                    <div className="h-4 w-5/6 bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <>
+                {activeTab === 'overview' && (
+                  <PlanViewer 
+                    plan={plan as Record<string, unknown>} 
+                    onNarrate={handleNarrate} 
+                    isNarrating={isNarrating} 
+                    readOnly={activeProject.role === 'viewer'}
+                    onUpdate={activeProject.role === 'viewer' ? undefined : async (newPlan) => {
+                      if (!id || !activeProject) return
+                      // Optimistically update the UI
+                      updateProject(id, { project_plan: newPlan })
+                      try {
+                        // Send only changed fields to the backend to prevent concurrent editing overwrites
+                        const project_plan_update = Object.keys(newPlan).reduce((acc: any, key) => {
+                          if (JSON.stringify((newPlan as any)[key]) !== JSON.stringify((plan as any)[key])) {
+                            acc[key] = (newPlan as any)[key]
+                          }
+                          return acc
+                        }, {})
+                        
+                        if (Object.keys(project_plan_update).length > 0) {
+                          await projectsApi.update(id, { project_plan_update })
+                        }
+                      } catch (err) {
+                        console.error("Failed to update project plan:", err)
+                        // Revert on error
+                        updateProject(id, { project_plan: plan })
                       }
-                      return acc
-                    }, {})
-                    
-                    if (Object.keys(project_plan_update).length > 0) {
-                      await projectsApi.update(id, { project_plan_update })
+                    }}
+                  />
+                )}
+                {activeTab === 'architecture' && (
+                  <MermaidErrorBoundary>
+                    <ArchitectureDiagram
+                      architecture={(plan as Record<string, unknown>).architecture as Record<string, unknown> | undefined}
+                      onUpdate={activeProject.role === 'viewer' ? undefined : async (newMermaid) => {
+                        if (!id || !activeProject) return
+                        const currentArch = (plan as Record<string, unknown>).architecture as Record<string, unknown> || {}
+                        const updatedArch = { ...currentArch, mermaid_diagram: newMermaid }
+                        const updatedPlan = { ...plan, architecture: updatedArch }
+                        
+                        updateProject(id, { project_plan: updatedPlan })
+                        try {
+                          await projectsApi.update(id, { project_plan_update: { architecture: updatedArch } })
+                        } catch (err) {
+                          console.error("Failed to update architecture:", err)
+                          updateProject(id, { project_plan: plan })
+                        }
+                      }}
+                    />
+                  </MermaidErrorBoundary>
+                )}
+                {activeTab === 'techstack' && (
+                  <TechStackCards
+                    techStack={
+                      (((plan as Record<string, unknown>).tech_stack as Array<{ layer: string; technology: string; justification: string; alternatives?: string[] }>) || [])
                     }
-                  } catch (err) {
-                    console.error("Failed to update project plan:", err)
-                    // Revert on error
-                    updateProject(id, { project_plan: plan })
-                  }
-                }}
-              />
-            )}
-            {activeTab === 'architecture' && (
-              <MermaidErrorBoundary>
-                <ArchitectureDiagram
-                  architecture={(plan as Record<string, unknown>).architecture as Record<string, unknown> | undefined}
-                  onUpdate={activeProject.role === 'viewer' ? undefined : async (newMermaid) => {
-                    if (!id || !activeProject) return
-                    const currentArch = (plan as Record<string, unknown>).architecture as Record<string, unknown> || {}
-                    const updatedArch = { ...currentArch, mermaid_diagram: newMermaid }
-                    const updatedPlan = { ...plan, architecture: updatedArch }
-                    
-                    updateProject(id, { project_plan: updatedPlan })
-                    try {
-                      await projectsApi.update(id, { project_plan_update: { architecture: updatedArch } })
-                    } catch (err) {
-                      console.error("Failed to update architecture:", err)
-                      updateProject(id, { project_plan: plan })
-                    }
-                  }}
-                />
-              </MermaidErrorBoundary>
-            )}
-            {activeTab === 'techstack' && (
-              <TechStackCards
-                techStack={
-                  (((plan as Record<string, unknown>).tech_stack as Array<{ layer: string; technology: string; justification: string; alternatives?: string[] }>) || [])
-                }
-                onUpdate={activeProject.role === 'viewer' ? undefined : async (newStack) => {
-                  if (!id || !activeProject) return
-                  const updatedPlan = { ...plan, tech_stack: newStack }
-                  // Optimistically update the UI
-                  updateProject(id, { project_plan: updatedPlan })
-                  try {
-                    // Update the backend safely using partial updates
-                    await projectsApi.update(id, { project_plan_update: { tech_stack: newStack } })
-                  } catch (err) {
-                    console.error("Failed to update tech stack:", err)
-                    // Revert on error
-                    updateProject(id, { project_plan: plan })
-                  }
-                }}
-              />
-            )}
-            {activeTab === 'timeline' && (
-              <TimelineView plan={plan as Record<string, unknown>} />
+                    onUpdate={activeProject.role === 'viewer' ? undefined : async (newStack) => {
+                      if (!id || !activeProject) return
+                      const updatedPlan = { ...plan, tech_stack: newStack }
+                      // Optimistically update the UI
+                      updateProject(id, { project_plan: updatedPlan })
+                      try {
+                        // Update the backend safely using partial updates
+                        await projectsApi.update(id, { project_plan_update: { tech_stack: newStack } })
+                      } catch (err) {
+                        console.error("Failed to update tech stack:", err)
+                        // Revert on error
+                        updateProject(id, { project_plan: plan })
+                      }
+                    }}
+                  />
+                )}
+                {activeTab === 'timeline' && (
+                  <TimelineView plan={plan as Record<string, unknown>} />
+                )}
+              </>
             )}
           </div>
         </motion.div>

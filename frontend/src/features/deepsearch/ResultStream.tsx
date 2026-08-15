@@ -130,7 +130,33 @@ export default function ResultStream({ progress, summary, isStreaming }: ResultS
       </div>
 
       {/* Summary Content */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
+        {!summary && isStreaming && (
+          <motion.div
+            key="skeleton"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 shadow-sm p-5 md:p-6 rounded-xl space-y-4"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-6 h-6 rounded bg-slate-200 dark:bg-slate-700 animate-pulse" />
+              <div className="h-5 w-48 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+            </div>
+            <div className="space-y-3">
+              <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-4 w-[90%] bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-4 w-[95%] bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-4 w-[80%] bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            </div>
+            <div className="space-y-3 pt-4">
+              <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-4 w-[85%] bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-4 w-[60%] bg-slate-100 dark:bg-slate-800 rounded animate-pulse" />
+            </div>
+          </motion.div>
+        )}
+
         {summary && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}

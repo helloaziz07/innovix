@@ -52,6 +52,12 @@ class ProjectUpdate(BaseModel):
     is_pinned: Optional[bool] = None
 
 
+class MagicEditRequest(BaseModel):
+    text: str = Field(..., description="The highlighted text to modify")
+    command: str = Field(..., description="The command to execute (e.g. 'Expand', 'Make Technical')")
+    context: Optional[str] = Field(None, description="The surrounding context for better AI understanding")
+
+
 class ProjectResponse(BaseModel):
     """Full project response."""
     id: UUID

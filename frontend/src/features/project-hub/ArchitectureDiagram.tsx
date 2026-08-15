@@ -89,6 +89,25 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
     setIsDragging(false)
   }
 
+  const handleTouchStart = (e: React.TouchEvent, ref: React.RefObject<HTMLDivElement>) => {
+    if (e.touches.length !== 1 || !ref.current) return
+    setIsDragging(true)
+    setDragStart({ 
+      x: e.touches[0].clientX, 
+      y: e.touches[0].clientY, 
+      scrollLeft: ref.current.scrollLeft, 
+      scrollTop: ref.current.scrollTop 
+    })
+  }
+
+  const handleTouchMove = (e: React.TouchEvent, ref: React.RefObject<HTMLDivElement>) => {
+    if (!isDragging || e.touches.length !== 1 || !ref.current) return
+    const dx = e.touches[0].clientX - dragStart.x
+    const dy = e.touches[0].clientY - dragStart.y
+    ref.current.scrollLeft = dragStart.scrollLeft - dx
+    ref.current.scrollTop = dragStart.scrollTop - dy
+  }
+
   const components = architecture?.components as Record<string, unknown>[] | undefined
   const patterns = architecture?.design_patterns as Record<string, unknown>[] | undefined
   const deployNotes = architecture?.deployment_notes as string | undefined
@@ -414,8 +433,12 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                   onMouseMove={(e) => handleMouseMove(e, containerRef)}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
+                  onTouchStart={(e) => handleTouchStart(e, containerRef)}
+                  onTouchMove={(e) => handleTouchMove(e, containerRef)}
+                  onTouchEnd={handleMouseUp}
+                  onTouchCancel={handleMouseUp}
                   className={`flex-1 p-6 flex justify-center items-center min-h-[400px] 
-                             [&_svg]:max-w-none [&_svg]:h-auto transition-colors select-none overflow-auto
+                             [&_svg]:max-w-none [&_svg]:h-auto transition-colors select-none overflow-auto touch-pan-x touch-pan-y
                              ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                 >
                 {mermaidLoaded && svgContent ? (

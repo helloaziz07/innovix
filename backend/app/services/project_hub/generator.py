@@ -100,7 +100,7 @@ async def generate_project_plan(
     roadmap = project.get("timeline") or {}
 
     # ─── Stage 2: Main Plan (Gemini call 1) ─────────────────
-    if not main_plan or target_phase == "main_plan" or target_phase == "full":
+    if target_phase in ["full", "main_plan"] or (not main_plan and target_phase not in ["architecture", "roadmap"]):
         await _emit("main_plan", "Analyzing idea and generating plan structure...", 15)
         _check_cancelled()
         main_plan = await _generate_main_plan(idea, research_summary, sources_text, gap_analysis)
@@ -113,13 +113,22 @@ async def generate_project_plan(
     if target_phase == "main_plan":
         # Save early
         await _emit("saving", "Saving partial plan to database...", 92)
-        full_plan = {**main_plan}
+        full_plan = {
+            **main_plan,
+            "tech_stack": tech_stack,
+            "architecture": architecture,
+            "roadmap": roadmap.get("roadmap", []),
+            "timeline": roadmap.get("timeline", []),
+            "total_weeks": roadmap.get("total_weeks", 8),
+            "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
+            "risks": roadmap.get("risks", []),
+        }
         await _persist_plan(project_id, full_plan, target_phase)
         await _emit("complete", "Project plan generated successfully!", 100)
         return full_plan
 
     # ─── Stage 3: Architecture (Gemini call 2) ──────────────
-    if not architecture or target_phase == "architecture" or target_phase == "full":
+    if target_phase in ["full", "architecture"] or (not architecture and target_phase not in ["main_plan", "roadmap"]):
         await _emit("architecture", "Designing system architecture...", 45)
         _check_cancelled()
         architecture = await _generate_architecture(idea)
@@ -139,13 +148,18 @@ async def generate_project_plan(
             **main_plan,
             "tech_stack": tech_stack,
             "architecture": architecture,
+            "roadmap": roadmap.get("roadmap", []),
+            "timeline": roadmap.get("timeline", []),
+            "total_weeks": roadmap.get("total_weeks", 8),
+            "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
+            "risks": roadmap.get("risks", []),
         }
         await _persist_plan(project_id, full_plan, target_phase)
         await _emit("complete", "Project plan generated successfully!", 100)
         return full_plan
 
     # ─── Stage 4: Roadmap (Gemini call 3) ───────────────────
-    if not roadmap or target_phase == "roadmap" or target_phase == "full":
+    if target_phase in ["full", "roadmap"] or (not roadmap and target_phase not in ["main_plan", "architecture"]):
         await _emit("roadmap", "Building development roadmap...", 75)
         _check_cancelled()
         tech_stack_json = json.dumps(tech_stack, indent=2)
@@ -332,12 +346,20 @@ async def _update_project_status(project_id: str, status: str) -> None:
 async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str) -> None:
     """
     Store the generated plan in the project's JSONB columns
-    and update status based on target_phase.
+    and update status based on what data actually exists.
     """
     try:
-        new_status = "completed" if target_phase in ["full", "roadmap"] else (
-            "architecting" if target_phase == "architecture" else "planning"
+        # Determine actual status based on what content we have
+        has_roadmap = bool(plan.get("roadmap") or plan.get("timeline"))
+        has_architecture = bool(plan.get("architecture") and len(plan.get("architecture", {}).keys()) > 0)
+        has_plan = bool(plan and len(plan.keys()) > 0)
+
+        new_status = "completed" if (has_roadmap and has_architecture) else (
+            "architecting" if has_architecture else (
+                "planning" if has_plan else "new"
+            )
         )
+
         update_data = {
             "project_plan": plan,
             "tech_stack": plan.get("tech_stack", []),
@@ -358,7 +380,7 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
             .eq("id", project_id)
             .execute()
         )
-        logger.info(f"[ProjectHub] Plan persisted for project {project_id}")
+        logger.info(f"[ProjectHub] Plan persisted for project {project_id} with status {new_status}")
 
     except Exception as e:
         logger.error(f"[ProjectHub] Failed to persist plan: {e}")

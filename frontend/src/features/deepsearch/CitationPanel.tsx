@@ -29,7 +29,7 @@ interface CitationPanelProps {
 }
 
 export default function CitationPanel({ citations }: CitationPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 1024 : true)
 
   if (citations.length === 0) return null
 

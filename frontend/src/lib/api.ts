@@ -88,6 +88,8 @@ export const projectsApi = {
     api.post(`/projects/${id}/invitations`, data),
   removeMember: (id: string, userId: string) => 
     api.delete(`/projects/${id}/members/${userId}`),
+  magicEdit: (id: string, payload: { text: string; command: string; context?: string }) =>
+    api.post(`/projects/${id}/magic-edit`, payload),
   // --- Activity Tracking ---
   markViewed: (id: string) => api.post(`/projects/${id}/view`),
   getActivity: (id: string) => api.get(`/projects/${id}/activity`),

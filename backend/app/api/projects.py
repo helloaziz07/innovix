@@ -22,7 +22,8 @@ from app.models.schemas import (
     ProjectMemberResponse,
     ProjectInvitationCreate,
     ProjectInvitationResponse,
-    ActivityLogResponse
+    ActivityLogResponse,
+    MagicEditRequest
 )
 import secrets
 from app.services.email_service import send_project_invitation
@@ -34,6 +35,8 @@ from app.services.project_hub.export_service import (
     get_narration_text,
 )
 from app.services.sarvam.tts_service import synthesize_speech, is_available as sarvam_available
+from google import genai
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -738,6 +741,69 @@ async def narrate_project(
             "Content-Disposition": f'attachment; filename="{filename}"',
         },
     )
+
+
+@router.post("/{project_id}/magic-edit", response_model=dict)
+async def magic_edit(
+    project_id: str,
+    req: MagicEditRequest,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Granular AI editing using Gemini.
+    Modifies specific text based on a command (Expand, Summarize, etc).
+    """
+    if not settings.gemini_api_key:
+         raise HTTPException(status_code=501, detail="gemini_api_key not configured")
+
+    # Fetch project and check access
+    result = supabase_admin.table("projects").select("*").eq("id", project_id).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    project = result.data[0]
+
+    # Check authorization (owner or member)
+    if project.get("user_id") != user["id"]:
+        member_res = (
+            supabase_admin.table("project_members")
+            .select("*")
+            .eq("project_id", project_id)
+            .eq("user_id", user["id"])
+            .limit(1)
+            .execute()
+        )
+        if not member_res.data:
+            raise HTTPException(status_code=403, detail="Not authorized to access this project")
+
+    # Initialize Gemini
+    try:
+        client = genai.Client(api_key=settings.gemini_api_key)
+        
+        prompt = f"""You are an expert AI editor for a software project plan.
+The user highlighted the following text in their project plan:
+"{req.text}"
+
+The user's command is: "{req.command}"
+
+Additional Context of the section they are in:
+{req.context or "None provided."}
+
+Follow the command and modify the text accordingly.
+Return ONLY the modified version of the highlighted text. 
+Do not include markdown blocks like ```text. Do not include any conversational phrases.
+"""
+        response = client.models.generate_content(
+            model='gemini-3.5-flash-lite',
+            contents=prompt,
+        )
+        if not response.text:
+             raise Exception("Gemini returned an empty response")
+             
+        return {"edited_text": response.text.strip()}
+    except Exception as e:
+        logger.error(f"Magic Edit failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate AI edit")
 
 
 # ============================================

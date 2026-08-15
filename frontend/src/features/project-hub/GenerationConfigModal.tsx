@@ -9,9 +9,10 @@ interface GenerationConfigModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: (targetPhase: string) => void
+  hasExistingPlan?: boolean
 }
 
-export default function GenerationConfigModal({ isOpen, onClose, onConfirm }: GenerationConfigModalProps) {
+export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasExistingPlan = false }: GenerationConfigModalProps) {
   const [mode, setMode] = useState<'full' | 'scoped'>('full')
   const [targetPhase, setTargetPhase] = useState<string>('main_plan')
 
@@ -114,7 +115,9 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm }: Ge
                           >
                             <option value="main_plan">Option 1: Foundation (Overview Only)</option>
                             <option value="architecture">Option 2: Blueprint (Overview + Architecture + Tech Stack)</option>
-                            <option value="roadmap">Option 3: Timeline & Roadmap Only</option>
+                            {hasExistingPlan && (
+                              <option value="roadmap">Option 3: Timeline & Roadmap Only</option>
+                            )}
                           </select>
                         </motion.div>
                       )}

@@ -25,8 +25,15 @@ import {
   Square,
   Edit2,
   Save,
-  X as XIcon
+  X as XIcon,
+  Wand2,
+  Maximize2,
+  Sparkles,
+  Loader2,
+  Wrench
 } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import { projectsApi } from '@/lib/api'
 
 interface PlanViewerProps {
   plan: Record<string, any>
@@ -115,6 +122,56 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
     setIsEditing(false)
   }
 
+  // --- Magic Wand Logic ---
+  const { id } = useParams<{ id: string }>()
+  const [magicEditState, setMagicEditState] = useState<{
+    text: string;
+    start: number;
+    end: number;
+    field: 'summary' | 'perspective';
+  } | null>(null)
+  const [isMagicLoading, setMagicLoading] = useState(false)
+
+  const handleSelection = (e: React.SyntheticEvent<HTMLTextAreaElement>, field: 'summary' | 'perspective') => {
+    const target = e.currentTarget
+    const start = target.selectionStart
+    const end = target.selectionEnd
+    if (start !== end) {
+      const selectedText = target.value.substring(start, end)
+      setMagicEditState({ text: selectedText, start, end, field })
+    } else {
+      setMagicEditState(null)
+    }
+  }
+
+  const executeMagicEdit = async (command: string) => {
+    if (!id || !magicEditState) return
+    setMagicLoading(true)
+    try {
+      const contextText = magicEditState.field === 'summary' ? editSummary : editPerspective
+      const response = await projectsApi.magicEdit(id, {
+        text: magicEditState.text,
+        command,
+        context: contextText
+      })
+      const newText = response.data.edited_text
+
+      if (magicEditState.field === 'summary') {
+        const updated = editSummary.substring(0, magicEditState.start) + newText + editSummary.substring(magicEditState.end)
+        setEditSummary(updated)
+      } else {
+        const updated = editPerspective.substring(0, magicEditState.start) + newText + editPerspective.substring(magicEditState.end)
+        setEditPerspective(updated)
+      }
+      setMagicEditState(null)
+    } catch (err) {
+      console.error("Magic Edit failed:", err)
+      alert("Failed to apply AI edit.")
+    } finally {
+      setMagicLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-3">
       {onUpdate && (
@@ -156,11 +213,38 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
         >
           <div className="flex items-start justify-between gap-4 mb-3">
             {isEditing ? (
-              <textarea
-                value={editSummary}
-                onChange={(e) => setEditSummary(e.target.value)}
-                className="w-full min-h-[100px] text-sm bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500/50 resize-y"
-              />
+              <div className="relative w-full">
+                <textarea
+                  value={editSummary}
+                  onChange={(e) => {
+                    setEditSummary(e.target.value)
+                    setMagicEditState(null)
+                  }}
+                  onMouseUp={(e) => handleSelection(e, 'summary')}
+                  onKeyUp={(e) => handleSelection(e, 'summary')}
+                  className="w-full min-h-[140px] text-sm bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500/50 resize-y"
+                />
+                {magicEditState?.field === 'summary' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-slate-900 dark:bg-slate-800 text-white p-1.5 rounded-lg shadow-xl border border-slate-700"
+                  >
+                    <span className="px-2 text-xs font-semibold text-blue-400 border-r border-slate-700 flex items-center gap-1.5">
+                      <Wand2 className="w-3.5 h-3.5" /> AI
+                    </span>
+                    <button onClick={() => executeMagicEdit("Expand and add more detail")} disabled={isMagicLoading} className="px-2.5 py-1 text-xs hover:bg-slate-700 rounded transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Maximize2 className="w-3 h-3"/>} Expand
+                    </button>
+                    <button onClick={() => executeMagicEdit("Make this sound highly technical and professional")} disabled={isMagicLoading} className="px-2.5 py-1 text-xs hover:bg-slate-700 rounded transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Wrench className="w-3 h-3"/>} Technical
+                    </button>
+                    <button onClick={() => executeMagicEdit("Summarize this to be very concise and punchy")} disabled={isMagicLoading} className="px-2.5 py-1 text-xs hover:bg-slate-700 rounded transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>} Summarize
+                    </button>
+                  </motion.div>
+                )}
+              </div>
             ) : (
               <p className="text-muted-foreground">{pv.summary as string}</p>
             )}
@@ -238,11 +322,38 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
         >
           <div className={`p-3 rounded-lg ${isEditing ? 'bg-transparent' : 'bg-emerald-500/5 border border-emerald-500/10'}`}>
             {isEditing ? (
-              <textarea
-                value={editPerspective}
-                onChange={(e) => setEditPerspective(e.target.value)}
-                className="w-full min-h-[120px] text-sm bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500/50 resize-y"
-              />
+              <div className="relative w-full">
+                <textarea
+                  value={editPerspective}
+                  onChange={(e) => {
+                    setEditPerspective(e.target.value)
+                    setMagicEditState(null)
+                  }}
+                  onMouseUp={(e) => handleSelection(e, 'perspective')}
+                  onKeyUp={(e) => handleSelection(e, 'perspective')}
+                  className="w-full min-h-[140px] text-sm bg-white dark:bg-[#111827] border border-blue-200 dark:border-blue-500/30 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500/50 resize-y"
+                />
+                {magicEditState?.field === 'perspective' && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-1 bg-slate-900 dark:bg-slate-800 text-white p-1.5 rounded-lg shadow-xl border border-slate-700"
+                  >
+                    <span className="px-2 text-xs font-semibold text-blue-400 border-r border-slate-700 flex items-center gap-1.5">
+                      <Wand2 className="w-3.5 h-3.5" /> AI
+                    </span>
+                    <button onClick={() => executeMagicEdit("Expand and add more detail")} disabled={isMagicLoading} className="px-2.5 py-1 text-xs hover:bg-slate-700 rounded transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Maximize2 className="w-3 h-3"/>} Expand
+                    </button>
+                    <button onClick={() => executeMagicEdit("Make this sound highly technical and professional")} disabled={isMagicLoading} className="px-2.5 py-1 text-xs hover:bg-slate-700 rounded transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Wrench className="w-3 h-3"/>} Technical
+                    </button>
+                    <button onClick={() => executeMagicEdit("Summarize this to be very concise and punchy")} disabled={isMagicLoading} className="px-2.5 py-1 text-xs hover:bg-slate-700 rounded transition-colors disabled:opacity-50 flex items-center gap-1.5">
+                      {isMagicLoading ? <Loader2 className="w-3 h-3 animate-spin"/> : <Sparkles className="w-3 h-3"/>} Summarize
+                    </button>
+                  </motion.div>
+                )}
+              </div>
             ) : (
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {String(pv.business_perspective)}
