@@ -21,7 +21,7 @@ AI-powered research and innovation copilot that helps students go from a raw ide
 
 <br/>
 
-<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&pause=1000&color=7C3AED&center=true&vCenter=true&multiline=true&repeat=true&width=600&height=80&lines=Multi-Source+AI+Research+Engine;Idea+→+Architecture+→+Roadmap;Real-Time+Team+Collaboration;Telegram+%26+WhatsApp+Agents" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&pause=1000&color=7C3AED&center=true&vCenter=true&repeat=true&width=600&height=30&lines=Multi-Source+AI+Research+Engine;Idea+to+Architecture+to+Roadmap;Real-Time+Team+Collaboration;Telegram+and+WhatsApp+Agents" alt="Typing SVG" />
 
 </div>
 
@@ -811,10 +811,10 @@ Contributions are welcome! Here's how to get started:
 <table>
   <tr>
     <td align="center"><a href="https://github.com/helloaziz07"><b>Aziz Sayyad</b></a></td>
-    <td align="center"><b>Jay Shimpi</b></td>
-    <td align="center"><b>Lakshay Vig</b></td>
-    <td align="center"><b>Riya Chavan</b></td>
-    <td align="center"><b>Vedant Patil</b></td>
+    <td align="center"><a href="https://github.com/JayShimpi07"><b>Jay Shimpi</b></a></td>
+    <td align="center"><a href="https://github.com/rajmachawal-py"><b>Lakshay Vig</b></a></td>
+    <td align="center"><a href="https://github.com/riyachavan1051"><b>Riya Chavan</b></a></td>
+    <td align="center"><a href="https://github.com/VedantPatil0525"><b>Vedant Patil</b></a></td>
   </tr>
 </table>
 
