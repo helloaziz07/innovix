@@ -1,103 +1,132 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&section=header&text=Innovix&fontSize=90&fontColor=ffffff&fontAlignY=38&desc=AI%20Research%20%26%20Innovation%20Copilot&descSize=20&descColor=aaaaaa&descAlignY=60&animation=twinkling" width="100%" alt="Innovix" />
+<img src="frontend/public/logo.jpg" alt="Innovix Logo" width="120" height="120" style="border-radius: 20px;" />
 
-<br/>
+# Innovix
 
-<a href="#">
-  <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&duration=3000&pause=1000&color=3B82F6&center=true&vCenter=true&width=650&lines=From+Idea+to+Execution+in+Minutes;Multi-Source+Academic+Research+Engine;Gemini-Powered+Project+Planning;Real-Time+Intelligence+%26+Trend+Analysis;Available+on+Web%2C+Telegram+%26+WhatsApp" alt="Typing SVG" />
-</a>
+### Search Less. Solve More.
 
-<br/><br/>
+AI-powered research and innovation copilot that helps students go from a raw idea to a structured, buildable project plan — using multi-source deep search, AI-generated architectures, and real-time collaboration.
 
-**Innovix** is a full-stack AI copilot that transforms raw ideas into structured, researched, and actionable project blueprints — complete with tech stack recommendations, architecture diagrams, phased roadmaps, and multi-platform bot integration.
-
-<br/>
-
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Vite](https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
-[![Gemini](https://img.shields.io/badge/Gemini-AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Supabase](https://img.shields.io/badge/Supabase-Database_&_Auth-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Gemini](https://img.shields.io/badge/Google_Gemini-AI_Engine-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev)
+
+[![Last Commit](https://img.shields.io/github/last-commit/helloaziz07/innovix?style=flat-square&color=blue)](https://github.com/helloaziz07/innovix/commits/main)
+[![Stars](https://img.shields.io/github/stars/helloaziz07/innovix?style=flat-square&color=yellow)](https://github.com/helloaziz07/innovix/stargazers)
+[![Issues](https://img.shields.io/github/issues/helloaziz07/innovix?style=flat-square&color=red)](https://github.com/helloaziz07/innovix/issues)
 
 <br/>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
-[![Version](https://img.shields.io/badge/Version-0.1.0-orange?style=flat-square)](#)
-[![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)](#)
+<img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&pause=1000&color=7C3AED&center=true&vCenter=true&multiline=true&repeat=true&width=600&height=80&lines=Multi-Source+AI+Research+Engine;Idea+→+Architecture+→+Roadmap;Real-Time+Team+Collaboration;Telegram+%26+WhatsApp+Agents" alt="Typing SVG" />
 
 </div>
 
 ---
 
-## Contents
+## Table of Contents
 
 - [Overview](#overview)
-- [The Problem & Solution](#the-problem--solution)
+- [Problem & Solution](#problem--solution)
 - [Key Features](#key-features)
+- [Demo](#demo)
 - [System Architecture](#system-architecture)
 - [How It Works](#how-it-works)
 - [Tech Stack](#tech-stack)
-- [AI & Agent Architecture](#ai--agent-architecture)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Running the Project](#running-the-project)
-- [API Reference](#api-reference)
-- [Database](#database)
+  - [Prerequisites](#prerequisites)
+  - [Clone the Repository](#clone-the-repository)
+  - [Backend Setup](#backend-setup)
+  - [Frontend Setup](#frontend-setup)
+  - [Database Setup](#database-setup)
+  - [Environment Variables](#environment-variables)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [AI & Agent Architecture](#ai--agent-architecture)
+- [Database Schema](#database-schema)
 - [Security](#security)
-- [Deployment](#deployment)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
+- [Contributors](#contributors)
+- [License](#license)
 
 ---
 
 ## Overview
 
-Innovix bridges the gap between an idea and a buildable project. Students and researchers typically have to context-switch between a dozen tools — academic databases, GitHub, design software, task trackers, and general-purpose AI chatbots — just to start planning a project.
+**Innovix** is a full-stack web application designed for students, researchers, and early-stage builders who want to validate and plan their project ideas using AI.
 
-Innovix replaces this fragmented workflow with a single AI workspace. It:
+Instead of manually searching across arXiv, GitHub, Google Scholar, and the web, then stitching together findings into a plan — Innovix automates the entire pipeline:
 
-1. Runs a multi-source **DeepSearch** across arXiv, GitHub, Semantic Scholar, and the open web simultaneously.
-2. Groups those results into thematic clusters using a **K-Means embedding pipeline**.
-3. Feeds the verified research into **Gemini** to generate a structured project plan including problem validation, existing solutions, innovation opportunities, tech stack, Mermaid architecture diagrams, and phased roadmaps.
-4. Keeps users connected to their workspace via **Telegram and WhatsApp bots** that can answer questions, check project status, and send proactive reminders.
-5. Provides **multilingual support** through the Sarvam AI translation API for 10 Indian languages plus English.
+1. **DeepSearch** — Searches multiple academic and technical sources in parallel, deduplicates results, and generates an AI-synthesized summary with citations and gap analysis.
+2. **Project HUB** — Takes your idea + research and generates a complete project plan, tech stack recommendations, system architecture (with Mermaid diagrams), and a phased development timeline.
+3. **AI Sidekick** — A context-aware chat assistant embedded in each project that understands your plan and can answer questions about it.
+4. **Multi-Agent Bots** — Telegram and WhatsApp bots that let you search, check project status, and get AI answers from your phone.
+
+The application is built with a React + TypeScript frontend, a FastAPI + Python backend, Google Gemini as the AI engine, and Supabase for database, auth, and real-time features.
 
 ---
 
-## The Problem & Solution
+## Problem & Solution
 
 ### The Problem
 
-Students and early-stage innovators lack a structured, automated bridge between an idea and the execution phase. Researching a topic, validating feasibility, designing an architecture, and tracking a roadmap are all separate, time-consuming, manual processes. General-purpose AI chatbots can generate text but do not verify it against real academic or open-source sources, and they produce no persistent, structured artifacts.
+Students and early-stage builders spend hours manually searching across scattered sources (arXiv, GitHub, Google Scholar, blogs), then struggle to synthesize findings into a structured, actionable project plan. There is no unified tool that connects *research* to *planning* to *execution*.
 
 ### The Solution
 
-Innovix automates the full project discovery-to-planning lifecycle:
-
-- **Verified Research** — Every plan is grounded in real papers from arXiv, repositories from GitHub, and academic citations from Semantic Scholar rather than LLM guesswork.
-- **Structured Output** — The AI generates JSON-structured plans stored directly in the database, not freeform chat responses, enabling interactive UI components like timeline cards and Mermaid diagrams.
-- **Persistent State** — Projects, search results, workspaces, and conversation history are all stored in Supabase PostgreSQL, accessible across the web, Telegram, and WhatsApp.
+Innovix bridges the gap between **idea** and **implementation**. It combines a multi-source AI research engine with automated project planning — so users can go from a one-line idea to a complete project plan with architecture diagrams, tech stack recommendations, and a development timeline in minutes, not days.
 
 ---
 
 ## Key Features
 
 | Feature | Description |
-|---------|-------------|
-| **DeepSearch Engine** | Parallel async scraping of arXiv, GitHub, Semantic Scholar, and web sources. Gemini generates optimized sub-queries per source, deduplicates results, and produces a cited summary with gap analysis. Streams progress over WebSocket. |
-| **Semantic Clustering** | A pure-Python K-Means clustering pipeline over TF-IDF embeddings groups search results into thematic clusters. Each cluster is labeled by Gemini and stored in Supabase for visual exploration. |
-| **AI Project Hub** | Three chained Gemini calls produce a complete plan: (1) problem validation + tech stack + opportunities, (2) Mermaid architecture diagram with component breakdown, (3) phased roadmap with weekly timeline and risk assessment. |
-| **Web Intelligence** | A dedicated `web_intel` service module runs trend detection via SerpAPI, competitive tracking, news aggregation, and source freshness scoring in parallel. |
-| **Multi-Platform Bots** | An `AgentOrchestrator` routes incoming Telegram/WhatsApp messages to four specialized agents: Research, Planning, Reminder, and Q&A — all backed by Gemini and Supabase state. |
-| **Sarvam AI Translation** | Translates content via the Sarvam AI API into Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, Gujarati, Malayalam, Punjabi, and English. |
-| **Project Export** | An `export_service` generates PDF and PPTX exports of the project plan using `xhtml2pdf` and `python-pptx`. |
-| **Rate Limiting** | API-level request throttling via `slowapi` at 100 requests/minute per IP. |
-| **Research Workspaces** | Per-project workspaces with structured notes, saved search results, and annotations. |
+|---|---|
+| **DeepSearch Engine** | Parallel search across arXiv, GitHub, Google Scholar, and the web with AI-powered summarization, citations, and gap analysis |
+| **AI Project Plan Generation** | Chained Gemini prompts produce problem validation, tech stack, architecture (Mermaid), and phased roadmaps from your idea |
+| **Architecture Diagrams** | Auto-generated Mermaid system architecture diagrams with component breakdowns and design pattern recommendations |
+| **Knowledge Clustering** | Gemini embeddings + scikit-learn clustering group your search results into semantic themes with auto-generated labels |
+| **Web Intelligence** | Trend detection, news aggregation, freshness scoring, and competitive tracking for any research domain |
+| **Team Collaboration** | Invite team members (editor/viewer roles), real-time activity feeds, and email invitations via Resend |
+| **AI Sidekick Chat** | Context-aware SSE chat per project — the AI knows your plan, architecture, and tech stack |
+| **Magic Edit** | Highlight any section of your plan and use AI commands (Expand, Simplify, Make Technical) to refine it |
+| **Multi-Format Export** | Export project plans to Markdown, PDF, or PowerPoint (PPTX) |
+| **Multilingual TTS** | Listen to your project plan narrated via Sarvam AI with support for Indian languages |
+| **Telegram Bot** | Search, list projects, check status, set reminders, and ask questions — all from Telegram |
+| **WhatsApp Bot** | Same agent capabilities accessible via WhatsApp messaging |
+| **Dark/Light Mode** | Full theme support across all UI components |
+| **Cloudflare Turnstile** | Bot protection on authentication pages |
+
+---
+
+## Demo
+
+| Component | URL |
+|---|---|
+| Live Application | `<ADD_DEPLOYMENT_URL>` |
+| API Documentation (Swagger) | `<ADD_DEPLOYMENT_URL>/docs` |
+| API Documentation (ReDoc) | `<ADD_DEPLOYMENT_URL>/redoc` |
+
+> **Note**: If not yet deployed, run locally following the [Getting Started](#getting-started) instructions.
+
+---
+
+## Screenshots
+
+> Screenshots can be added here once the application is running. Place images in a `docs/screenshots/` directory and reference them below.
+
+```
+<!-- Example:
+| Dashboard | Project Detail |
+|---|---|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Project Detail](docs/screenshots/project-detail.png) |
+-->
+```
 
 ---
 
@@ -105,210 +134,156 @@ Innovix automates the full project discovery-to-planning lifecycle:
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Client Interfaces"]
-        Web["React + Vite SPA\n(localhost:5173)"]
-        TG["Telegram Bot\n(Webhook)"]
-        WA["WhatsApp via Twilio\n(Webhook)"]
+    subgraph Client
+        A[React + TypeScript SPA]
+        T[Telegram Bot]
+        W[WhatsApp Bot]
     end
 
-    subgraph Gateway["FastAPI Backend (localhost:8000)"]
-        direction TB
-        CORS["CORS Middleware"]
-        RateLimit["Rate Limiter\n(slowapi)"]
-        Auth["JWT Auth\n(Supabase)"]
-        Routers["API Routers\n/api/*"]
+    subgraph Backend["FastAPI Backend"]
+        API[REST API + SSE Streaming]
+        DS[DeepSearch Orchestrator]
+        PG[Project Plan Generator]
+        AO[Agent Orchestrator]
+        WI[Web Intelligence]
+        CL[Clustering Engine]
+        EX[Export Service]
+        TTS[Sarvam TTS]
     end
 
-    subgraph Services["Backend Services"]
-        direction TB
-        DS["DeepSearch\nOrchestrator"]
-        PH["Project Hub\nGenerator"]
-        CL["Clustering\nPipeline"]
-        WI["Web Intelligence\n(Trends, News)"]
-        AG["Agent\nOrchestrator"]
-        TR["Sarvam Translation"]
-        NS["Notification\nService"]
+    subgraph External["External Services"]
+        GM[Google Gemini API]
+        AX[arXiv API]
+        GH[GitHub API]
+        SC[Google Scholar]
+        SP[SerpAPI / Tavily]
+        RE[Resend Email]
+        CF[Cloudflare Turnstile]
     end
 
-    subgraph AI["AI Layer"]
-        GM["Gemini API\n(gemini-3.5-flash-lite)"]
-        LC["LangChain"]
+    subgraph Data["Supabase"]
+        DB[(PostgreSQL + pgvector)]
+        AU[Auth + JWT]
+        RLS[Row Level Security]
+        RT[Realtime]
     end
 
-    subgraph Sources["External Data Sources"]
-        AX["arXiv"]
-        GH["GitHub API"]
-        SC["Semantic Scholar"]
-        WB["Web (SerpAPI / Tavily)"]
-    end
-
-    subgraph Data["Persistence"]
-        SB[("Supabase\nPostgreSQL")]
-    end
-
-    Web -->|REST + WebSocket| CORS
-    TG -->|POST webhook| CORS
-    WA -->|POST webhook| CORS
-    CORS --> RateLimit --> Auth --> Routers
-
-    Routers --> DS
-    Routers --> PH
-    Routers --> CL
-    Routers --> WI
-    Routers --> AG
-    Routers --> TR
-
-    DS --> AX & GH & SC & WB
+    A -->|HTTP/SSE| API
+    T -->|Webhook| AO
+    W -->|Webhook| AO
+    API --> DS
+    API --> PG
+    API --> WI
+    API --> CL
+    API --> EX
+    API --> TTS
     DS --> GM
-    PH --> GM
-    PH --> LC
-    CL --> GM
+    DS --> AX
+    DS --> GH
+    DS --> SC
+    DS --> SP
+    PG --> GM
+    AO --> GM
+    WI --> SP
     WI --> GM
-    WI --> WB
-    AG --> GM
-    AG --> NS
-    NS -->|API| TG & WA
-
-    DS & PH & CL & AG --> SB
+    CL --> GM
+    API --> DB
+    API --> AU
+    API --> RE
+    A --> CF
+    A --> AU
 ```
 
 ---
 
 ## How It Works
 
-**1. Authentication**
-The user signs in via Supabase Auth (email/password or OAuth). The React frontend stores the JWT, which is sent as a `Bearer` token on every subsequent API call. The FastAPI `security.py` middleware verifies the token against Supabase on each protected route.
-
-**2. Research (DeepSearch)**
-The user submits a query. The backend's `deep_search.py` calls Gemini to generate optimized sub-queries for each data source, then fans out with `asyncio.gather` across arXiv, GitHub, Semantic Scholar, and web APIs simultaneously. Results are deduplicated by URL, scored by relevance, and persisted to Supabase. Gemini then produces a cited summary and gap analysis. Progress events stream back to the browser over a WebSocket connection.
-
-**3. Knowledge Clustering**
-The user can trigger clustering on any saved search results. `embedder.py` converts result titles and snippets into TF-IDF vectors. `clusterer.py` runs K-Means (K=4 by default) over those vectors using cosine similarity. `labeler.py` sends the grouped results to Gemini to generate a human-readable cluster label. Clusters are saved to Supabase and visualized on the frontend.
-
-**4. Project Hub Generation**
-The user creates a project (title + idea text). The `generator.py` service fetches associated search results from Supabase, then makes three sequential Gemini calls using structured prompts to produce: (a) problem validation, existing solutions, tech stack, innovation opportunities; (b) a complete Mermaid architecture diagram with component breakdown; (c) a phased roadmap with weekly milestones and risk registry. The entire plan is stored in Supabase JSONB columns.
-
-**5. Bot Interaction**
-When a message arrives at `/api/agents/telegram/webhook` or `/api/agents/whatsapp/webhook`, the `AgentOrchestrator` classifies the intent (search, projects, status, remind, ask, help) and routes to the appropriate agent function. Responses are sent back via the Telegram Bot API or Twilio REST API. The `NotificationService` also enables proactive push messages.
-
-**6. Translation & TTS**
-The frontend `AutoTranslator` component posts content to `/api/translation/batch`. The backend `translation.py` service forwards requests to the Sarvam AI Translate API. A `tts_service.py` handles text-to-speech via Sarvam AI for supported Indian languages.
+```
+1. User enters a research idea or question
+         ↓
+2. DeepSearch sends parallel queries to arXiv, GitHub, Scholar, and Web
+         ↓
+3. Results are deduplicated, scored, and fused
+         ↓
+4. Gemini generates an AI summary with inline citations + gap analysis
+         ↓
+5. Results are stored in Supabase and optionally clustered via embeddings
+         ↓
+6. User creates a Project from their research
+         ↓
+7. Plan Generator chains 3 Gemini calls:
+   ├── Project Plan (problem validation, existing solutions, innovation gaps)
+   ├── Architecture (Mermaid diagram, components, design patterns)
+   └── Roadmap (phased milestones, weekly timeline, risk analysis)
+         ↓
+8. AI Sidekick enables conversational Q&A within the project context
+         ↓
+9. Team members can be invited to view or edit the project collaboratively
+         ↓
+10. Plans can be exported to Markdown, PDF, or PPTX
+```
 
 ---
 
 ## Tech Stack
 
 ### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18 | UI component model |
-| TypeScript | 5 | Type-safe frontend |
-| Vite | 6 | Dev server and build tooling |
-| TailwindCSS | 3 | Utility-first styling |
-| Framer Motion | 12 | Page and component animations |
-| Radix UI | — | Accessible UI primitives (Dialog, Tabs, Dropdown, Tooltip, etc.) |
-| Zustand | 5 | Global auth and app state |
-| TanStack Query | 5 | Server state, caching, background refetch |
-| React Router | 7 | Client-side routing |
-| Axios | 1.9 | HTTP client |
-| Recharts | 2 | Data visualization |
-| Mermaid | 11 | In-browser architecture diagram rendering |
-| i18next | 26 | Internationalization |
-| Lucide React | — | Icon library |
-| html2pdf.js | — | Client-side PDF generation |
+
+| Technology | Purpose |
+|---|---|
+| [React 18](https://react.dev) | UI framework |
+| [TypeScript 5.8](https://typescriptlang.org) | Type safety |
+| [Vite 6](https://vitejs.dev) | Build tool and dev server |
+| [Tailwind CSS 3](https://tailwindcss.com) | Utility-first styling |
+| [Zustand](https://zustand-demo.pmnd.rs/) | Lightweight state management |
+| [React Router 7](https://reactrouter.com) | Client-side routing |
+| [TanStack React Query](https://tanstack.com/query) | Server state management |
+| [Framer Motion](https://www.framer.com/motion/) | Animations and transitions |
+| [Radix UI](https://www.radix-ui.com/) | Accessible UI primitives (Dialog, Tabs, Tooltip, etc.) |
+| [Recharts](https://recharts.org) | Dashboard charts and data visualization |
+| [Mermaid](https://mermaid.js.org) | Architecture diagram rendering |
+| [Lucide React](https://lucide.dev) | Icon library |
 
 ### Backend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| FastAPI | 0.115 | Async REST API and WebSocket framework |
-| Uvicorn | 0.34 | ASGI server |
-| Pydantic v2 | ≥2.12 | Request/response validation and settings |
-| python-dotenv | 1.1 | Environment variable loading |
-| slowapi | — | Rate limiting middleware |
-| orjson | 3.10 | High-performance JSON serialization |
 
-### AI & Machine Learning
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Google GenAI SDK | ≥1.21 | Direct Gemini API access |
-| LangChain | 0.3.25 | Prompt chaining and structured output |
-| langchain-google-genai | 2.1.4 | LangChain × Gemini integration |
-| NumPy | 2.3 | Numerical array operations |
-| Scikit-learn | 1.7 | TF-IDF vectorization and K-Means clustering |
-
-### Data Sources
 | Technology | Purpose |
-|------------|---------|
-| arxiv (PyPI) | arXiv academic paper search |
-| PyGithub | GitHub repository search via API |
-| httpx | Async HTTP for Semantic Scholar and SerpAPI |
-| aiohttp | Async HTTP for web source scraping |
+|---|---|
+| [FastAPI 0.115](https://fastapi.tiangolo.com) | Async Python API framework |
+| [Uvicorn](https://www.uvicorn.org) | ASGI server |
+| [Pydantic v2](https://docs.pydantic.dev) | Request/response validation |
+| [Pydantic Settings](https://docs.pydantic.dev/latest/concepts/pydantic_settings/) | Environment variable management |
+| [SlowAPI](https://github.com/laurentS/slowapi) | Rate limiting (100 req/min) |
 
-### Bots & Notifications
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| python-telegram-bot | 22.2 | Telegram Bot API integration |
-| twilio | 9.6 | WhatsApp messaging via Twilio |
+### AI / Machine Learning
+
+| Technology | Purpose |
+|---|---|
+| [Google Gemini](https://ai.google.dev) (`gemini-3.5-flash-lite`) | LLM for summarization, plan generation, intent classification |
+| [Gemini Embeddings](https://ai.google.dev) (`text-embedding-004`) | 768-dim vectors for semantic clustering |
+| [LangChain](https://langchain.com) | Agent framework for multi-tool research agent |
+| [scikit-learn](https://scikit-learn.org) | K-Means clustering for knowledge grouping |
 
 ### Database & Auth
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Supabase | 2.15 | PostgreSQL database + Auth + Row Level Security |
-| postgrest | 1.0 | Supabase REST client |
 
-### Export & Utilities
 | Technology | Purpose |
-|------------|---------|
-| xhtml2pdf | Server-side PDF generation |
-| python-pptx | PowerPoint export |
-| markdown | Markdown-to-HTML conversion |
-| Sarvam AI | Translation and TTS for 10 Indian languages |
+|---|---|
+| [Supabase](https://supabase.com) | Hosted PostgreSQL + Auth + Realtime |
+| [pgvector](https://github.com/pgvector/pgvector) | Vector similarity search on embeddings |
+| Row Level Security (RLS) | Per-user data isolation enforced at DB level |
 
----
+### Integrations
 
-## AI & Agent Architecture
-
-### DeepSearch Pipeline
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant API as FastAPI
-    participant DS as DeepSearch
-    participant G as Gemini
-    participant S as Sources
-
-    U->>API: POST /api/deepsearch/query
-    API->>DS: run_deep_search(query)
-    DS->>G: Generate sub-queries per source
-    G-->>DS: {arxiv_q, github_q, scholar_q, web_q}
-    DS->>S: asyncio.gather(arxiv, github, scholar, web)
-    S-->>DS: Raw results
-    DS->>DS: Deduplicate + score by relevance
-    DS->>G: Summarize + cite + gap analysis
-    G-->>DS: Summary, citations, gap analysis
-    DS->>Supabase: Persist search_results
-    DS-->>U: Stream progress via WebSocket
-```
-
-### Agent System
-
-The `AgentOrchestrator` classifies each incoming message into one of five intents and delegates to the appropriate handler:
-
-| Agent | Intent | Responsibility | Input | Output |
-|-------|--------|----------------|-------|--------|
-| Research Agent | `search` | Runs a quick DeepSearch query | Free text | Summarized findings |
-| Planning Agent | `projects` / `status` | Fetches project list or status | Command | Project summary |
-| Reminder Agent | `remind` | Schedules and sends notifications | Reminder text | Confirmation + push notification |
-| Q&A Agent | `ask` / default | Answers questions using project context from Supabase | Free text | Gemini-generated answer |
-
-### Project Hub — Three-Stage Generation
-
-| Stage | Gemini Call | Output |
-|-------|-------------|--------|
-| 1 — Plan | `get_project_plan_prompt()` | Problem validation, existing solutions, innovation opportunities, tech stack, API/dataset recommendations, GitHub repos, documentation links |
-| 2 — Architecture | `get_architecture_prompt()` | Mermaid diagram source, component list, design patterns |
-| 3 — Roadmap | `get_roadmap_prompt()` | Phased milestones, weekly timeline, risk registry |
+| Service | Purpose |
+|---|---|
+| [arXiv API](https://arxiv.org) | Academic paper search |
+| [GitHub API](https://docs.github.com/en/rest) | Repository search |
+| [Google Scholar](https://scholar.google.com) (via SerpAPI) | Academic citation search |
+| [SerpAPI](https://serpapi.com) / [Tavily](https://tavily.com) | Web search and Google Trends |
+| [Sarvam AI](https://sarvam.ai) | Multilingual text-to-speech |
+| [Resend](https://resend.com) | Transactional email for invitations |
+| [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) | Bot protection on auth pages |
+| [Telegram Bot API](https://core.telegram.org/bots/api) | Messaging bot |
+| [Twilio](https://twilio.com) | WhatsApp bot messaging |
 
 ---
 
@@ -318,78 +293,74 @@ The `AgentOrchestrator` classifies each incoming message into one of five intent
 innovix/
 ├── backend/
 │   ├── app/
-│   │   ├── api/
-│   │   │   ├── agents.py          # Telegram, WhatsApp, Meta webhook routes
-│   │   │   ├── auth.py            # Auth profile routes
-│   │   │   ├── clusters.py        # Clustering API
-│   │   │   ├── dashboard.py       # Dashboard aggregation
-│   │   │   ├── deepsearch.py      # DeepSearch REST + WebSocket routes
-│   │   │   ├── intelligence.py    # Web intelligence API
-│   │   │   ├── projects.py        # Project CRUD + plan generation
-│   │   │   ├── translation.py     # Sarvam translation API
-│   │   │   └── workspaces.py      # Workspace + notes CRUD
+│   │   ├── api/                    # FastAPI route handlers
+│   │   │   ├── auth.py             # Authentication & profile routes
+│   │   │   ├── dashboard.py        # Aggregated dashboard data
+│   │   │   ├── deepsearch.py       # DeepSearch SSE streaming endpoint
+│   │   │   ├── projects.py         # Project CRUD, plan generation, chat, export
+│   │   │   ├── workspaces.py       # Research workspace management
+│   │   │   ├── agents.py           # Bot agent API routes
+│   │   │   ├── intelligence.py     # Trends, news, freshness, competitors
+│   │   │   ├── clusters.py         # Knowledge clustering endpoints
+│   │   │   └── invitations.py      # Team invitation handling
+│   │   ├── agents/
+│   │   │   └── research_agent.py   # LangChain multi-tool research agent
 │   │   ├── core/
-│   │   │   ├── config.py          # Pydantic settings
-│   │   │   ├── database.py        # Supabase client initialization
-│   │   │   └── security.py        # Supabase JWT verification middleware
+│   │   │   ├── config.py           # Pydantic Settings (env vars)
+│   │   │   ├── database.py         # Supabase client initialization
+│   │   │   └── security.py         # JWT verification middleware
 │   │   ├── models/
-│   │   │   └── schemas.py         # All Pydantic request/response models
+│   │   │   └── schemas.py          # All Pydantic request/response models
 │   │   ├── services/
 │   │   │   ├── agents/
-│   │   │   │   ├── agent_orchestrator.py   # Intent routing + agent logic
-│   │   │   │   └── notification_service.py # Telegram + Twilio push notifications
+│   │   │   │   ├── agent_orchestrator.py   # Multi-agent intent router
+│   │   │   │   └── notification_service.py # Scheduled notifications
 │   │   │   ├── clustering/
-│   │   │   │   ├── clusterer.py   # K-Means implementation
-│   │   │   │   ├── embedder.py    # TF-IDF vectorization
-│   │   │   │   ├── labeler.py     # Gemini cluster labeling
-│   │   │   │   └── visualizer.py  # Cluster visualization data
+│   │   │   │   ├── embedder.py     # Gemini embedding generation
+│   │   │   │   ├── clusterer.py    # K-Means clustering
+│   │   │   │   ├── labeler.py      # AI-powered cluster labeling
+│   │   │   │   └── visualizer.py   # Cluster visualization data
 │   │   │   ├── project_hub/
-│   │   │   │   ├── generator.py   # Three-stage Gemini plan generation
-│   │   │   │   ├── export_service.py  # PDF + PPTX export
-│   │   │   │   └── templates/     # Structured Gemini prompts
-│   │   │   ├── sarvam/
-│   │   │   │   └── tts_service.py # Sarvam AI TTS
+│   │   │   │   ├── generator.py    # Chained Gemini plan generation
+│   │   │   │   ├── export_service.py  # MD / PDF / PPTX export
+│   │   │   │   └── templates/      # Prompt templates
 │   │   │   ├── search/
-│   │   │   │   ├── deep_search.py # Main orchestrator
-│   │   │   │   └── sources/       # arxiv, github, scholar, web adapters
+│   │   │   │   ├── deep_search.py  # DeepSearch orchestrator
+│   │   │   │   └── sources/        # arXiv, GitHub, Scholar, Web adapters
+│   │   │   ├── sarvam/
+│   │   │   │   └── tts_service.py  # Multilingual text-to-speech
 │   │   │   ├── web_intel/
-│   │   │   │   ├── trend_detector.py      # SerpAPI + Gemini trend analysis
-│   │   │   │   ├── competitive_tracker.py # Competitor analysis
-│   │   │   │   ├── freshness_scorer.py    # Source recency scoring
-│   │   │   │   └── news_aggregator.py     # Domain news collection
-│   │   │   └── translation.py     # Sarvam translate service
-│   │   └── main.py                # FastAPI app, routers, CORS, lifespan
-│   ├── migrations/                # Supabase SQL migrations
+│   │   │   │   ├── trend_detector.py      # SerpAPI + Gemini trends
+│   │   │   │   ├── news_aggregator.py     # Domain news aggregation
+│   │   │   │   ├── freshness_scorer.py    # Result freshness scoring
+│   │   │   │   └── competitive_tracker.py # Competitive analysis
+│   │   │   └── email_service.py    # Resend / SMTP email
+│   │   └── main.py                 # FastAPI app entry point
 │   ├── .env.example
 │   └── requirements.txt
-├── bots/
-│   ├── telegram_bot.py            # Standalone Telegram bot runner
-│   └── whatsapp_bot.py            # Standalone WhatsApp bot runner
 ├── frontend/
+│   ├── public/                     # Static assets (logo, images)
 │   ├── src/
-│   │   ├── components/            # Shared UI components
+│   │   ├── components/             # Shared UI components
 │   │   ├── features/
-│   │   │   ├── agents/            # AgentsPage
-│   │   │   ├── clustering/        # Cluster visualization
-│   │   │   ├── deepsearch/        # DeepSearch UI
-│   │   │   ├── intelligence/      # Web intelligence views
-│   │   │   ├── project-hub/       # Project Hub + Project Detail
-│   │   │   └── workspace/         # Research workspace
-│   │   ├── hooks/                 # Custom React hooks
-│   │   ├── lib/                   # API client + utilities
-│   │   ├── pages/
-│   │   │   ├── Dashboard.tsx      # Main dashboard
-│   │   │   ├── Landing.tsx        # Public landing page
-│   │   │   ├── Layout.tsx         # Authenticated app shell
-│   │   │   ├── Login.tsx          # Auth page (sign in, sign up, forgot)
-│   │   │   └── ResetPassword.tsx  # Password reset
-│   │   ├── stores/
-│   │   │   └── authStore.ts       # Zustand auth store
-│   │   ├── App.tsx
-│   │   └── main.tsx
+│   │   │   ├── deepsearch/         # DeepSearch UI (SearchInput, ResultStream, Citations, GapAnalysis)
+│   │   │   ├── project-hub/        # Project HUB UI (PlanViewer, ArchitectureDiagram, Timeline, etc.)
+│   │   │   ├── clustering/         # Cluster visualization (ClusterMap, ClusterLabels)
+│   │   │   ├── intelligence/       # Web Intelligence UI (Trends, News, Freshness)
+│   │   │   ├── agents/             # Agent management page
+│   │   │   └── workspace/          # Research workspace (Notes, Annotations, Export)
+│   │   ├── pages/                  # Route-level pages (Dashboard, Landing, Login, Layout)
+│   │   ├── stores/                 # Zustand stores (authStore, projectStore)
+│   │   ├── hooks/                  # Custom React hooks
+│   │   ├── lib/                    # API client, utilities
+│   │   └── App.tsx                 # Router and app shell
+│   ├── .env.example
 │   └── package.json
+├── bots/
+│   ├── telegram_bot.py             # Telegram bot (python-telegram-bot)
+│   └── whatsapp_bot.py             # WhatsApp bot (Twilio)
 ├── supabase/
-│   └── migrations/                # Supabase database migrations
+│   └── migrations/                 # SQL migration files (001–005)
 └── README.md
 ```
 
@@ -399,16 +370,19 @@ innovix/
 
 ### Prerequisites
 
-- **Node.js** 18 or later
-- **Python** 3.12 or later
-- **Git**
-- A **Supabase** project (free tier works)
-- A **Google AI Studio** account for the Gemini API key
+| Tool | Version | Required |
+|---|---|---|
+| [Python](https://python.org) | 3.10+ | Yes |
+| [Node.js](https://nodejs.org) | 18+ | Yes |
+| [npm](https://npmjs.com) | 9+ | Yes |
+| [Git](https://git-scm.com) | Any | Yes |
+| [Supabase Account](https://supabase.com) | Free tier | Yes |
+| [Google AI API Key](https://ai.google.dev) | Gemini access | Yes |
 
 ### Clone the Repository
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
+git clone https://github.com/helloaziz07/innovix.git
 cd innovix
 ```
 
@@ -417,13 +391,13 @@ cd innovix
 ```bash
 cd backend
 
-# Create and activate a virtual environment
+# Create virtual environment
 python -m venv .venv
 
-# Windows
+# Activate (Windows)
 .venv\Scripts\activate
 
-# macOS / Linux
+# Activate (macOS/Linux)
 source .venv/bin/activate
 
 # Install dependencies
@@ -432,257 +406,432 @@ pip install -r requirements.txt
 
 ### Frontend Setup
 
-Open a second terminal:
-
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
 ```
 
----
+### Database Setup
 
-## Environment Variables
+1. Create a new project on [Supabase](https://supabase.com).
+2. Go to **SQL Editor** in your Supabase dashboard.
+3. Run the migration files in order:
 
-Copy the example file and fill in your credentials:
-
-```bash
-cp backend/.env.example backend/.env
+```
+supabase/migrations/001_initial_schema.sql
+supabase/migrations/002_team_collaboration.sql
+supabase/migrations/003_update_statuses.sql
+supabase/migrations/004_activity_logs.sql
+supabase/migrations/005_enable_realtime.sql
 ```
 
-**`backend/.env`**
+### Environment Variables
+
+#### Backend (`backend/.env`)
+
+Create a `.env` file in the `backend/` directory based on `.env.example`:
+
 ```env
-# --- Supabase ---
+# --- Supabase (Required) ---
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
-# --- Google Gemini ---
+# --- Google Gemini (Required) ---
 GEMINI_API_KEY=your-gemini-api-key-here
 
-# --- GitHub (for repo search in DeepSearch) ---
+# --- GitHub (Recommended) ---
 GITHUB_TOKEN=your-github-personal-access-token
 
-# --- Search APIs ---
+# --- Search APIs (Recommended) ---
 SERPAPI_KEY=your-serpapi-key-here
 TAVILY_API_KEY=your-tavily-api-key-here
 
-# --- Semantic Scholar (optional — works without key at lower rate) ---
+# --- Semantic Scholar (Optional) ---
 SEMANTIC_SCHOLAR_API_KEY=
 
-# --- Telegram Bot (optional) ---
+# --- Telegram Bot (Optional) ---
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 
-# --- Twilio / WhatsApp (optional) ---
+# --- Twilio / WhatsApp (Optional) ---
 TWILIO_ACCOUNT_SID=your-twilio-sid
 TWILIO_AUTH_TOKEN=your-twilio-auth-token
 TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
 
-# --- Sarvam AI (optional — required for translation and TTS) ---
+# --- Sarvam AI TTS (Optional) ---
 SARVAM_API_KEY=your-sarvam-api-key-here
+
+# --- Email via Resend (Optional) ---
+RESEND_API_KEY=your-resend-api-key
+RESEND_FROM_EMAIL=Innovix <no-reply@yourdomain.com>
 
 # --- App Config ---
 APP_NAME=Innovix
 APP_ENV=development
 FRONTEND_URL=http://localhost:5173
 BACKEND_URL=http://localhost:8000
-SECRET_KEY=change-this-to-a-random-secret-key
+SECRET_KEY=generate-a-random-secret-key
 ```
 
-**`frontend/.env`**
+> Generate a secret key: `python -c "import secrets; print(secrets.token_hex(32))"`
+
+#### Frontend (`frontend/.env`)
+
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 VITE_API_URL=http://localhost:8000
 ```
 
-> **Note:** `TELEGRAM_BOT_TOKEN`, `TWILIO_*`, and `SARVAM_API_KEY` are optional. Core research and project planning features work without them.
-
 ---
 
-## Running the Project
+## Running the Application
 
-**Terminal 1 — Backend**
+Open **two terminals**:
+
+**Terminal 1 — Backend:**
+
 ```bash
 cd backend
-uv run uvicorn app.main:app --reload --port 8000
-# or: uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8000
 ```
 
-API available at `http://localhost:8000`
-Swagger docs at `http://localhost:8000/docs`
+**Terminal 2 — Frontend:**
 
-**Terminal 2 — Frontend**
 ```bash
 cd frontend
 npm run dev
 ```
 
-App available at `http://localhost:5173`
+**Terminal 3 — Telegram Bot (Optional):**
 
-**Terminal 3 — Telegram/WhatsApp (optional, for local bot testing)**
-
-To test bots locally, expose your backend using [ngrok](https://ngrok.com):
 ```bash
-ngrok http 8000
+python -m bots.telegram_bot
 ```
 
-Then register your webhook with Telegram:
-```
-https://api.telegram.org/bot<TOKEN>/setWebhook?url=<NGROK_URL>/api/agents/telegram/webhook
+| Service | URL |
+|---|---|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8000 |
+| Swagger Docs | http://localhost:8000/docs |
+| ReDoc | http://localhost:8000/redoc |
+| Health Check | http://localhost:8000/health |
+
+---
+
+## API Documentation
+
+FastAPI provides auto-generated interactive documentation at `/docs` (Swagger UI) and `/redoc` (ReDoc).
+
+### Core Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Health check |
+| `GET` | `/api/auth/me` | Get current user profile |
+| `PATCH` | `/api/auth/me` | Update user profile |
+
+### DeepSearch
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/deepsearch` | Run a deep search (SSE streaming) |
+| `GET` | `/api/deepsearch/history` | Get search history for the user |
+| `GET` | `/api/deepsearch/{id}` | Get a specific search result |
+
+### Project HUB
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/projects` | List user's projects |
+| `POST` | `/api/projects` | Create a new project |
+| `GET` | `/api/projects/{id}` | Get project details |
+| `PATCH` | `/api/projects/{id}` | Update a project |
+| `DELETE` | `/api/projects/{id}` | Delete a project |
+| `POST` | `/api/projects/{id}/generate` | Generate AI plan (SSE streaming) |
+| `POST` | `/api/projects/{id}/chat` | AI Sidekick chat (SSE streaming) |
+| `POST` | `/api/projects/{id}/magic-edit` | AI-powered inline text editing |
+| `GET` | `/api/projects/{id}/export/markdown` | Export plan as Markdown |
+| `GET` | `/api/projects/{id}/export/pdf` | Export plan as PDF |
+| `GET` | `/api/projects/{id}/export/pptx` | Export plan as PowerPoint |
+| `GET` | `/api/projects/{id}/narrate` | TTS audio of the plan |
+| `POST` | `/api/projects/{id}/invite` | Invite a team member |
+| `GET` | `/api/projects/{id}/members` | List project members |
+
+### Web Intelligence
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/intelligence/trending` | Get trending topics for a domain |
+| `GET` | `/api/intelligence/news` | Aggregate news for a domain |
+| `GET` | `/api/intelligence/freshness` | Score result freshness |
+| `GET` | `/api/intelligence/competitors` | Track competitive landscape |
+
+### Knowledge Clustering
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/clusters/{project_id}/generate` | Generate clusters from search results |
+| `GET` | `/api/clusters/{project_id}` | Get clusters for a project |
+
+### Dashboard
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/dashboard` | Aggregated stats, recent projects, recommendations |
+
+---
+
+## AI & Agent Architecture
+
+### LLM Usage
+
+All AI features use **Google Gemini** (`gemini-3.5-flash-lite`) through the official `google-genai` SDK. Embeddings use `text-embedding-004` (768 dimensions).
+
+### Multi-Agent System
+
+The Agent Orchestrator routes incoming bot messages to specialized agents based on intent classification:
+
+| Agent | Responsibility | Trigger |
+|---|---|---|
+| **Research Agent** | Quick search queries across all sources | `/search <query>` or natural language |
+| **Planning Agent** | List projects, show status summaries | `/projects`, `/status <name>` |
+| **Reminder Agent** | Schedule notifications for deadlines | `/remind <message>` |
+| **Q&A Agent** | Answer questions using project context | `/ask <question>` or general messages |
+
+### LangChain Research Agent
+
+A separate LangChain-based agent (`research_agent.py`) uses Gemini with tool-calling to autonomously decide which sources to search, generate follow-up queries, and synthesize results across multiple searches.
+
+```mermaid
+flowchart LR
+    MSG[Incoming Message] --> IC[Intent Classifier]
+    IC -->|search| RA[Research Agent]
+    IC -->|projects| PA[Planning Agent]
+    IC -->|remind| REM[Reminder Agent]
+    IC -->|ask| QA[Q&A Agent]
+    RA --> GM[Gemini]
+    PA --> DB[(Supabase)]
+    QA --> GM
+    QA --> DB
 ```
 
 ---
 
-## API Reference
+## Database Schema
 
-FastAPI automatically generates interactive API documentation at `http://localhost:8000/docs`.
+The application uses Supabase (PostgreSQL) with the `pgvector` extension for embedding storage. All tables enforce Row Level Security (RLS).
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/health` | — | Health check |
-| `GET` | `/api/auth/profile` | ✓ | Get current user profile |
-| `PATCH` | `/api/auth/profile` | ✓ | Update user profile |
-| `POST` | `/api/deepsearch/query` | ✓ | Run a DeepSearch (REST) |
-| `WS` | `/api/deepsearch/stream` | ✓ | Run a DeepSearch (WebSocket stream) |
-| `GET` | `/api/deepsearch/history` | ✓ | List past searches |
-| `POST` | `/api/projects/` | ✓ | Create a new project |
-| `GET` | `/api/projects/` | ✓ | List user projects |
-| `GET` | `/api/projects/{id}` | ✓ | Get project details |
-| `PATCH` | `/api/projects/{id}` | ✓ | Update project |
-| `DELETE` | `/api/projects/{id}` | ✓ | Delete project |
-| `POST` | `/api/projects/{id}/generate` | ✓ | Generate AI plan for project |
-| `POST` | `/api/clusters/generate` | ✓ | Run clustering on search results |
-| `GET` | `/api/clusters/{id}` | ✓ | Get clusters for a search |
-| `GET` | `/api/dashboard/` | ✓ | Aggregated dashboard data |
-| `GET` | `/api/dashboard/activity` | ✓ | Recent activity feed |
-| `GET` | `/api/intelligence/trends` | ✓ | Trending topics in a domain |
-| `POST` | `/api/translation/batch` | ✓ | Translate text via Sarvam AI |
-| `POST` | `/api/agents/telegram/webhook` | — | Telegram webhook receiver |
-| `POST` | `/api/agents/whatsapp/webhook` | — | Twilio WhatsApp webhook receiver |
-| `GET` | `/api/agents/meta/webhook` | — | Meta webhook verification |
-| `POST` | `/api/workspaces/` | ✓ | Create a workspace |
-| `POST` | `/api/workspaces/{id}/notes` | ✓ | Add a note to a workspace |
+```mermaid
+erDiagram
+    profiles {
+        uuid id PK
+        text full_name
+        text avatar_url
+        jsonb preferences
+        timestamptz created_at
+    }
 
----
+    projects {
+        uuid id PK
+        uuid user_id FK
+        text title
+        text idea_text
+        text status
+        jsonb project_plan
+        jsonb tech_stack
+        jsonb architecture
+        jsonb timeline
+        boolean is_pinned
+        boolean is_shared
+        timestamptz created_at
+        timestamptz updated_at
+    }
 
-## Database
+    search_results {
+        uuid id PK
+        uuid project_id FK
+        text query
+        jsonb sources
+        text summary
+        jsonb citations
+        integer cluster_id
+        vector embedding
+        timestamptz created_at
+    }
 
-Innovix uses **Supabase (PostgreSQL)** with Row Level Security. The backend communicates via the `supabase-py` client using the service role key for admin operations and the anon key for user-scoped operations.
+    workspaces {
+        uuid id PK
+        uuid project_id FK
+        text name
+        jsonb notes
+        jsonb annotations
+        timestamptz created_at
+    }
 
-Key tables derived from schemas and service code:
+    clusters {
+        serial id PK
+        uuid project_id FK
+        text label
+        text[] keywords
+        vector centroid
+        timestamptz created_at
+    }
 
-| Table | Purpose |
-|-------|---------|
-| `users` (Supabase Auth) | Authentication and user metadata |
-| `projects` | Project records with JSONB columns for `project_plan`, `tech_stack`, `architecture`, `timeline` |
-| `search_results` | Persisted DeepSearch runs with sources, summary, citations, and gap analysis |
-| `clusters` | K-Means clustering output grouped by `search_result_id` |
-| `workspaces` | Per-project research workspaces with notes and saved results |
-| `agent_sessions` | Maps `chat_id` from Telegram/WhatsApp to Supabase `user_id` for bot continuity |
+    project_members {
+        uuid id PK
+        uuid project_id FK
+        uuid user_id FK
+        text role
+        timestamptz created_at
+    }
 
-SQL migration files are located in `supabase/migrations/` and `backend/migrations/`.
+    project_invitations {
+        uuid id PK
+        uuid project_id FK
+        text email
+        text role
+        text token
+        text status
+        timestamptz expires_at
+    }
+
+    agent_sessions {
+        uuid id PK
+        uuid user_id FK
+        text platform
+        text chat_id
+        uuid project_id FK
+        jsonb conversation_history
+    }
+
+    project_activity_logs {
+        uuid id PK
+        uuid project_id FK
+        uuid user_id FK
+        text action
+        text component
+        jsonb metadata
+        timestamptz created_at
+    }
+
+    profiles ||--o{ projects : owns
+    profiles ||--o{ agent_sessions : has
+    profiles ||--o{ project_members : member_of
+    projects ||--o{ search_results : contains
+    projects ||--o{ workspaces : contains
+    projects ||--o{ clusters : groups
+    projects ||--o{ project_members : has_members
+    projects ||--o{ project_invitations : has_invitations
+    projects ||--o{ project_activity_logs : logs
+```
+
+### Key Design Decisions
+
+- **JSONB Columns**: Project plans, tech stacks, architectures, and timelines are stored as JSONB — flexible and schema-less for AI-generated structured output.
+- **pgvector**: Search result embeddings are stored as `VECTOR(768)` for future semantic similarity search.
+- **RLS**: Every table has row-level security policies ensuring users can only access their own data (or data shared with them via `project_members`).
 
 ---
 
 ## Security
 
 | Mechanism | Implementation |
-|-----------|---------------|
-| **Authentication** | Supabase Auth — email/password and OAuth providers |
-| **JWT Verification** | Every protected route calls `supabase.auth.get_user(token)` via `security.py` |
-| **Row Level Security** | Enforced at the Supabase database level per user |
-| **CORS** | Strict origin allowlist — only `FRONTEND_URL` and localhost in dev |
-| **Rate Limiting** | 100 requests/minute per IP via `slowapi` |
-| **CAPTCHA** | Cloudflare Turnstile on the login/signup forms |
-| **Secret Key** | Application fails to start in production if `SECRET_KEY` is left as default |
-| **Environment Variables** | No credentials in source code; all secrets via `.env` files excluded from git |
-| **Webhook Endpoints** | Telegram and Twilio webhook endpoints are public (no JWT) but validated by payload structure |
-
----
-
-## Deployment
-
-> Deployment URLs are pending configuration. The sections below describe the intended production setup.
-
-### Frontend — Vercel
-
-1. Import the repository on [Vercel](https://vercel.com).
-2. Set the **Root Directory** to `frontend`.
-3. Add all `VITE_*` environment variables, setting `VITE_API_URL` to your deployed backend URL.
-4. Deploy.
-
-### Backend — Render
-
-1. Create a **Web Service** on [Render](https://render.com).
-2. Set **Root Directory** to `backend`.
-3. Set **Build Command** to `pip install -r requirements.txt`.
-4. Set **Start Command** to `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-5. Add all backend environment variables.
-6. Update `FRONTEND_URL` to your Vercel URL and re-register Telegram/Twilio webhooks.
-
-### Database — Supabase
-
-The database is hosted on Supabase. Run SQL migration files from `supabase/migrations/` in the Supabase SQL Editor to initialize the schema.
+|---|---|
+| **Authentication** | Supabase Auth (email/password, OAuth) with JWT tokens |
+| **JWT Verification** | `HTTPBearer` middleware validates Supabase JWTs on every protected route |
+| **Row Level Security** | PostgreSQL RLS policies enforce per-user data isolation |
+| **CORS** | Restricted to frontend URL; additional origins in development only |
+| **Rate Limiting** | SlowAPI — 100 requests/minute per IP |
+| **Bot Protection** | Cloudflare Turnstile on login/signup pages |
+| **Environment Variables** | All secrets loaded via Pydantic Settings; production crashes if `SECRET_KEY` is default |
+| **Input Validation** | Pydantic v2 schemas with field constraints on all endpoints |
 
 ---
 
 ## Roadmap
 
 ### Completed
-- [x] FastAPI backend with full router structure and Pydantic v2 schemas
-- [x] Supabase auth integration with JWT middleware
-- [x] DeepSearch engine across arXiv, GitHub, Semantic Scholar, and web
-- [x] WebSocket streaming for DeepSearch progress
-- [x] K-Means clustering pipeline with Gemini-powered cluster labeling
-- [x] Three-stage AI Project Hub generator (plan, architecture, roadmap)
-- [x] PDF and PPTX export service
-- [x] Telegram bot with AgentOrchestrator (Research, Planning, Reminder, Q&A agents)
-- [x] WhatsApp integration via Twilio webhooks
-- [x] Sarvam AI translation service (10 Indian languages + English)
-- [x] Web intelligence module (trend detection, competitive tracking, news, freshness scoring)
-- [x] Rate limiting, CORS, and Cloudflare Turnstile CAPTCHA
-- [x] React frontend with Dashboard, DeepSearch, Project Hub, Agents pages
-- [x] Zustand auth store and TanStack Query for server state
 
-### In Progress
-- [ ] Sarvam AI TTS integration in the frontend UI
-- [ ] Meta WhatsApp Cloud API webhook (infrastructure is in place)
+- [x] DeepSearch with multi-source parallel search (arXiv, GitHub, Scholar, Web)
+- [x] AI summarization with citations and gap analysis
+- [x] Project HUB with AI plan generation pipeline
+- [x] Architecture diagram generation (Mermaid)
+- [x] Tech stack recommendations
+- [x] Phased development timeline / roadmap
+- [x] Knowledge clustering with Gemini embeddings
+- [x] Web Intelligence (trends, news, freshness, competitors)
+- [x] Team collaboration with role-based access (editor/viewer)
+- [x] Email invitations via Resend
+- [x] Multi-format export (Markdown, PDF, PPTX)
+- [x] Multilingual TTS via Sarvam AI
+- [x] Telegram bot with multi-agent orchestrator
+- [x] WhatsApp bot integration
+- [x] Dark/Light theme toggle
+- [x] AI Sidekick chat per project (SSE streaming)
+- [x] Magic Edit for inline AI text refinement
+- [x] Activity feed and real-time collaboration logs
+- [x] Research workspaces with notes and annotations
 
 ### Planned
-- [ ] Production deployment on Vercel + Render
-- [ ] Email notification support
-- [ ] Collaborative project workspaces (multi-user)
-- [ ] GitHub repository auto-scaffold from generated project plan
+
+- [ ] Payment gateway integration for premium features
+- [ ] Advanced analytics and usage dashboards
+- [ ] Mobile-responsive PWA improvements
+- [ ] Google ADK agent integration
 
 ---
 
 ## Contributing
 
-Contributions are welcome.
+Contributions are welcome! Here's how to get started:
 
-1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Make your changes and ensure existing functionality is not broken.
-4. Commit with a clear message: `git commit -m "feat: add your feature description"`
-5. Push to your fork: `git push origin feature/your-feature-name`
-6. Open a pull request against the `main` branch.
+1. **Fork** the repository
+2. **Create** a feature branch
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Make** your changes and test locally
+4. **Commit** with a descriptive message
+   ```bash
+   git commit -m "feat: add your feature description"
+   ```
+5. **Push** to your fork
+   ```bash
+   git push origin feature/your-feature-name
+   ```
+6. **Open** a Pull Request against `main`
 
-Please follow the existing code style and include comments on non-obvious logic.
+---
+
+## Contributors
+
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/helloaziz07"><b>Aziz Sayyad</b></a></td>
+    <td align="center"><b>Jay Shimpi</b></td>
+    <td align="center"><b>Lakshay Vig</b></td>
+    <td align="center"><b>Riya Chavan</b></td>
+    <td align="center"><b>Vedant Patil</b></td>
+  </tr>
+</table>
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+> Licensing information has not yet been specified for this project. Consider adding a `LICENSE` file to clarify usage terms.
 
 ---
 
 <div align="center">
 
-Built with care by the Innovix team.
+Built with ❤️ by the Innovix team
 
-If this project helped you, consider giving it a ⭐
+⭐ Star this repository if you find it useful
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=120&section=footer&animation=twinkling" width="100%" alt="footer" />
+[Report Bug](https://github.com/helloaziz07/innovix/issues) · [Request Feature](https://github.com/helloaziz07/innovix/issues)
 
 </div>
