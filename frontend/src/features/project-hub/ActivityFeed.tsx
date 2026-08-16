@@ -26,6 +26,7 @@ export default function ActivityFeed({ projectId, onClose }: ActivityFeedProps) 
   const [isLoading, setIsLoading] = useState(true)
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
   const activeProject = useProjectStore((state) => state.activeProject)
+  const refreshTrigger = useProjectStore((state) => state.refreshTrigger)
 
   const fetchLogs = async () => {
     try {
@@ -52,7 +53,7 @@ export default function ActivityFeed({ projectId, onClose }: ActivityFeedProps) 
 
   useEffect(() => {
     fetchLogs()
-  }, [projectId])
+  }, [projectId, refreshTrigger])
 
   const toggleExpand = (id: string) => {
     setExpandedLogs(prev => {

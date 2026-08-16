@@ -43,6 +43,72 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/projects", tags=["Project HUB"])
 
+# --- SSE Real-Time Updates ---
+# Maps project_id to a set of connected asyncio.Queues
+project_streams: dict[str, set[asyncio.Queue]] = {}
+
+async def broadcast_project_update(project_id: str, event_type: str = "update"):
+    """Broadcast an event to all connected clients for a project."""
+    if project_id in project_streams:
+        msg = {"event": event_type}
+        for q in list(project_streams[project_id]):
+            try:
+                q.put_nowait(msg)
+            except Exception as e:
+                logger.warning(f"Failed to push to SSE queue: {e}")
+
+@router.get("/{project_id}/updates-stream")
+async def project_updates_stream(
+    project_id: str,
+    request: Request,
+    token: str = Query(..., description="Auth token required since EventSource doesn't support headers"),
+):
+    """
+    SSE Endpoint for real-time dashboard updates.
+    """
+    # Simple manual token verification since Depends(get_current_user) relies on headers
+    from app.core.security import verify_token
+    try:
+        user = verify_token(token)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    # Ensure queue set exists
+    if project_id not in project_streams:
+        project_streams[project_id] = set()
+
+    client_queue = asyncio.Queue()
+    project_streams[project_id].add(client_queue)
+
+    async def event_generator():
+        try:
+            while True:
+                if await request.is_disconnected():
+                    break
+                try:
+                    # Wait for an event from the queue
+                    event = await asyncio.wait_for(client_queue.get(), timeout=5.0)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    # Keep-alive heartbeat
+                    yield ": keep-alive\n\n"
+        finally:
+            if project_id in project_streams:
+                project_streams[project_id].discard(client_queue)
+                if not project_streams[project_id]:
+                    del project_streams[project_id]
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
+    )
+
+
 def log_activity(project_id: str, user_id: str, action: str, component: str, metadata: dict = None):
     try:
         supabase_admin.table("project_activity_logs").insert({
@@ -379,6 +445,9 @@ async def update_project(
     else:
         log_activity(project_id, user["id"], "updated", "Project Details", metadata)
 
+    # Broadcast update to connected SSE clients
+    await broadcast_project_update(project_id)
+
     return MessageResponse(message="Project updated successfully")
 
 
@@ -486,6 +555,9 @@ async def generate_plan(
             )
 
         log_activity(project_id, user["id"], "regenerated", "Full Project Plan")
+
+        # Broadcast update to connected SSE clients
+        await broadcast_project_update(project_id)
 
         return MessageResponse(
             message="Project plan generated successfully",

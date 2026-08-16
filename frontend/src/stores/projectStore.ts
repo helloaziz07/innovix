@@ -67,6 +67,10 @@ interface ProjectState {
   setPipelineProgress: (progress: number) => void
   setPipelineMessage: (message: string) => void
   resetPipeline: () => void
+
+  // SSE Global Sync
+  refreshTrigger: number
+  triggerRefresh: () => void
 }
 
 export const useProjectStore = create<ProjectState>((set) => ({
@@ -80,6 +84,10 @@ export const useProjectStore = create<ProjectState>((set) => ({
   pipelineStage: 'idle',
   pipelineProgress: 0,
   pipelineMessage: '',
+
+  // SSE Global Sync defaults
+  refreshTrigger: 0,
+  triggerRefresh: () => set((state) => ({ refreshTrigger: state.refreshTrigger + 1 })),
 
   setProjects: (projects) => set({ projects }),
 
@@ -126,4 +134,5 @@ export const useProjectStore = create<ProjectState>((set) => ({
       isGeneratingPlan: false,
     }),
 }))
+
 
