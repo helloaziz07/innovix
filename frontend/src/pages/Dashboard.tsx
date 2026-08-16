@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { useAuthStore } from '@/stores/authStore'
+import VoiceInputOverlay from '@/components/VoiceInputOverlay'
 import { dashboardApi, projectsApi } from '@/lib/api'
 import { 
   Rocket, 
@@ -215,41 +216,15 @@ export default function Dashboard() {
   // Search bar state — this is the main entry point
   const [ideaText, setIdeaText] = useState('')
   const [isCreating, setIsCreating] = useState(false)
-  const [isListening, setIsListening] = useState(false)
+  const [isVoiceOverlayOpen, setIsVoiceOverlayOpen] = useState(false)
 
-  const handleMicClick = () => {
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Your browser does not support voice input.");
-      return;
+  const handleVoiceAccept = (spokenText: string) => {
+    if (!spokenText) {
+      setIsVoiceOverlayOpen(false)
+      return
     }
-    const recognition = new SpeechRecognition();
-    
-    // Map supported app languages to Speech API locales
-    const langMap: Record<string, string> = {
-      'hi': 'hi-IN', 'ta': 'ta-IN', 'te': 'te-IN', 'bn': 'bn-IN', 
-      'mr': 'mr-IN', 'kn': 'kn-IN', 'gu': 'gu-IN', 'ml': 'ml-IN', 'pa': 'pa-IN', 'en': 'en-US'
-    };
-    const currentLang = localStorage.getItem('i18nextLng') || 'en';
-    const baseLang = currentLang.split('-')[0] || 'en'; // handles 'mr', 'mr-IN', etc.
-    recognition.lang = langMap[baseLang] || 'en-US';
-    
-    recognition.onstart = () => setIsListening(true);
-    
-    recognition.onresult = async (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setIdeaText(transcript); // Show raw text exactly as they spoke it
-    };
-    
-    recognition.onerror = (e: any) => {
-      console.error("Speech recognition error:", e);
-      setIsListening(false);
-    };
-    
-    recognition.onend = () => setIsListening(false);
-    
-    recognition.start();
+    setIdeaText(prev => prev ? `${prev} ${spokenText}` : spokenText)
+    setIsVoiceOverlayOpen(false)
   }
 
   const handleTogglePin = async (project: any, e: React.MouseEvent) => {
@@ -379,29 +354,22 @@ export default function Dashboard() {
                              focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50
                              transition-all min-h-[56px] max-h-[120px]"
                   rows={2}
-                  disabled={isCreating || isListening}
+                  disabled={isCreating}
                 />
                 <button
-                  onClick={handleMicClick}
-                  disabled={isCreating || isListening}
+                  onClick={() => setIsVoiceOverlayOpen(true)}
+                  disabled={isCreating}
                   className="absolute right-14 bottom-3 w-9 h-9 rounded-lg
                              bg-white dark:bg-[#1F2937] border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400
                              flex items-center justify-center shadow-sm
                              transition-all"
                   title="Speak your idea"
                 >
-                  {isListening ? (
-                    <div className="relative flex items-center justify-center">
-                      <Mic className="w-4 h-4 text-blue-500" />
-                      <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-30 animate-ping"></span>
-                    </div>
-                  ) : (
-                    <Mic className="w-4 h-4" />
-                  )}
+                  <Mic className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleStartResearch}
-                  disabled={!ideaText.trim() || isCreating || isListening}
+                  disabled={!ideaText.trim() || isCreating}
                   className="absolute right-3 bottom-3 w-9 h-9 rounded-lg
                              bg-blue-600 hover:bg-blue-700 shadow-md
                              flex items-center justify-center
@@ -424,7 +392,7 @@ export default function Dashboard() {
                 <button
                   key={i}
                   onClick={() => setIdeaText(idea)}
-                  disabled={isCreating || isListening}
+                  disabled={isCreating}
                   className="text-[11px] px-3 py-1.5 rounded-full font-medium
                              bg-slate-100 dark:bg-[#1F2937] text-slate-600 dark:text-slate-300
                              hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400
@@ -574,6 +542,13 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </div>
+      
+      {/* Voice Input Overlay */}
+      <VoiceInputOverlay 
+        isOpen={isVoiceOverlayOpen}
+        onAccept={handleVoiceAccept}
+        onCancel={() => setIsVoiceOverlayOpen(false)}
+      />
     </div>
   )
 }
