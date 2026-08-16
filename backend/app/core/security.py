@@ -15,6 +15,21 @@ security = HTTPBearer()
 _supabase_anon = get_supabase_client()
 
 
+def verify_token(token: str) -> dict:
+    """Verifies a token string and returns the user dict."""
+    try:
+        user_response = _supabase_anon.auth.get_user(token)
+        if not user_response or not user_response.user:
+            raise ValueError("Invalid token")
+        return {
+            "id": str(user_response.user.id),
+            "email": user_response.user.email,
+            "full_name": user_response.user.user_metadata.get("full_name", ""),
+            "avatar_url": user_response.user.user_metadata.get("avatar_url", ""),
+        }
+    except Exception:
+        raise ValueError("Invalid token")
+
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
