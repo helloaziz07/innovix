@@ -223,7 +223,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                         </div>
                       </div>
                       <span className="px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 rounded-md text-xs font-medium">
-                        Pending
+                        Invite Sent
                       </span>
                     </div>
                   ))}
