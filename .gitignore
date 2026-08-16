@@ -124,6 +124,7 @@ docker-compose.override.yml
 # ==============================================================================
 # Project Documentation (Internal)
 # ==============================================================================
+/Documentation
 IMPLEMENTATION_PLAN.md
 Polished_features.md
 PROJECT_FEATURES.md
