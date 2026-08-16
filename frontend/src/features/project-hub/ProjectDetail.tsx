@@ -823,7 +823,7 @@ export default function ProjectDetail() {
 
       {/* Activity Feed Sidebar */}
       {isActivityOpen && (
-        <ActivityFeed projectId={id!} onClose={() => setActivityOpen(false)} />
+        <ActivityFeed projectId={id!} onClose={() => setIsActivityOpen(false)} />
       )}
       
       {/* AI Sidekick */}
