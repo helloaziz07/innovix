@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/logo.jpg" alt="Innovix Logo" width="120" height="120" style="border-radius: 20px;" />
+<img src="frontend/public/lgog_wth_name.png" alt="Innovix Logo" width="200" style="border-radius: 20px;" />
 
 # Innovix
 
