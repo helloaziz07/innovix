@@ -2,7 +2,6 @@
 
 <img src="frontend/public/lgog_wth_name.png" alt="Innovix Logo" width="200" style="border-radius: 20px;" />
 
-# Innovix
 
 ### Search Less. Solve More.
 
