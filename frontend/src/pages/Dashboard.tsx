@@ -424,10 +424,12 @@ export default function Dashboard() {
                 <button
                   key={i}
                   onClick={() => setIdeaText(idea)}
+                  disabled={isCreating || isListening}
                   className="text-[11px] px-3 py-1.5 rounded-full font-medium
                              bg-slate-100 dark:bg-[#1F2937] text-slate-600 dark:text-slate-300
                              hover:bg-blue-50 dark:hover:bg-blue-500/10 hover:text-blue-600 dark:hover:text-blue-400
-                             transition-colors border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-500/30"
+                             transition-colors border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-500/30
+                             disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {idea.length > 45 ? idea.slice(0, 42) + '...' : idea}
                 </button>

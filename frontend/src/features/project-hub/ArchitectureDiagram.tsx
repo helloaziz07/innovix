@@ -187,18 +187,20 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
   const [showModalDownloadMenu, setShowModalDownloadMenu] = useState(false)
 
   const handleZoomIn = (e: React.MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation()
-    setZoom((z) => {
-      if (z >= 3) return 3
-      return Number(Math.min(z + 0.2, 3).toFixed(1))
+    setZoom((prevZoom) => {
+      const nextZoom = Math.round((prevZoom + 0.2) * 10) / 10
+      return nextZoom >= 3 ? 3 : nextZoom
     })
   }
 
   const handleZoomOut = (e: React.MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation()
-    setZoom((z) => {
-      if (z <= 0.5) return 0.5
-      return Number(Math.max(z - 0.2, 0.5).toFixed(1))
+    setZoom((prevZoom) => {
+      const nextZoom = Math.round((prevZoom - 0.2) * 10) / 10
+      return nextZoom <= 0.5 ? 0.5 : nextZoom
     })
   }
 
@@ -375,10 +377,10 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
               {/* Zoom & Download Controls */}
               <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
                 <div className="flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-                  <button onClick={handleZoomIn} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b border-slate-200 dark:border-slate-700" title="Zoom In">
+                  <button onClick={handleZoomIn} disabled={zoom >= 3} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b border-slate-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Zoom In">
                     <ZoomIn className="w-4 h-4" />
                   </button>
-                  <button onClick={handleZoomOut} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Zoom Out">
+                  <button onClick={handleZoomOut} disabled={zoom <= 0.5} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Zoom Out">
                     <ZoomOut className="w-4 h-4" />
                   </button>
                 </div>
@@ -451,16 +453,10 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                              ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                 >
                 {mermaidLoaded && svgContent ? (
-                  <div 
-                    className="p-8" 
-                    style={{ 
-                      zoom: zoom,
-                      // For browsers that don't support zoom, we fallback to scale, but scrollbars might not work perfectly there.
-                      // Most modern browsers (Chrome/Edge/Safari/FF126+) support zoom.
-                    }}
-                  >
+                  <div className="p-8">
                     <div
                       className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
+                      style={{ zoom: zoom }}
                       dangerouslySetInnerHTML={{ __html: svgContent }}
                     />
                   </div>
@@ -603,12 +599,21 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                   System Architecture
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="flex bg-white dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <button onClick={handleZoomIn} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Zoom In">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors ml-2"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div className="relative flex-1 flex flex-col overflow-hidden bg-slate-100 dark:bg-slate-900">
+                <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                  <div className="flex flex-col bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
+                    <button onClick={handleZoomIn} disabled={zoom >= 3} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors border-b border-slate-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed" title="Zoom In">
                       <ZoomIn className="w-4 h-4" />
                     </button>
-                    <div className="w-px bg-slate-200 dark:bg-slate-700" />
-                    <button onClick={handleZoomOut} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" title="Zoom Out">
+                    <button onClick={handleZoomOut} disabled={zoom <= 0.5} className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Zoom Out">
                       <ZoomOut className="w-4 h-4" />
                     </button>
                   </div>
@@ -617,14 +622,21 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                       onClick={(e) => {
                         e.stopPropagation()
                         setShowModalDownloadMenu(!showModalDownloadMenu)
-                      }}
-                      className="p-2 flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm" 
+                      }} 
+                      className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm" 
                       title="Download Image"
                     >
                       <Download className="w-4 h-4" />
                     </button>
+                    <button 
+                      onClick={openExternalEditor}
+                      className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm mt-2" 
+                      title="Open in Visual Editor"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </button>
                     {showModalDownloadMenu && (
-                      <div className="absolute top-10 right-0 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl mt-1">
+                      <div className="absolute top-0 right-10 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden whitespace-nowrap z-20 shadow-xl">
                         <button 
                           onClick={(e) => {
                             downloadImage('png', e)
@@ -646,41 +658,30 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                       </div>
                     )}
                   </div>
-                  <button 
-                    onClick={openExternalEditor}
-                    className="p-2 flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors shadow-sm ml-1" 
-                    title="Open in Visual Editor"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="p-2 rounded-lg hover:bg-slate-100 dark:bg-slate-800 text-muted-foreground hover:text-white transition-colors ml-2"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
                 </div>
-              </div>
-              <div 
-                ref={modalContainerRef}
-                className={`p-8 flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 select-none
-                           ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                onMouseDown={(e) => handleMouseDown(e, modalContainerRef)}
-                onMouseMove={(e) => handleMouseMove(e, modalContainerRef)}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-              >
                 <div 
-                  className="p-8"
-                  style={{ zoom: zoom }}
+                  ref={modalContainerRef}
+                  className={`flex-1 p-6 flex justify-center items-center overflow-auto select-none touch-pan-x touch-pan-y
+                             ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                  onMouseDown={(e) => handleMouseDown(e, modalContainerRef)}
+                  onMouseMove={(e) => handleMouseMove(e, modalContainerRef)}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onTouchStart={(e) => handleTouchStart(e, modalContainerRef)}
+                  onTouchMove={(e) => handleTouchMove(e, modalContainerRef)}
+                  onTouchEnd={handleMouseUp}
+                  onTouchCancel={handleMouseUp}
                 >
-                  <div
-                    className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
-                    dangerouslySetInnerHTML={{ __html: svgContent }}
-                  />
-                </div>
+                  <div className="p-8">
+                    <div
+                      className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
+                      style={{ zoom: zoom }}
+                      dangerouslySetInnerHTML={{ __html: svgContent }}
+                    />
+                  </div>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
