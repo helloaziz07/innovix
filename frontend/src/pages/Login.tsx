@@ -17,6 +17,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { isDisposableEmail } from '@/lib/email-validator'
 
 type AuthMode = 'signin' | 'signup' | 'forgot'
 
@@ -206,6 +207,13 @@ export default function Login() {
       setError('Please fill in all fields.')
       return
     }
+    
+    // Prevent disposable emails
+    if (isDisposableEmail(email)) {
+      setError('Please use a legitimate email address. Disposable emails are not allowed.')
+      return
+    }
+
     if (password.length < 8) {
       setError('Password must be at least 8 characters long.')
       return
@@ -221,6 +229,10 @@ export default function Login() {
     const result = await signUpWithEmail(email, password, fullName, captchaToken)
     if (result.error) {
       setError(result.error)
+    } else if (result.needsVerification) {
+      // Show success message and switch to signin mode
+      setSuccessMessage('Verification email sent! Please check your inbox and verify your email to log in.')
+      setMode('signin')
     } else {
       // Account created and auto signed-in — redirect will happen via isAuthenticated effect
     }

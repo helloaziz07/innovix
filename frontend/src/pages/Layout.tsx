@@ -12,11 +12,12 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   LayoutDashboard, FolderKanban,
-  LogOut, Pin, PanelLeftClose, PanelLeftOpen
+  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { projectsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { HelpDrawer } from '@/components/HelpDrawer'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -28,6 +29,7 @@ export default function Layout() {
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
   const [pinnedProjects, setPinnedProjects] = useState<any[]>([])
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
 
   const fetchPinnedProjects = async () => {
     if (!user) return
@@ -155,6 +157,17 @@ export default function Layout() {
             </div>
           )}
 
+          {/* Help Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+            onClick={() => setIsHelpOpen(true)}
+          >
+            <HelpCircle className="w-4 h-4 shrink-0" />
+            {!collapsed && 'Help & Support'}
+          </Button>
+
           <Button
             variant="ghost"
             size="sm"
@@ -167,6 +180,8 @@ export default function Layout() {
         </div>
 
       </aside>
+
+      <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">

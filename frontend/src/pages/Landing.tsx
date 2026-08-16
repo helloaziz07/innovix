@@ -1,4 +1,4 @@
-import { Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, Brain, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight, X } from 'lucide-react';
+import { Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, Brain, Search, Rocket, Bot, Globe, BookOpen, Terminal, ChevronRight, X, Users, Wand2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -113,6 +113,38 @@ const FEATURE_DOCS: Record<string, { title: string; subtitle: string; content: R
           <li><strong>Saved Results & Annotations:</strong> Save specific DeepSearch findings directly to your workspace and highlight key takeaways.</li>
           <li><strong>Multi-Format Export:</strong> Export your entire workspace—including all notes and saved results—into clean PDF, Markdown, or PPTX formats.</li>
           <li><strong>Public/Private Sharing:</strong> Toggle workspace visibility to share your findings via a public link with collaborators.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Team Collaboration': {
+    title: 'Team Collaboration',
+    subtitle: 'Invite team members and build projects together in real-time.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p>Innovation is rarely a solo endeavor. <strong>Team Collaboration</strong> allows you to bring your co-founders, peers, or mentors directly into your project environment.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Collaboration Features:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Role-Based Access:</strong> Assign specific roles like 'Editor' or 'Viewer' to control who can modify the project plan versus who can only read it.</li>
+          <li><strong>Real-Time Activity Feeds:</strong> See exactly who is doing what within your project with live activity logs and updates.</li>
+          <li><strong>Seamless Invitations:</strong> Invite users directly via their email address using our secure invitation system.</li>
+          <li><strong>Shared Workspaces:</strong> All team members have access to the same DeepSearch results and workspace notes, ensuring everyone stays aligned.</li>
+        </ul>
+      </div>
+    )
+  },
+  'Magic Edit': {
+    title: 'Magic Edit',
+    subtitle: 'AI-powered inline text refinement and structural editing.',
+    content: (
+      <div className="space-y-4 text-sm text-slate-600">
+        <p>Need to tweak the generated project plan? <strong>Magic Edit</strong> gives you the power of an AI copywriter directly inside your documents.</p>
+        <h4 className="font-semibold text-slate-900 mt-4">Editing Capabilities:</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Inline Refinement:</strong> Highlight any text within your plan and use AI commands to refine it instantly.</li>
+          <li><strong>Dynamic Commands:</strong> Quickly choose to 'Expand', 'Simplify', 'Make More Technical', or provide your own custom prompt.</li>
+          <li><strong>Context-Aware:</strong> The AI understands the context of your entire project when making edits, ensuring terminology and architecture remain consistent.</li>
+          <li><strong>Non-Destructive:</strong> Review the AI's suggested changes before accepting them into your final project blueprint.</li>
         </ul>
       </div>
     )
@@ -368,6 +400,30 @@ export default function Landing() {
                 <h3 className="text-[20px] font-bold text-slate-900 mb-2">Research Workspaces</h3>
                 <p className="text-sm text-slate-600 leading-relaxed">
                   Save, annotate, organize, and export your research findings.
+                </p>
+              </div>
+            </div>
+            {/* Feature 8 */}
+            <div onClick={() => setSelectedFeature('Team Collaboration')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-indigo-300 hover-glow transition-all">
+              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                <Users className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-[20px] font-bold text-slate-900 mb-2">Team Collaboration</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Invite team members, assign roles, and build projects together in real-time.
+                </p>
+              </div>
+            </div>
+            {/* Feature 9 */}
+            <div onClick={() => setSelectedFeature('Magic Edit')} className="cursor-pointer micro-gradient rounded-xl border border-slate-200 p-8 ambient-shadow flex flex-col gap-6 group hover:border-cyan-300 hover-glow transition-all">
+              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                <Wand2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-[20px] font-bold text-slate-900 mb-2">Magic Edit</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  AI-powered inline text refinement to expand, simplify, or rewrite your plans.
                 </p>
               </div>
             </div>
