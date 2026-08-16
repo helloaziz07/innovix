@@ -142,9 +142,9 @@ export default function ProjectDetail() {
   const [isActivityOpen, setIsActivityOpen] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  const fetchProject = useCallback(async () => {
+  const fetchProject = useCallback(async (silent = false) => {
     if (!id) return
-    setLoading(true)
+    if (!silent) setLoading(true)
     try {
       const res = await projectsApi.get(id)
       setActiveProject(res.data)
@@ -156,10 +156,10 @@ export default function ProjectDetail() {
         console.warn('Failed to mark project as viewed:', err)
       }
     } catch (err) {
-      setError('Failed to load project')
+      if (!silent) setError('Failed to load project')
       console.error(err)
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }, [id, setActiveProject])
 
@@ -194,7 +194,7 @@ export default function ProjectDetail() {
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'projects', filter: `id=eq.${id}` }, () => {
         // Silently fetch the updated project to sync state
-        fetchProject()
+        fetchProject(true)
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -217,13 +217,13 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!id || !session?.access_token) return
 
-    const url = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+    const url = import.meta.env.VITE_API_URL || 'http://localhost:8000'
     // Native EventSource automatically handles reconnection and exponential backoff!
-    const sse = new EventSource(`${url}/projects/${id}/updates-stream?token=${session.access_token}`)
+    const sse = new EventSource(`${url}/api/projects/${id}/updates-stream?token=${session.access_token}`)
 
     // When the connection drops and reconnects, sync any missed changes
     sse.onopen = () => {
-      fetchProject()
+      fetchProject(true)
       triggerRefresh()
     }
 
@@ -232,7 +232,7 @@ export default function ProjectDetail() {
         const data = JSON.parse(event.data)
         if (data.event === 'update') {
           // Instantly refresh the project data without reloading the page
-          fetchProject()
+          fetchProject(true)
           // Tell other components (like Activity Feed) to refresh too
           triggerRefresh()
         }
