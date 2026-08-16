@@ -75,36 +75,7 @@ If you don't have an account yet, you will be prompted to create one.
     </div>
     """
 
-    if settings.smtp_email and settings.smtp_password:
-        try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = f"You're invited to join {project_title} on Innovix"
-            from_email = settings.smtp_from_email or (
-                settings.resend_from_email if settings.smtp_email == "resend" else settings.smtp_email
-            )
-            msg["From"] = from_email if "<" in from_email else f"Innovix <{from_email}>"
-            msg["To"] = to_email
-            
-            # Attach HTML content
-            part = MIMEText(html_body, "html")
-            msg.attach(part)
-            
-            # Connect to SMTP server
-            if settings.smtp_port == 465:
-                server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port)
-            else:
-                server = smtplib.SMTP(settings.smtp_host, settings.smtp_port)
-                server.starttls()
-                
-            server.login(settings.smtp_email, settings.smtp_password)
-            server.send_message(msg)
-            server.quit()
-            
-            logger.info(f"SMTP email sent successfully to {to_email}")
-        except Exception as e:
-            logger.error(f"Failed to send email via SMTP: {e}")
-            print(email_ui)
-    elif settings.resend_api_key:
+    if settings.resend_api_key:
         try:
             r = resend.Emails.send({
                 "from": settings.resend_from_email,
@@ -116,6 +87,33 @@ If you don't have an account yet, you will be prompted to create one.
         except Exception as e:
             logger.error(f"Failed to send email via Resend: {e}")
             # Fallback to printing in terminal if Resend fails
+            print(email_ui)
+    elif settings.smtp_email and settings.smtp_password:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"You're invited to join {project_title} on Innovix"
+            from_email = settings.smtp_from_email or settings.smtp_email
+            msg["From"] = from_email if "<" in from_email else f"Innovix <{from_email}>"
+            msg["To"] = to_email
+            
+            # Attach HTML content
+            part = MIMEText(html_body, "html")
+            msg.attach(part)
+            
+            # Connect to SMTP server with a strict timeout so it doesn't hang for 2 minutes
+            if settings.smtp_port == 465:
+                server = smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=10)
+            else:
+                server = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10)
+                server.starttls()
+                
+            server.login(settings.smtp_email, settings.smtp_password)
+            server.send_message(msg)
+            server.quit()
+            
+            logger.info(f"SMTP email sent successfully to {to_email}")
+        except Exception as e:
+            logger.error(f"Failed to send email via SMTP: {e}")
             print(email_ui)
     else:
         # Mock Email Service
