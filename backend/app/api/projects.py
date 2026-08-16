@@ -919,9 +919,8 @@ async def create_invitation(
     saved_invite = result.data[0]
     
     # Generate the frontend magic link URL
-    # E.g. http://localhost:5173/invite/{token}
-    # In production, this would use a settings.FRONTEND_URL
-    invite_url = f"http://localhost:5173/invite/{token}"
+    # E.g. https://www.innovixapp.site/invite/{token}
+    invite_url = f"{settings.frontend_url}/invite/{token}"
     
     # Fetch inviter profile
     inviter_res = supabase_admin.table("profiles").select("full_name").eq("id", user["id"]).single().execute()
