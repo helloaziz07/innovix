@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # --- App ---
     app_name: str = "Innovix"
     app_env: str = "development"
-    frontend_url: str = "http://localhost:5173"
+    frontend_url: str = "https://www.innovixapp.site"
     backend_url: str = "http://localhost:8000"
     secret_key: str = "change-this-to-a-random-secret-key"
 
