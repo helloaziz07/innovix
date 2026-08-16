@@ -9,7 +9,7 @@ import json
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks
 from fastapi.responses import Response, StreamingResponse
 
 from app.core.security import get_current_user
@@ -882,6 +882,7 @@ async def list_members_and_invites(
 async def create_invitation(
     project_id: str,
     invite: ProjectInvitationCreate,
+    background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
 ):
     """
@@ -927,7 +928,8 @@ async def create_invitation(
     inviter_name = inviter_res.data.get("full_name") if inviter_res.data else "A teammate"
     
     # Trigger Mock Email Service
-    await send_project_invitation(
+    background_tasks.add_task(
+        send_project_invitation,
         to_email=invite.email,
         inviter_name=inviter_name,
         project_title=project_title,

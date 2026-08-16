@@ -2,6 +2,7 @@ import { Menu, ArrowRight, PlayCircle, BarChart3, TrendingUp, Layers, Workflow, 
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/stores/authStore';
 
 const FEATURE_DOCS: Record<string, { title: string; subtitle: string; content: React.ReactNode }> = {
   'DeepSearch': {
@@ -120,7 +121,14 @@ const FEATURE_DOCS: Record<string, { title: string; subtitle: string; content: R
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuthStore();
   const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   useEffect(() => {
     const handleScroll = () => {

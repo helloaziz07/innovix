@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Activity, Clock, RefreshCw, ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
+import { Activity, Clock, RefreshCw, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
 import { diffWordsWithSpace } from 'diff'
@@ -18,9 +18,10 @@ interface ActivityLog {
 
 interface ActivityFeedProps {
   projectId: string
+  onClose: () => void
 }
 
-export default function ActivityFeed({ projectId }: ActivityFeedProps) {
+export default function ActivityFeed({ projectId, onClose }: ActivityFeedProps) {
   const [logs, setLogs] = useState<ActivityLog[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedLogs, setExpandedLogs] = useState<Set<string>>(new Set())
@@ -180,6 +181,13 @@ export default function ActivityFeed({ projectId }: ActivityFeedProps) {
             title="Refresh activity"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <button 
+            onClick={onClose}
+            className="p-1.5 ml-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Close"
+          >
+            <X className="w-5 h-5" />
           </button>
         </div>
       </div>

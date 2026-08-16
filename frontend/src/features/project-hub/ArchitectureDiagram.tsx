@@ -188,12 +188,18 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
 
   const handleZoomIn = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setZoom((z) => Math.min(z + 0.2, 3))
+    setZoom((z) => {
+      if (z >= 3) return 3
+      return Number(Math.min(z + 0.2, 3).toFixed(1))
+    })
   }
 
   const handleZoomOut = (e: React.MouseEvent) => {
     e.stopPropagation()
-    setZoom((z) => Math.max(z - 0.2, 0.5))
+    setZoom((z) => {
+      if (z <= 0.5) return 0.5
+      return Number(Math.max(z - 0.2, 0.5).toFixed(1))
+    })
   }
 
   const openExternalEditor = (e: React.MouseEvent) => {
@@ -446,7 +452,7 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                 >
                 {mermaidLoaded && svgContent ? (
                   <div 
-                    className="p-8 transition-all" 
+                    className="p-8" 
                     style={{ 
                       zoom: zoom,
                       // For browsers that don't support zoom, we fallback to scale, but scrollbars might not work perfectly there.
@@ -665,7 +671,7 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                 onMouseLeave={handleMouseUp}
               >
                 <div 
-                  className="p-8 transition-all"
+                  className="p-8"
                   style={{ zoom: zoom }}
                 >
                   <div
