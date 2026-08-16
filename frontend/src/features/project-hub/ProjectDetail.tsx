@@ -865,7 +865,7 @@ export default function ProjectDetail() {
       )}
       
       {/* AI Sidekick */}
-      {id && <ProjectSidekick projectId={id} />}
+      {id && hasPlan && <ProjectSidekick projectId={id} />}
     </div>
   )
 }
