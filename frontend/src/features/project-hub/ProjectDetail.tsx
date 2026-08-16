@@ -217,59 +217,36 @@ export default function ProjectDetail() {
   useEffect(() => {
     if (!id || !session?.access_token) return
 
-    const abortController = new AbortController()
-    
-    const listenToUpdates = async () => {
+    const url = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+    // Native EventSource automatically handles reconnection and exponential backoff!
+    const sse = new EventSource(`${url}/projects/${id}/updates-stream?token=${session.access_token}`)
+
+    // When the connection drops and reconnects, sync any missed changes
+    sse.onopen = () => {
+      fetchProject()
+      triggerRefresh()
+    }
+
+    sse.onmessage = (event) => {
       try {
-        const url = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
-        const response = await fetch(`${url}/projects/${id}/updates-stream?token=${session.access_token}`, {
-          signal: abortController.signal
-        })
-
-        if (!response.ok) throw new Error('Failed to connect to SSE stream')
-
-        const reader = response.body?.getReader()
-        const decoder = new TextDecoder()
-
-        if (reader) {
-          let buffer = ''
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-
-            buffer += decoder.decode(value, { stream: true })
-            const lines = buffer.split('\n\n')
-            buffer = lines.pop() || ''
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const dataStr = line.replace('data: ', '').trim()
-                try {
-                  const data = JSON.parse(dataStr)
-                  if (data.event === 'update') {
-                    // Instantly refresh the project data without reloading the page
-                    fetchProject()
-                    // Tell other components (like Activity Feed) to refresh too
-                    triggerRefresh()
-                  }
-                } catch (e) {
-                  // Ignore JSON parse errors for keep-alives or malformed messages
-                }
-              }
-            }
-          }
+        const data = JSON.parse(event.data)
+        if (data.event === 'update') {
+          // Instantly refresh the project data without reloading the page
+          fetchProject()
+          // Tell other components (like Activity Feed) to refresh too
+          triggerRefresh()
         }
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          console.warn('SSE Updates disconnected:', err)
-        }
+      } catch (e) {
+        // Ignore JSON parse errors for keep-alives or malformed messages
       }
     }
 
-    listenToUpdates()
+    sse.onerror = (err) => {
+      console.warn('SSE Updates disconnected, attempting to reconnect...', err)
+    }
 
     return () => {
-      abortController.abort()
+      sse.close()
     }
   }, [id, session?.access_token, fetchProject, triggerRefresh])
 
