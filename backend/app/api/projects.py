@@ -1010,6 +1010,34 @@ async def create_invitation(
     
     return saved_invite
 
+@router.delete("/{project_id}/invitations/{invitation_id}", response_model=MessageResponse)
+async def revoke_invitation(
+    project_id: str,
+    invitation_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Revoke a pending invitation. Only the project owner can revoke invites.
+    """
+    # Verify ownership
+    project_res = (
+        supabase_admin.table("projects")
+        .select("title")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    if not project_res.data:
+        raise HTTPException(status_code=403, detail="Only the project owner can revoke invites.")
+
+    # Delete the invite
+    res = supabase_admin.table("project_invitations").delete().eq("id", invitation_id).eq("project_id", project_id).execute()
+    
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Invitation not found or already deleted.")
+        
+    return {"message": "Invitation revoked successfully."}
+
 
 @router.delete("/{project_id}/members/{user_id}", response_model=MessageResponse)
 async def remove_member(

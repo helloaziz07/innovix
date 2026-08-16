@@ -88,6 +88,17 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
     }
   }
 
+  const handleRevokeInvite = async (inviteId: string) => {
+    if (!confirm('Are you sure you want to revoke this invitation?')) return
+    try {
+      await projectsApi.revokeInvitation(projectId, inviteId)
+      fetchTeam()
+    } catch (err: any) {
+      console.error('Failed to revoke invitation', err)
+      alert(err.response?.data?.detail || 'Failed to revoke invitation')
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -222,9 +233,18 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                           </p>
                         </div>
                       </div>
-                      <span className="px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 rounded-md text-xs font-medium">
-                        Invite Sent
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 rounded-md text-xs font-medium">
+                          Pending
+                        </span>
+                        <button
+                          onClick={() => handleRevokeInvite(invite.id)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Revoke invitation"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

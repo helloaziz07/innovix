@@ -86,6 +86,8 @@ export const projectsApi = {
   getMembers: (id: string) => api.get(`/projects/${id}/members`),
   inviteMember: (id: string, data: { email: string, role: string }) => 
     api.post(`/projects/${id}/invitations`, data),
+  revokeInvitation: (id: string, inviteId: string) =>
+    api.delete(`/projects/${id}/invitations/${inviteId}`),
   removeMember: (id: string, userId: string) => 
     api.delete(`/projects/${id}/members/${userId}`),
   magicEdit: (id: string, payload: { text: string; command: string; context?: string }) =>
