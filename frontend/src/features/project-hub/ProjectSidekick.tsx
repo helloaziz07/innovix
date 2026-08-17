@@ -30,7 +30,7 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
         {
           id: 'welcome',
           role: 'model',
-          content: "Hi! I'm your Innovix AI Assistant. How can i help you with this project?",
+          content: "Hi! I'm your Innovix AI Assistant. How can I help you with this project?",
         }
       ])
     }
@@ -86,7 +86,7 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
             if (line.startsWith('data: ')) {
               const dataStr = line.replace('data: ', '').trim()
               if (dataStr === '[DONE]') break
-              
+
               try {
                 const data = JSON.parse(dataStr)
                 if (data.error) {
@@ -94,9 +94,9 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
                 }
                 if (data.text) {
                   currentText += data.text
-                  setMessages(prev => 
-                    prev.map(msg => 
-                      msg.id === botMessageId 
+                  setMessages(prev =>
+                    prev.map(msg =>
+                      msg.id === botMessageId
                         ? { ...msg, content: currentText }
                         : msg
                     )
@@ -144,7 +144,7 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
                   <Bot className="w-5 h-5" />
                   <span className="font-semibold text-sm">AI Assistant</span>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsOpen(false)}
                   className="p-1 hover:bg-white/20 rounded-md transition-colors"
                 >
@@ -156,16 +156,14 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50">
                 {messages.map((msg) => (
                   <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                      msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400'
+                      }`}>
                       {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                     </div>
-                    <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${
-                      msg.role === 'user' 
-                        ? 'bg-blue-600 text-white rounded-tr-sm' 
+                    <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm ${msg.role === 'user'
+                        ? 'bg-blue-600 text-white rounded-tr-sm'
                         : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-tl-sm text-slate-800 dark:text-slate-200 shadow-sm'
-                    }`}>
+                      }`}>
                       {msg.role === 'model' ? (
                         <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-slate-900 prose-pre:text-slate-50 max-w-none">
                           {msg.content ? (
@@ -241,9 +239,8 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 ${
-            isOpen ? 'bg-slate-800 text-white dark:bg-slate-700' : 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
-          }`}
+          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 ${isOpen ? 'bg-slate-800 text-white dark:bg-slate-700' : 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
+            }`}
         >
           {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
         </button>
