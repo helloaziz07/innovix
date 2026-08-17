@@ -17,7 +17,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
-import { isDisposableEmail } from '@/lib/email-validator'
+import { isAllowedEmailDomain } from '@/lib/email-validator'
 
 type AuthMode = 'signin' | 'signup' | 'forgot'
 
@@ -208,9 +208,9 @@ export default function Login() {
       return
     }
     
-    // Prevent disposable emails
-    if (isDisposableEmail(email)) {
-      setError('Please use a legitimate email address. Disposable emails are not allowed.')
+    // Enforce strict allowlist for email domains
+    if (!isAllowedEmailDomain(email)) {
+      setError('For security purposes, registration requires a recognized email provider (e.g., @gmail.com, @outlook.com) or a verified corporate domain.')
       return
     }
 
@@ -330,13 +330,20 @@ export default function Login() {
             <AnimatePresence>
               {error && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100"
+                  initial={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                  className="mb-6 p-4 rounded-xl bg-red-50/80 border border-red-200/60 shadow-sm backdrop-blur-md relative overflow-hidden"
                 >
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-l-xl"></div>
+                  <div className="flex items-start gap-3 pl-1">
+                    <div className="p-1 bg-red-100/50 rounded-md shrink-0 mt-0.5">
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                    </div>
+                    <div className="text-[13px] leading-relaxed text-red-900 font-medium">
+                      {error}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -345,13 +352,20 @@ export default function Login() {
             <AnimatePresence>
               {successMessage && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-green-50 text-green-600 text-sm border border-green-100"
+                  initial={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+                  className="mb-6 p-4 rounded-xl bg-emerald-50/80 border border-emerald-200/60 shadow-sm backdrop-blur-md relative overflow-hidden"
                 >
-                  <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>{successMessage}</span>
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500 rounded-l-xl"></div>
+                  <div className="flex items-start gap-3 pl-1">
+                    <div className="p-1 bg-emerald-100/50 rounded-md shrink-0 mt-0.5">
+                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div className="text-[13px] leading-relaxed text-emerald-900 font-medium">
+                      {successMessage}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
