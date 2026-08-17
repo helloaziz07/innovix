@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Loader2, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
@@ -68,9 +68,10 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
 
   tasks.forEach(t => {
     if (t.assigned_to && tasksByAssignee[t.assigned_to]) {
-      tasksByAssignee[t.assigned_to].push(t)
+      tasksByAssignee[t.assigned_to]!.push(t)
     } else {
-      tasksByAssignee['unassigned'].push(t)
+      if (!tasksByAssignee['unassigned']) tasksByAssignee['unassigned'] = []
+      tasksByAssignee['unassigned']!.push(t)
     }
   })
 
@@ -79,10 +80,7 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
     return m?.user_full_name || m?.user_email || 'Unknown User'
   }
 
-  const getMemberRole = (userId: string) => {
-    const m = members.find(m => m.user_id === userId)
-    return m?.technical_role ? m.technical_role : ''
-  }
+
 
   return (
     <div className="space-y-6">
@@ -93,16 +91,16 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
         {/* Unassigned Column */}
-        {tasksByAssignee['unassigned'].length > 0 && (
+        {(tasksByAssignee['unassigned']?.length || 0) > 0 && (
           <div className="bg-slate-50 dark:bg-[#111827] rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
             <h3 className="font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-between">
               Unassigned
               <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded-full">
-                {tasksByAssignee['unassigned'].length}
+                {tasksByAssignee['unassigned']?.length || 0}
               </span>
             </h3>
             <div className="space-y-3">
-              {tasksByAssignee['unassigned'].map(task => (
+              {tasksByAssignee['unassigned']?.map(task => (
                 <TaskCard key={task.id} task={task} />
               ))}
             </div>
