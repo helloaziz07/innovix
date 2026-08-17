@@ -26,6 +26,7 @@ from app.core.database import supabase_admin
 from app.services.project_hub.templates.project_plan_prompt import get_project_plan_prompt
 from app.services.project_hub.templates.architecture_prompt import get_architecture_prompt
 from app.services.project_hub.templates.roadmap_prompt import get_roadmap_prompt
+from app.services.task_assignment import run_matchmaker
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +183,7 @@ async def generate_project_plan(
         "total_weeks": roadmap.get("total_weeks", 8),
         "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
         "risks": roadmap.get("risks", []),
+        "project_tasks": roadmap.get("project_tasks", []),
     }
 
     await _persist_plan(project_id, full_plan, target_phase)
@@ -381,6 +383,37 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
             .execute()
         )
         logger.info(f"[ProjectHub] Plan persisted for project {project_id} with status {new_status}")
+
+        # Save extracted tasks if present
+        project_tasks = plan.get("project_tasks", [])
+        if project_tasks and target_phase in ["full", "roadmap"]:
+            task_inserts = []
+            for t in project_tasks:
+                task_inserts.append({
+                    "project_id": project_id,
+                    "title": t.get("title", "Untitled Task"),
+                    "description": t.get("description", ""),
+                    "required_role": t.get("required_role", ""),
+                    "estimated_effort": t.get("estimated_effort", "medium")
+                })
+            
+            if task_inserts:
+                # Clear old tasks just in case we are regenerating
+                await asyncio.to_thread(
+                    lambda: supabase_admin.table("project_tasks")
+                    .delete()
+                    .eq("project_id", project_id)
+                    .execute()
+                )
+                
+                await asyncio.to_thread(
+                    lambda: supabase_admin.table("project_tasks")
+                    .insert(task_inserts)
+                    .execute()
+                )
+                
+                # Run the Matchmaker
+                await run_matchmaker(project_id)
 
     except Exception as e:
         logger.error(f"[ProjectHub] Failed to persist plan: {e}")

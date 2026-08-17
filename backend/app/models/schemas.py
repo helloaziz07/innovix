@@ -110,6 +110,7 @@ class ProjectInvitationCreate(BaseModel):
     """Request to create a new invitation."""
     email: str
     role: str = "viewer"
+    technical_role: Optional[str] = None
 
 class ProjectInvitationResponse(BaseModel):
     """A pending invitation."""
@@ -117,10 +118,33 @@ class ProjectInvitationResponse(BaseModel):
     project_id: UUID
     email: str
     role: str
+    technical_role: Optional[str] = None
     token: str
     status: str
     created_at: datetime
     expires_at: datetime
+
+
+class ProjectTask(BaseModel):
+    id: UUID
+    project_id: UUID
+    title: str
+    description: Optional[str] = None
+    required_role: Optional[str] = None
+    estimated_effort: Optional[str] = None
+    status: str
+    assigned_to: Optional[UUID] = None
+    created_at: datetime
+
+class ProjectTaskUpdate(BaseModel):
+    status: Optional[str] = None
+    assigned_to: Optional[UUID] = None
+
+class ProjectTaskCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    required_role: Optional[str] = None
+    estimated_effort: Optional[str] = None
 
 
 # ============================================

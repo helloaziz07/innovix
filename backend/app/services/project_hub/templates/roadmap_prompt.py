@@ -59,6 +59,14 @@ Return ONLY a valid JSON object (no markdown code fences):
             "focus_area": "What the main focus is this week"
         }}
     ],
+    "project_tasks": [
+        {{
+            "title": "Task title",
+            "description": "Detailed description of the task",
+            "required_role": "frontend|backend|design|devops|fullstack",
+            "estimated_effort": "low|medium|high"
+        }}
+    ],
     "total_weeks": 8,
     "mvp_ready_by_week": 4,
     "risks": [
@@ -74,6 +82,8 @@ Guidelines:
 - Plan for 6-12 weeks total (realistic for a student project)
 - Include 3-5 phases with clear milestones
 - Each week should have 3-5 concrete tasks
+- Provide a comprehensive list of actionable `project_tasks` based on the roadmap.
+- Assign a clear `required_role` to each task.
 - Identify an MVP milestone (minimal viable demo)
 - Include 2-4 project risks with mitigation strategies
 - Dependencies should reference phase numbers

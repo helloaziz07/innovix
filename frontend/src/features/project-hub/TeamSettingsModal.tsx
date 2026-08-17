@@ -32,6 +32,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
   const [loading, setLoading] = useState(true)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor')
+  const [inviteTechnicalRole, setInviteTechnicalRole] = useState<string>('')
   const [inviting, setInviting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -66,9 +67,14 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
       setInviting(true)
       setError('')
       setSuccess('')
-      await projectsApi.inviteMember(projectId, { email: inviteEmail, role: inviteRole })
+      await projectsApi.inviteMember(projectId, { 
+        email: inviteEmail, 
+        role: inviteRole,
+        technical_role: inviteTechnicalRole || undefined
+      })
       setSuccess(`Invitation sent to ${inviteEmail}`)
       setInviteEmail('')
+      setInviteTechnicalRole('')
       fetchTeam() // Refresh list
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to send invitation')
@@ -146,6 +152,21 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                     onChange={(e) => setInviteEmail(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   />
+                </div>
+                <div className="relative w-full sm:w-36">
+                  <select
+                    value={inviteTechnicalRole}
+                    onChange={(e) => setInviteTechnicalRole(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none"
+                  >
+                    <option value="">No Tech Role</option>
+                    <option value="frontend">Frontend</option>
+                    <option value="backend">Backend</option>
+                    <option value="fullstack">Fullstack</option>
+                    <option value="design">Design</option>
+                    <option value="devops">DevOps</option>
+                    <option value="qa">QA</option>
+                  </select>
                 </div>
                 <div className="relative w-full sm:w-36">
                   <select

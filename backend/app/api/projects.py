@@ -24,10 +24,13 @@ from app.models.schemas import (
     ProjectInvitationResponse,
     ActivityLogResponse,
     MagicEditRequest,
-    ChatRequest
+    ChatRequest,
+    ProjectTask,
+    ProjectTaskUpdate
 )
 import secrets
 from app.services.email_service import send_project_invitation
+from app.services.task_assignment import run_matchmaker
 from app.services.project_hub.generator import generate_project_plan, GenerationCancelled
 from app.services.project_hub.export_service import (
     export_to_markdown,
@@ -980,6 +983,7 @@ async def create_invitation(
         "project_id": project_id,
         "email": invite.email.lower(),
         "role": invite.role,
+        "technical_role": invite.technical_role,
         "token": token
     }
     
@@ -1061,6 +1065,10 @@ async def remove_member(
         raise HTTPException(status_code=403, detail="Only the project owner can remove members.")
         
     supabase_admin.table("project_members").delete().eq("project_id", project_id).eq("user_id", user_id).execute()
+    
+    # Run matchmaker since member was removed
+    await run_matchmaker(project_id)
+    
     return MessageResponse(message="Member removed successfully.")
 
 
@@ -1150,6 +1158,56 @@ async def clear_project_activity(
         
     supabase_admin.table("project_activity_logs").delete().eq("project_id", project_id).execute()
     return MessageResponse(message="Activity logs cleared successfully.")
+
+
+@router.get("/{project_id}/tasks", response_model=list[ProjectTask])
+async def get_project_tasks(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Get all tasks for a project."""
+    res = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).execute()
+    has_access = bool(res.data)
+    if not has_access:
+        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+        if member_res.data:
+            has_access = True
+            
+    if not has_access:
+        raise HTTPException(status_code=403, detail="You do not have access to this project.")
+        
+    tasks_res = supabase_admin.table("project_tasks").select("*").eq("project_id", project_id).order("created_at", desc=False).execute()
+    return tasks_res.data
+
+
+@router.patch("/{project_id}/tasks/{task_id}", response_model=ProjectTask)
+async def update_project_task(
+    project_id: str,
+    task_id: str,
+    task_update: ProjectTaskUpdate,
+    user: dict = Depends(get_current_user),
+):
+    """Update a specific task (e.g. status or assignment)."""
+    res = supabase_admin.table("projects").select("id").eq("id", project_id).eq("user_id", user["id"]).execute()
+    has_access = bool(res.data)
+    if not has_access:
+        member_res = supabase_admin.table("project_members").select("role").eq("project_id", project_id).eq("user_id", user["id"]).execute()
+        if member_res.data:
+            has_access = True
+            
+    if not has_access:
+        raise HTTPException(status_code=403, detail="You do not have access to this project.")
+        
+    update_data = task_update.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+        
+    task_res = supabase_admin.table("project_tasks").update(update_data).eq("id", task_id).eq("project_id", project_id).execute()
+    if not task_res.data:
+        raise HTTPException(status_code=404, detail="Task not found")
+        
+    return task_res.data[0]
+
 
 
 @router.post("/{project_id}/chat")

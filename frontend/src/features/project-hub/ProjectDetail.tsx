@@ -20,7 +20,8 @@ import {
   Pin,
   Users,
   Activity,
-  User
+  User,
+  LayoutList
 } from 'lucide-react'
 import { projectsApi } from '@/lib/api'
 import { useProjectStore } from '@/stores/projectStore'
@@ -45,6 +46,7 @@ import GenerationPipeline from './GenerationPipeline'
 import TeamSettingsModal from './TeamSettingsModal'
 import ActivityFeed from './ActivityFeed'
 import ProjectSidekick from './ProjectSidekick'
+import TaskBoard from './TaskBoard'
 
 /**
  * Error boundary for Mermaid diagram rendering.
@@ -90,13 +92,14 @@ class MermaidErrorBoundary extends Component<
   }
 }
 
-type TabKey = 'overview' | 'architecture' | 'techstack' | 'timeline'
+type TabKey = 'overview' | 'architecture' | 'techstack' | 'timeline' | 'tasks'
 
 const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
   { key: 'overview', label: 'Overview', icon: <Sparkles className="w-4 h-4" /> },
   { key: 'architecture', label: 'Architecture', icon: <Layers className="w-4 h-4" /> },
   { key: 'techstack', label: 'Tech Stack', icon: <Wrench className="w-4 h-4" /> },
   { key: 'timeline', label: 'Timeline', icon: <CalendarDays className="w-4 h-4" /> },
+  { key: 'tasks', label: 'Tasks', icon: <LayoutList className="w-4 h-4" /> },
 ]
 
 const formatRelativeTime = (dateString: string) => {
@@ -820,6 +823,9 @@ export default function ProjectDetail() {
                 )}
                 {activeTab === 'timeline' && (
                   <TimelineView plan={plan as Record<string, unknown>} />
+                )}
+                {activeTab === 'tasks' && (
+                  <TaskBoard projectId={id!} />
                 )}
               </>
             )}

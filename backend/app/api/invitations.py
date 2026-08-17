@@ -4,10 +4,12 @@ Innovix API — Invitations Routes
 Endpoints for validating and accepting project invitations.
 """
 
+from typing import Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.security import get_current_user
 from app.core.database import supabase_admin
 from app.models.schemas import MessageResponse
+from app.services.task_assignment import run_matchmaker
 
 router = APIRouter(prefix="/invitations", tags=["Team Invitations"])
 
@@ -74,7 +76,8 @@ async def accept_invitation(
     member_data = {
         "project_id": invite["project_id"],
         "user_id": user["id"],
-        "role": invite["role"]
+        "role": invite["role"],
+        "technical_role": invite.get("technical_role")
     }
     
     try:
@@ -86,5 +89,8 @@ async def accept_invitation(
             
     # 3. Mark invite as accepted
     supabase_admin.table("project_invitations").update({"status": "accepted"}).eq("id", invite["id"]).execute()
+    
+    # 4. Trigger matchmaker to assign tasks
+    await run_matchmaker(invite["project_id"])
     
     return MessageResponse(message="Successfully joined the project!")

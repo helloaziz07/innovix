@@ -84,7 +84,7 @@ export const projectsApi = {
     }),
   // --- Team Collaboration ---
   getMembers: (id: string) => api.get(`/projects/${id}/members`),
-  inviteMember: (id: string, data: { email: string, role: string }) => 
+  inviteMember: (id: string, data: { email: string, role: string, technical_role?: string }) => 
     api.post(`/projects/${id}/invitations`, data),
   revokeInvitation: (id: string, inviteId: string) =>
     api.delete(`/projects/${id}/invitations/${inviteId}`),
@@ -96,6 +96,11 @@ export const projectsApi = {
   markViewed: (id: string) => api.post(`/projects/${id}/view`),
   getActivity: (id: string) => api.get(`/projects/${id}/activity`),
   clearActivity: (id: string) => api.delete(`/projects/${id}/activity`),
+  
+  // --- Tasks (Automated Assignment) ---
+  getTasks: (id: string) => api.get(`/projects/${id}/tasks`),
+  updateTask: (id: string, taskId: string, data: any) => api.patch(`/projects/${id}/tasks/${taskId}`, data),
+
   chatStream: async (id: string, messages: { role: string; content: string }[], signal?: AbortSignal): Promise<Response> => {
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token || ''
