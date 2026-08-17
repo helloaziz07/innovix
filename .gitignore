@@ -118,6 +118,126 @@ tmp/
 .tmp/
 
 # Docker
+# ==============================================================================
+# Python / Backend
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env_back/
+ENV/
+env.bak/
+
+# Pytest / Coverage
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+htmlcov/
+
+# FastAPI / SQLite
+*.sqlite3
+*.db
+
+# ==============================================================================
+# Node.js / Frontend
+# ==============================================================================
+node_modules/
+jspm_packages/
+.npm/
+
+# npm / yarn / pnpm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.eslintcache
+
+# Vite / React
+frontend/coverage/
+
+# ==============================================================================
+# Environment Variables
+# ==============================================================================
+.env
+.env.*
+!.env.example
+
+# ==============================================================================
+# IDEs & Editors
+# ==============================================================================
+.vscode/
+.idea/
+.fleet/
+*.swp
+*.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ==============================================================================
+# OS Generated Files
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+ehthumbs_vista.db
+[Tt]humbs.db
+desktop.ini
+
+# ==============================================================================
+# Logs & Temp Files
+# ==============================================================================
+*.log
+logs/
+temp/
+tmp/
+.temp/
+.tmp/
+
+# Docker
 docker-compose.override.yml
 .docker/
 
@@ -129,3 +249,6 @@ IMPLEMENTATION_PLAN.md
 Polished_features.md
 PROJECT_FEATURES.md
 CHANGELOG.md
+
+# Un-ignore frontend lib
+!frontend/src/lib/
