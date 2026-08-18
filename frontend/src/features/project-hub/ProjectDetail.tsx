@@ -825,7 +825,10 @@ export default function ProjectDetail() {
                   <TimelineView plan={plan as Record<string, unknown>} />
                 )}
                 {activeTab === 'tasks' && (
-                  <TaskBoard projectId={id!} />
+                  <TaskBoard 
+                    projectId={id!} 
+                    isProjectComplete={!!activeProject?.project_plan?.timeline?.length} 
+                  />
                 )}
               </>
             )}

@@ -31,7 +31,7 @@ from app.models.schemas import (
 import secrets
 from app.services.email_service import send_project_invitation
 from app.services.task_assignment import run_matchmaker
-from app.services.project_hub.generator import generate_project_plan, GenerationCancelled
+from app.services.project_hub.generator import generate_project_plan, GenerationCancelled, generate_project_tasks
 from app.services.project_hub.export_service import (
     export_to_markdown,
     export_to_pdf,
@@ -947,7 +947,8 @@ async def list_members_and_invites(
             "created_at": m["created_at"],
             "user_full_name": prof.get("full_name"),
             "user_avatar": prof.get("avatar_url"),
-            "alias_name": m.get("alias_name")
+            "alias_name": m.get("alias_name"),
+            "technical_role": m.get("technical_role")
         })
         
     return {
@@ -1307,3 +1308,29 @@ INSTRUCTIONS:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.post("/{project_id}/generate-tasks", response_model=MessageResponse)
+async def api_generate_tasks(
+    project_id: str,
+    user: dict = Depends(get_current_user),
+    team_size: int = Query(4),
+):
+    """
+    Manually trigger task generation for an existing, completed project.
+    """
+    try:
+        tasks = await generate_project_tasks(project_id, user["id"], team_size)
+        
+        # Log Activity
+        log_activity(project_id, user["id"], "generated", f"{len(tasks)} Tasks")
+        
+        return MessageResponse(
+            message="Tasks generated successfully",
+            data={"tasks": tasks}
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"[ProjectHub] Task generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate tasks: {str(e)}")

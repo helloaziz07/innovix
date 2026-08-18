@@ -26,6 +26,7 @@ from app.core.database import supabase_admin
 from app.services.project_hub.templates.project_plan_prompt import get_project_plan_prompt
 from app.services.project_hub.templates.architecture_prompt import get_architecture_prompt
 from app.services.project_hub.templates.roadmap_prompt import get_roadmap_prompt
+from app.services.project_hub.templates.task_prompt import get_task_prompt
 from app.services.task_assignment import run_matchmaker
 
 logger = logging.getLogger(__name__)
@@ -386,40 +387,139 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
         logger.info(f"[ProjectHub] Plan persisted for project {project_id} with status {new_status}")
 
         # Save extracted tasks if present
-        project_tasks = plan.get("project_tasks", [])
-        if project_tasks and target_phase == "full":
-            task_inserts = []
-            for t in project_tasks:
-                desc = t.get("description") or ""
-                assignee = t.get("assignee")
-                if assignee:
-                    desc = f"[Assignee: {assignee}]\n\n{desc}"
+        if target_phase == "full":
+            if project_tasks:
+                task_inserts = []
+                for t in project_tasks:
+                    desc = t.get("description") or ""
+                    assignee = t.get("assignee")
+                    if assignee:
+                        desc = f"[Assignee: {assignee}]\n\n{desc}"
+                        
+                    task_inserts.append({
+                        "project_id": project_id,
+                        "title": t.get("title", "Untitled Task"),
+                        "description": desc,
+                        "required_role": t.get("required_role", ""),
+                        "estimated_effort": t.get("estimated_effort", "medium")
+                    })
+                
+                if task_inserts:
+                    # Clear old tasks just in case we are regenerating
+                    await asyncio.to_thread(
+                        lambda: supabase_admin.table("project_tasks")
+                        .delete()
+                        .eq("project_id", project_id)
+                        .execute()
+                    )
                     
-                task_inserts.append({
-                    "project_id": project_id,
-                    "title": t.get("title", "Untitled Task"),
-                    "description": desc,
-                    "required_role": t.get("required_role", ""),
-                    "estimated_effort": t.get("estimated_effort", "medium")
-                })
-            
-            if task_inserts:
-                # Clear old tasks just in case we are regenerating
-                await asyncio.to_thread(
-                    lambda: supabase_admin.table("project_tasks")
-                    .delete()
-                    .eq("project_id", project_id)
-                    .execute()
-                )
-                
-                await asyncio.to_thread(
-                    lambda: supabase_admin.table("project_tasks")
-                    .insert(task_inserts)
-                    .execute()
-                )
-                
-                # Run the Matchmaker
-                await run_matchmaker(project_id)
+                    await asyncio.to_thread(
+                        lambda: supabase_admin.table("project_tasks")
+                        .insert(task_inserts)
+                        .execute()
+                    )
+                    
+                    # Run the Matchmaker
+                    await run_matchmaker(project_id)
+        else:
+            # Dropdown generation or regeneration -> wipe existing tasks to prevent them from being outdated
+            await asyncio.to_thread(
+                lambda: supabase_admin.table("project_tasks")
+                .delete()
+                .eq("project_id", project_id)
+                .execute()
+            )
 
     except Exception as e:
         logger.error(f"[ProjectHub] Failed to persist plan: {e}")
+
+async def generate_project_tasks(project_id: str, user_id: str, team_size: int = 4) -> List[Dict[str, Any]]:
+    """
+    Generate standalone project tasks for an already completed project.
+    """
+    logger.info(f"Generating tasks only for project {project_id}")
+    
+    # 1. Fetch project
+    result = (
+        supabase_admin.table("projects")
+        .select("*")
+        .eq("id", project_id)
+        .execute()
+    )
+    if not result.data:
+        raise ValueError("Project not found")
+
+    project = result.data[0]
+    
+    # Check access
+    if project.get("user_id") != user_id:
+        member_res = (
+            supabase_admin.table("project_members")
+            .select("*")
+            .eq("project_id", project_id)
+            .eq("user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        if not member_res.data:
+            raise ValueError("Not authorized to access this project")
+
+    # Ensure project is complete
+    timeline = project.get("timeline") or {}
+    roadmap = timeline.get("roadmap", [])
+    if not roadmap:
+        raise ValueError("Project timeline/roadmap must be completed before generating tasks.")
+        
+    idea_text = project.get("idea_text", "")
+    tech_stack = project.get("tech_stack", [])
+    architecture = project.get("architecture", {})
+    
+    # Generate tasks
+    prompt = get_task_prompt(
+        idea_text, 
+        json.dumps(tech_stack, indent=2), 
+        json.dumps(architecture.get("components", []), indent=2), 
+        json.dumps(roadmap, indent=2),
+        team_size
+    )
+    
+    res = await _call_gemini_json(prompt, max_tokens=8000)
+    if "error" in res:
+        raise ValueError(f"Task generation failed: {res['error']}")
+        
+    project_tasks = res.get("project_tasks", [])
+    
+    if project_tasks:
+        task_inserts = []
+        for t in project_tasks:
+            desc = t.get("description") or ""
+            assignee = t.get("assignee")
+            if assignee:
+                desc = f"[Assignee: {assignee}]\n\n{desc}"
+                
+            task_inserts.append({
+                "project_id": project_id,
+                "title": t.get("title", "Untitled Task"),
+                "description": desc,
+                "required_role": t.get("required_role", ""),
+                "estimated_effort": t.get("estimated_effort", "medium")
+            })
+        
+        # Clear old tasks just in case
+        await asyncio.to_thread(
+            lambda: supabase_admin.table("project_tasks")
+            .delete()
+            .eq("project_id", project_id)
+            .execute()
+        )
+        
+        await asyncio.to_thread(
+            lambda: supabase_admin.table("project_tasks")
+            .insert(task_inserts)
+            .execute()
+        )
+        
+        # Run the Matchmaker
+        await run_matchmaker(project_id)
+        
+    return project_tasks

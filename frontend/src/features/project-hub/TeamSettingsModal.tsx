@@ -11,6 +11,7 @@ interface Member {
   user_full_name?: string
   user_avatar?: string
   alias_name?: string
+  technical_role?: string
 }
 
 interface Invitation {
@@ -39,6 +40,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [aiRoles, setAiRoles] = useState<string[]>([])
+  const [isCustomTechRole, setIsCustomTechRole] = useState(false)
 
   const fetchTeam = async () => {
     try {
@@ -53,8 +55,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
         const tasks = tasksRes.data.tasks || []
         const roles = new Set<string>()
         tasks.forEach((t: any) => {
-          const match = t.description?.match(/^\[Assignee:\s*(.*?)\]/i)
-          if (match) roles.add(match[1])
+          if (t.required_role) roles.add(t.required_role.toLowerCase())
         })
         setAiRoles(Array.from(roles).sort())
       } catch (e) {
@@ -162,7 +163,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
               </label>
               <div className="flex flex-col sm:flex-row gap-3">
                 {/* 1. Alias */}
-                <div className="relative w-full sm:w-48 shrink-0">
+                <div className="relative w-full sm:w-32 shrink-0">
                   <input
                     type="text"
                     placeholder="Name"
@@ -184,32 +185,50 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                   />
                 </div>
                 {/* 3. Tech Role */}
-                <div className="relative w-full sm:w-48 shrink-0">
-                  <input
-                    type="text"
-                    list="tech-roles"
-                    placeholder="Tech Role"
-                    value={inviteTechnicalRole}
-                    onChange={(e) => setInviteTechnicalRole(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
-                  />
-                  <datalist id="tech-roles">
-                    {aiRoles.length > 0 ? (
-                      aiRoles.map(role => (
+                {isCustomTechRole ? (
+                  <div className="relative w-full sm:w-40 shrink-0 flex items-center gap-1">
+                    <input
+                      type="text"
+                      placeholder="Custom Role"
+                      value={inviteTechnicalRole}
+                      onChange={(e) => setInviteTechnicalRole(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                    />
+                    <button type="button" onClick={() => setIsCustomTechRole(false)} className="absolute right-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative w-full sm:w-40 shrink-0">
+                    <select
+                      value={inviteTechnicalRole || ''}
+                      onChange={(e) => {
+                        if (e.target.value === 'custom') {
+                          setIsCustomTechRole(true)
+                          setInviteTechnicalRole('')
+                        } else {
+                          setInviteTechnicalRole(e.target.value)
+                        }
+                      }}
+                      className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none capitalize"
+                    >
+                      <option value="" disabled>Tech Role</option>
+                      {aiRoles.map(role => (
                         <option key={role} value={role}>{role}</option>
-                      ))
-                    ) : (
-                      <>
-                        <option value="frontend">Frontend</option>
-                        <option value="backend">Backend</option>
-                        <option value="fullstack">Fullstack</option>
-                        <option value="design">Design</option>
-                        <option value="devops">DevOps</option>
-                        <option value="qa">QA</option>
-                      </>
-                    )}
-                  </datalist>
-                </div>
+                      ))}
+                      {!aiRoles.includes('frontend') && <option value="frontend">Frontend</option>}
+                      {!aiRoles.includes('backend') && <option value="backend">Backend</option>}
+                      {!aiRoles.includes('fullstack') && <option value="fullstack">Fullstack</option>}
+                      {!aiRoles.includes('design') && <option value="design">Design</option>}
+                      {!aiRoles.includes('devops') && <option value="devops">DevOps</option>}
+                      {!aiRoles.includes('qa') && <option value="qa">QA</option>}
+                      <option value="custom" className="font-semibold text-blue-600">Add Custom...</option>
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                      ▼
+                    </div>
+                  </div>
+                )}
                 {/* 4. Role */}
                 <div className="relative w-full sm:w-32 shrink-0">
                   <select
@@ -252,8 +271,8 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                         {member.user_full_name ? member.user_full_name.charAt(0).toUpperCase() : 'U'}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">
-                          {member.user_full_name || 'Unknown User'} {member.alias_name ? `(${member.alias_name})` : ''}
+                        <p className="text-sm font-medium text-slate-900 dark:text-white capitalize">
+                          {member.user_full_name || 'Unknown User'} {member.technical_role ? `(${member.technical_role})` : (member.alias_name ? `(${member.alias_name})` : '')}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 capitalize flex items-center gap-1">
                           {member.role === 'owner' ? <ShieldAlert className="w-3 h-3 text-blue-500"/> : null}

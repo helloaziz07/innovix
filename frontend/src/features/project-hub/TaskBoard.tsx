@@ -20,32 +20,46 @@ interface Member {
   user_full_name?: string
 }
 
-export default function TaskBoard({ projectId }: { projectId: string }) {
+export default function TaskBoard({ projectId, isProjectComplete }: { projectId: string, isProjectComplete?: boolean }) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const [tasksRes, membersRes] = await Promise.all([
+        projectsApi.getTasks(projectId),
+        projectsApi.getMembers(projectId)
+      ])
+      setTasks(tasksRes.data || [])
+      setMembers(membersRes.data.members || [])
+    } catch (err) {
+      console.error("Failed to load tasks or members", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const [tasksRes, membersRes] = await Promise.all([
-          projectsApi.getTasks(projectId),
-          projectsApi.getMembers(projectId)
-        ])
-        setTasks(tasksRes.data || [])
-        setMembers(membersRes.data.members || [])
-      } catch (err) {
-        console.error("Failed to load tasks or members", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    
     if (projectId) {
       fetchData()
     }
   }, [projectId])
+
+  const handleGenerateTasks = async () => {
+    try {
+      setIsGenerating(true)
+      await projectsApi.generateTasks(projectId)
+      await fetchData()
+    } catch (err) {
+      console.error("Failed to generate tasks", err)
+      alert("Failed to generate tasks. Please ensure the project roadmap is complete.")
+    } finally {
+      setIsGenerating(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -106,7 +120,27 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
       
       {tasks.length === 0 && (
         <div className="text-center py-12 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-          <p className="text-slate-500">No tasks generated yet. They will appear here once the project plan is complete.</p>
+          <p className="text-slate-500 mb-6">No tasks generated yet. They will appear here once you generate them.</p>
+          <div className="flex justify-center">
+            {isProjectComplete ? (
+              <button
+                onClick={handleGenerateTasks}
+                disabled={isGenerating}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
+              >
+                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {isGenerating ? 'Generating Tasks...' : 'Generate Tasks'}
+              </button>
+            ) : (
+              <button
+                disabled
+                title="Complete your project timeline to generate tasks"
+                className="flex items-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl text-sm font-medium cursor-not-allowed"
+              >
+                Generate Tasks
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -144,7 +178,7 @@ function TaskCard({ task, members }: { task: Task, members: Member[] }) {
       
       <div className="flex items-center gap-2 mt-auto pt-2 border-t border-slate-100 dark:border-slate-700/50">
         <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium capitalize">
-          {task.required_role ? `${task.required_role}${memberName ? ` ${memberName}` : ''}` : (memberName || 'General')}
+          {task.required_role ? `${task.required_role}${memberName ? ` (${memberName})` : ''}` : (memberName || 'General')}
         </span>
         <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium capitalize ${
           task.estimated_effort === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :

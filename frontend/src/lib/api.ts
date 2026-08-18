@@ -100,6 +100,7 @@ export const projectsApi = {
   // --- Tasks (Automated Assignment) ---
   getTasks: (id: string) => api.get(`/projects/${id}/tasks`),
   updateTask: (id: string, taskId: string, data: any) => api.patch(`/projects/${id}/tasks/${taskId}`, data),
+  generateTasks: (id: string, teamSize: number = 4) => api.post(`/projects/${id}/generate-tasks`, null, { params: { team_size: teamSize } }),
 
   chatStream: async (id: string, messages: { role: string; content: string }[], signal?: AbortSignal): Promise<Response> => {
     const { data: { session } } = await supabase.auth.getSession()
