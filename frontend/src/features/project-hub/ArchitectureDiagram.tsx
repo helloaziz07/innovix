@@ -455,8 +455,8 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                 {mermaidLoaded && svgContent ? (
                   <div className="p-8">
                     <div
-                      className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
-                      style={{ zoom: zoom }}
+                      className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none transition-transform duration-200"
+                      style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
                       dangerouslySetInnerHTML={{ __html: svgContent }}
                     />
                   </div>
@@ -550,12 +550,15 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
           <h3 className="text-sm font-semibold mb-3">🧩 Design Patterns</h3>
           <div className="space-y-2">
             {patterns.map((p, idx) => (
-              <div key={idx} className="flex items-start gap-3 text-xs">
-                <span className="font-medium text-blue-500 dark:text-blue-300 whitespace-nowrap">
+              <div key={idx} className="flex flex-col gap-1 text-xs p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
                   {p.pattern as string}
                 </span>
-                <span className="text-muted-foreground">
-                  {p.where as string} — {p.why as string}
+                <span className="text-muted-foreground leading-relaxed mt-0.5">
+                  <strong className="text-slate-600 dark:text-slate-300 font-medium">Where:</strong> {p.where as string}
+                </span>
+                <span className="text-muted-foreground leading-relaxed">
+                  <strong className="text-slate-600 dark:text-slate-300 font-medium">Why:</strong> {p.why as string}
                 </span>
               </div>
             ))}
@@ -674,8 +677,8 @@ export default function ArchitectureDiagram({ architecture, onUpdate }: Architec
                 >
                   <div className="p-8">
                     <div
-                      className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none"
-                      style={{ zoom: zoom }}
+                      className="[&_svg]:max-w-none [&_svg]:h-auto pointer-events-none transition-transform duration-200"
+                      style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
                       dangerouslySetInnerHTML={{ __html: svgContent }}
                     />
                   </div>

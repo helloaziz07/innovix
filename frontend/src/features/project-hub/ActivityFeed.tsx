@@ -160,7 +160,7 @@ export default function ActivityFeed({ projectId, onClose }: ActivityFeedProps) 
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-l border-border w-80 shrink-0">
+    <div className="absolute right-0 top-0 bottom-0 z-50 flex flex-col h-full bg-white dark:bg-slate-900 border-l border-border w-[85vw] sm:w-80 md:relative shrink-0 shadow-2xl md:shadow-none transition-all">
       <div className="p-4 border-b border-border flex items-center justify-between sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10">
         <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200">
           <Activity className="w-5 h-5" />

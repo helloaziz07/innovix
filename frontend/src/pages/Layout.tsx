@@ -58,11 +58,27 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-[#0B1120] overflow-hidden">
-      {/* Sidebar */}
+    <div className="flex flex-col md:flex-row h-screen bg-slate-50 dark:bg-[#0B1120] overflow-hidden">
+      {/* Mobile Top Bar */}
+      <header className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-[#111827] border-b border-border shrink-0 z-20">
+        <Link to="/dashboard" className="flex items-center gap-2">
+          <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
+          <span className="text-xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">Innovix</span>
+        </Link>
+        <div className="flex items-center gap-4">
+          <ThemeToggle collapsed={true} />
+          {user && (
+            <button onClick={handleSignOut} className="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Sidebar (Desktop only) */}
       <aside
         className={cn(
-          'flex flex-col border-r border-border bg-white dark:bg-[#111827] transition-all duration-300',
+          'hidden md:flex flex-col border-r border-border bg-white dark:bg-[#111827] transition-all duration-300',
           collapsed ? 'w-16' : 'w-64'
         )}
       >
@@ -184,9 +200,37 @@ export default function Layout() {
       <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-20 md:pb-0 relative z-0">
         <Outlet />
       </main>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#111827] border-t border-border flex items-center justify-around p-3 z-50 safe-area-pb">
+        {navItems.map((navItem) => (
+          <NavLink
+            key={navItem.to}
+            to={navItem.to}
+            className={({ isActive }) =>
+              cn(
+                'flex flex-col items-center gap-1 text-xs font-medium transition-colors',
+                isActive
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              )
+            }
+          >
+            <navItem.icon className="w-5 h-5" />
+            <span>{navItem.label}</span>
+          </NavLink>
+        ))}
+        <button
+          onClick={() => setIsHelpOpen(true)}
+          className="flex flex-col items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        >
+          <HelpCircle className="w-5 h-5" />
+          <span>Help</span>
+        </button>
+      </nav>
     </div>
   )
 }

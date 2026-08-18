@@ -45,7 +45,7 @@ function ProjectOverviewCards({ stats }: { stats: any }) {
   ]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {cards.map((stat, idx) => (
         <motion.div
           key={stat.label}
@@ -303,14 +303,14 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="text-3xl font-bold mb-1 text-slate-900 dark:text-white">
+        <h1 className="text-2xl md:text-3xl font-bold mb-1 text-slate-900 dark:text-white">
           Welcome back, <span className="text-blue-600 dark:text-blue-400">{firstName}</span> 👋
         </h1>
         <p className="text-muted-foreground">
@@ -409,7 +409,7 @@ export default function Dashboard() {
 
       {/* Stats */}
       {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white dark:bg-[#111827] border border-slate-100 dark:border-[#1F2937] rounded-xl p-5 shadow-sm animate-pulse">
               <div className="flex items-center gap-4">
@@ -429,7 +429,7 @@ export default function Dashboard() {
       )}
 
       {/* Main grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
         {/* Left column — Recent Projects + Progress */}
         <motion.div
           initial={{ opacity: 0 }}

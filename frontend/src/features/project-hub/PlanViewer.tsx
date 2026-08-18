@@ -246,7 +246,7 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
                 )}
               </div>
             ) : (
-              <p className="text-muted-foreground">{pv.summary as string}</p>
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap max-w-4xl">{pv.summary as string}</p>
             )}
             {onNarrate && (
               <button
@@ -355,7 +355,7 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap max-w-4xl">
                 {String(pv.business_perspective)}
               </p>
             )}
@@ -553,7 +553,7 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
             <p className="italic text-muted-foreground mb-3">{String(docs.tagline)}</p>
           )}
           {docs.proposal_outline && (
-            <div className="whitespace-pre-wrap text-xs text-muted-foreground leading-relaxed">
+            <div className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 leading-relaxed max-w-4xl">
               {String(docs.proposal_outline)}
             </div>
           )}

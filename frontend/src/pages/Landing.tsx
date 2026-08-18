@@ -155,6 +155,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuthStore();
   const [selectedFeature, setSelectedFeature] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
@@ -217,11 +218,39 @@ export default function Landing() {
             <button onClick={() => navigate('/login')} className="bg-blue-600 text-white font-medium text-sm px-4 py-2 rounded-lg hover-glow transition-all duration-200 shadow-sm">Get Started</button>
           </div>
           {/* Mobile Menu Toggle */}
-          <button className="md:hidden text-slate-600 p-4">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden text-slate-600 p-4">
             <Menu className="w-6 h-6" />
           </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-[60] bg-white flex flex-col pt-6 px-6"
+          >
+            <div className="flex justify-between items-center mb-8">
+              <div className="flex items-center gap-2">
+                <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded object-contain" />
+                <span className="text-xl font-bold text-slate-900 tracking-tight">Innovix</span>
+              </div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex flex-col gap-6 text-lg font-medium">
+              <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-700 hover:text-blue-600">Features</a>
+              <div className="w-full h-px bg-slate-200"></div>
+              <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} className="text-left text-blue-600 font-bold">Sign In</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-md w-full text-center">Get Started</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
       <header className="relative min-h-screen flex items-center pt-16 overflow-hidden">
@@ -244,11 +273,11 @@ export default function Landing() {
         </div>
         <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-8 w-full grid md:grid-cols-12 gap-8 items-center">
           {/* Hero Content */}
-          <div className="md:col-span-7 lg:col-span-6 flex flex-col gap-8">
-            <h1 className="text-5xl lg:text-6xl md:leading-[64px] font-extrabold text-slate-900 tracking-tight drop-shadow-sm">
+          <div className="md:col-span-7 lg:col-span-6 flex flex-col gap-8 mt-12 md:mt-0">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl md:leading-[64px] leading-tight font-extrabold text-slate-900 tracking-tight drop-shadow-sm">
               Transform Ideas into <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Reality</span> with AI-Driven Precision
             </h1>
-            <p className="text-lg text-slate-800 font-medium max-w-xl drop-shadow-sm">
+            <p className="text-base md:text-lg text-slate-800 font-medium max-w-xl drop-shadow-sm">
               Research, plan, and execute your next breakthrough with Innovix—the intelligent assistant for creators and entrepreneurs.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 mt-4">

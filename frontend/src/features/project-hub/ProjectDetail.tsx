@@ -573,7 +573,7 @@ export default function ProjectDetail() {
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex flex-wrap items-center gap-2 flex-shrink-0 w-full lg:w-auto">
             {!hasPlan ? (
               activeProject.role !== 'viewer' ? (
                 <button
@@ -698,12 +698,12 @@ export default function ProjectDetail() {
       {(hasPlan || isGeneratingPlan) && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {/* Tabs */}
-          <div className="flex gap-1 mb-6 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl w-full md:w-fit border border-slate-200 dark:border-slate-800 overflow-x-auto whitespace-nowrap hide-scrollbar max-w-full">
+          <div className="flex gap-1 mb-6 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl w-full md:w-fit border border-slate-200 dark:border-slate-800 overflow-x-auto whitespace-nowrap hide-scrollbar max-w-full snap-x snap-mandatory">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => !isGeneratingPlan && setActiveTab(tab.key)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all
+                className={`snap-start flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all
                   ${activeTab === tab.key
                     ? 'bg-violet-600/20 text-blue-500 dark:text-blue-300 font-medium border border-blue-200 dark:border-blue-500/30'
                     : 'text-muted-foreground hover:text-foreground hover:bg-slate-50 dark:bg-slate-800/50'
