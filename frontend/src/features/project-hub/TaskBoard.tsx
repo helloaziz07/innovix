@@ -157,16 +157,19 @@ export default function TaskBoard({ projectId, isProjectComplete }: { projectId:
 }
 
 function TaskCard({ task, members }: { task: Task, members: Member[] }) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const assignee = members.find(m => m.user_id === task.assigned_to)
   const memberName = assignee ? (assignee.alias_name || assignee.user_full_name?.split(' ')[0]) : null
 
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-[#1F2937] p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all cursor-pointer"
+      onClick={() => setIsExpanded(!isExpanded)}
+      className="bg-white dark:bg-[#1F2937] p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
     >
-      <div className="flex items-start justify-between gap-2 mb-2">
+      <motion.div layout="position" className="flex items-start justify-between gap-2 mb-2">
         <h4 className="font-medium text-sm text-slate-900 dark:text-white leading-tight">
           {task.title}
         </h4>
@@ -177,15 +180,17 @@ function TaskCard({ task, members }: { task: Task, members: Member[] }) {
         ) : (
           <AlertCircle className="w-4 h-4 text-slate-300 dark:text-slate-600 shrink-0 mt-0.5" />
         )}
-      </div>
+      </motion.div>
       
       {task.description && (
-        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">
-          {task.description}
-        </p>
+        <motion.div layout="position" className="mb-3">
+          <p className={`text-xs text-slate-500 dark:text-slate-400 ${isExpanded ? 'whitespace-pre-wrap' : 'line-clamp-2'}`}>
+            {task.description}
+          </p>
+        </motion.div>
       )}
       
-      <div className="flex items-center gap-2 mt-auto pt-2 border-t border-slate-100 dark:border-slate-700/50">
+      <motion.div layout="position" className="flex items-center gap-2 mt-auto pt-2 border-t border-slate-100 dark:border-slate-700/50">
         <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium capitalize">
           {task.required_role ? `${task.required_role}${memberName ? ` (${memberName})` : ''}` : (memberName || 'General')}
         </span>
@@ -196,7 +201,7 @@ function TaskCard({ task, members }: { task: Task, members: Member[] }) {
         }`}>
           {task.estimated_effort || 'low'}
         </span>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
