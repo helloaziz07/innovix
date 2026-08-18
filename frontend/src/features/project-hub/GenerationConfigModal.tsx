@@ -15,7 +15,6 @@ interface GenerationConfigModalProps {
 export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasExistingPlan = false }: GenerationConfigModalProps) {
   const [mode, setMode] = useState<'full' | 'scoped'>('full')
   const [targetPhase, setTargetPhase] = useState<string>('main_plan')
-  const [teamSize, setTeamSize] = useState<number>(4)
 
   if (!isOpen) return null
 
@@ -137,7 +136,7 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasE
                 Cancel
               </Button>
               <Button
-                onClick={() => onConfirm(mode === 'full' ? 'full' : targetPhase, teamSize)}
+                onClick={() => onConfirm(mode === 'full' ? 'full' : targetPhase, 4)}
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
               >
                 Start Generation
