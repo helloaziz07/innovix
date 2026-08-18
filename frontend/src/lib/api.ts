@@ -60,10 +60,10 @@ export const projectsApi = {
    * @param signal - AbortSignal for cancellation
    * @returns Promise<Response> — the raw fetch Response with body stream
    */
-  generatePlanStream: async (id: string, signal?: AbortSignal, targetPhase: string = 'full'): Promise<Response> => {
+  generatePlanStream: async (id: string, signal?: AbortSignal, targetPhase: string = 'full', teamSize: number = 4): Promise<Response> => {
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token || ''
-    return fetch(`${API_BASE}/api/projects/${id}/generate-plan-stream?target_phase=${targetPhase}`, {
+    return fetch(`${API_BASE}/api/projects/${id}/generate-plan-stream?target_phase=${targetPhase}&team_size=${teamSize}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,

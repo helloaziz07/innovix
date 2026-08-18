@@ -36,6 +36,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
   const [inviting, setInviting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [aiRoles, setAiRoles] = useState<string[]>([])
 
   const fetchTeam = async () => {
     try {
@@ -43,6 +44,20 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
       const res = await projectsApi.getMembers(projectId)
       setMembers(res.data.members || [])
       setInvitations(res.data.invitations || [])
+      
+      // Fetch tasks to extract AI Assignees
+      try {
+        const tasksRes = await projectsApi.getTasks(projectId)
+        const tasks = tasksRes.data.tasks || []
+        const roles = new Set<string>()
+        tasks.forEach((t: any) => {
+          const match = t.description?.match(/^\[Assignee:\s*(.*?)\]/i)
+          if (match) roles.add(match[1])
+        })
+        setAiRoles(Array.from(roles).sort())
+      } catch (e) {
+        console.error('Failed to load tasks for AI roles', e)
+      }
     } catch (err) {
       console.error('Failed to load team', err)
     } finally {
@@ -160,12 +175,20 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                     className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none"
                   >
                     <option value="">No Tech Role</option>
-                    <option value="frontend">Frontend</option>
-                    <option value="backend">Backend</option>
-                    <option value="fullstack">Fullstack</option>
-                    <option value="design">Design</option>
-                    <option value="devops">DevOps</option>
-                    <option value="qa">QA</option>
+                    {aiRoles.length > 0 ? (
+                      aiRoles.map(role => (
+                        <option key={role} value={role}>{role}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="frontend">Frontend</option>
+                        <option value="backend">Backend</option>
+                        <option value="fullstack">Fullstack</option>
+                        <option value="design">Design</option>
+                        <option value="devops">DevOps</option>
+                        <option value="qa">QA</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className="relative w-full sm:w-36">

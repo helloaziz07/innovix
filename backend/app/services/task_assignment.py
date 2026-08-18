@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import List, Dict, Optional
 from app.core.database import supabase_admin
 
@@ -68,17 +69,30 @@ async def run_matchmaker(project_id: str):
         # 4. Perform assignment
         updates = []
         for task in unassigned_tasks:
+            desc = task.get("description", "")
+            assignee_match = re.search(r'^\[Assignee:\s*(.*?)\]', desc, re.IGNORECASE)
+            task_ai_assignee = assignee_match.group(1).strip().lower() if assignee_match else None
+
             required_role = task.get("required_role")
-            if not required_role:
+            req_role_lower = required_role.strip().lower() if required_role else None
+            
+            if not task_ai_assignee and not req_role_lower:
                 continue
                 
-            req_role_lower = required_role.strip().lower()
+            # Find eligible members by AI Assignee first, then fallback to required_role
+            eligible_members = []
             
-            # Find eligible members
-            eligible_members = [
-                m for m in role_members 
-                if m["technical_role"].strip().lower() == req_role_lower
-            ]
+            if task_ai_assignee:
+                eligible_members = [
+                    m for m in role_members 
+                    if m["technical_role"].strip().lower() == task_ai_assignee
+                ]
+                
+            if not eligible_members and req_role_lower:
+                eligible_members = [
+                    m for m in role_members 
+                    if m["technical_role"].strip().lower() == req_role_lower
+                ]
             
             if eligible_members:
                 # Pick the member with the lowest workload

@@ -66,9 +66,27 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
     tasksByAssignee[m.user_id] = []
   })
 
-  tasks.forEach(t => {
+  const safeTasks = tasks.map(t => {
+    let fakeAssignee = null;
+    let cleanDescription = t.description;
+    
+    if (t.description) {
+      const match = t.description.match(/^\[Assignee:\s*(.*?)\]/i);
+      if (match) {
+        fakeAssignee = match[1];
+        cleanDescription = t.description.replace(/^\[Assignee:\s*(.*?)\]\s*/i, '').trim();
+      }
+    }
+    
+    return { ...t, description: cleanDescription, _fakeAssignee: fakeAssignee }
+  });
+
+  safeTasks.forEach(t => {
     if (t.assigned_to && tasksByAssignee[t.assigned_to]) {
       tasksByAssignee[t.assigned_to]!.push(t)
+    } else if (t._fakeAssignee) {
+      if (!tasksByAssignee[t._fakeAssignee]) tasksByAssignee[t._fakeAssignee] = []
+      tasksByAssignee[t._fakeAssignee].push(t)
     } else {
       if (!tasksByAssignee['unassigned']) tasksByAssignee['unassigned'] = []
       tasksByAssignee['unassigned']!.push(t)
@@ -135,6 +153,36 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
             </div>
           )
         })}
+
+        {/* AI Assignee Columns */}
+        {Object.keys(tasksByAssignee)
+          .filter(k => k !== 'unassigned' && !members.find(m => m.user_id === k))
+          .sort()
+          .map(assignee => {
+            const memberTasks = tasksByAssignee[assignee]
+            if (!memberTasks || memberTasks.length === 0) return null
+
+            return (
+              <div key={assignee} className="bg-slate-50 dark:bg-[#111827] rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
+                <div className="mb-3">
+                  <h3 className="font-semibold text-slate-900 dark:text-white flex items-center justify-between">
+                    {assignee}
+                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+                      {memberTasks.length}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">
+                    AI Assigned
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {memberTasks.map(task => (
+                    <TaskCard key={task.id} task={task} />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
       </div>
       
       {tasks.length === 0 && (

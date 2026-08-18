@@ -297,7 +297,7 @@ export default function ProjectDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProject?.id, activeProject?.status])
 
-  const handleGeneratePlan = async (targetPhase: string = 'full') => {
+  const handleGeneratePlan = async (targetPhase: string = 'full', teamSize: number = 4) => {
     setConfigModalOpen(false)
     if (!id || isGeneratingPlan) return
 
@@ -345,7 +345,7 @@ export default function ProjectDetail() {
     abortControllerRef.current = abortController
 
     try {
-      const response = await projectsApi.generatePlanStream(id, abortController.signal, targetPhase)
+      const response = await projectsApi.generatePlanStream(id, abortController.signal, targetPhase, teamSize)
 
       if (!response.ok) {
         const errorText = await response.text()

@@ -46,6 +46,7 @@ async def generate_project_plan(
     progress_callback=None,
     cancel_event: Optional[asyncio.Event] = None,
     target_phase: str = "full",
+    team_size: int = 4,
 ) -> Dict[str, Any]:
     """
     Generate a complete project plan for the given project.
@@ -165,7 +166,7 @@ async def generate_project_plan(
         _check_cancelled()
         tech_stack_json = json.dumps(tech_stack, indent=2)
         architecture_json = json.dumps(architecture.get("components", []), indent=2)
-        roadmap = await _generate_roadmap(idea, tech_stack_json, architecture_json)
+        roadmap = await _generate_roadmap(idea, tech_stack_json, architecture_json, team_size)
         logger.info(f"[ProjectHub] Roadmap generated for project {project_id}")
         _check_cancelled()
         await _emit("roadmap", "Roadmap complete.", 90)
@@ -290,9 +291,9 @@ async def _generate_architecture(idea: str) -> Dict[str, Any]:
     return await _call_gemini_json(prompt, max_tokens=3000)
 
 
-async def _generate_roadmap(idea: str, tech_stack_json: str, architecture_json: str) -> Dict[str, Any]:
+async def _generate_roadmap(idea: str, tech_stack_json: str, architecture_json: str, team_size: int = 4) -> Dict[str, Any]:
     """Generate roadmap via Gemini (Step 3)."""
-    prompt = get_roadmap_prompt(idea, tech_stack_json, architecture_json)
+    prompt = get_roadmap_prompt(idea, tech_stack_json, architecture_json, team_size)
     return await _call_gemini_json(prompt, max_tokens=3000)
 
 
@@ -389,10 +390,15 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
         if project_tasks and target_phase in ["full", "roadmap"]:
             task_inserts = []
             for t in project_tasks:
+                desc = t.get("description", "")
+                assignee = t.get("assignee")
+                if assignee:
+                    desc = f"[Assignee: {assignee}]\n\n{desc}"
+                    
                 task_inserts.append({
                     "project_id": project_id,
                     "title": t.get("title", "Untitled Task"),
-                    "description": t.get("description", ""),
+                    "description": desc,
                     "required_role": t.get("required_role", ""),
                     "estimated_effort": t.get("estimated_effort", "medium")
                 })

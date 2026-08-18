@@ -582,6 +582,7 @@ async def generate_plan_stream(
     request: Request,
     user: dict = Depends(get_current_user),
     target_phase: str = Query("full"),
+    team_size: int = Query(4),
 ):
     """
     Generate a project plan with real-time SSE progress streaming.
@@ -608,6 +609,7 @@ async def generate_plan_stream(
                     progress_callback=progress_callback,
                     cancel_event=cancel_event,
                     target_phase=target_phase,
+                    team_size=team_size,
                 )
                 if plan.get("error"):
                     await queue.put({"stage": "error", "message": plan["error"], "progress": 0})

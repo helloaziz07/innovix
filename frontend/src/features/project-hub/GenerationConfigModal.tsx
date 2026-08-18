@@ -8,13 +8,14 @@ import { cn } from '@/lib/utils'
 interface GenerationConfigModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (targetPhase: string) => void
+  onConfirm: (targetPhase: string, teamSize: number) => void
   hasExistingPlan?: boolean
 }
 
 export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasExistingPlan = false }: GenerationConfigModalProps) {
   const [mode, setMode] = useState<'full' | 'scoped'>('full')
   const [targetPhase, setTargetPhase] = useState<string>('main_plan')
+  const [teamSize, setTeamSize] = useState<number>(4)
 
   if (!isOpen) return null
 
@@ -28,7 +29,7 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasE
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="w-full max-w-lg"
         >
-          <Card className="border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden relative">
+          <Card className="border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto relative max-h-[90vh] flex flex-col">
             <button
               onClick={onClose}
               className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors z-10"
@@ -36,7 +37,7 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasE
               <X className="w-5 h-5" />
             </button>
 
-            <div className="p-8 pb-6 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
+            <div className="p-8 pb-6 border-b border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 shrink-0">
               <div className="w-12 h-12 bg-blue-500/20 text-blue-500 dark:text-blue-400 rounded-xl flex items-center justify-center mb-4">
                 <Wand2 className="w-6 h-6" />
               </div>
@@ -46,8 +47,9 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasE
               </p>
             </div>
 
-            <CardContent className="p-8 pt-6 space-y-6">
-              {/* Option 1: Full Plan */}
+            <div className="overflow-y-auto">
+              <CardContent className="p-8 pt-6 space-y-6">
+                {/* Option 1: Full Plan */}
               <div
                 onClick={() => setMode('full')}
                 className={cn(
@@ -127,12 +129,38 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasE
               </div>
             </CardContent>
 
-            <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex justify-end gap-3">
+            <div className="px-8 pb-6 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800">
+              <label className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3 block">
+                Team Size
+              </label>
+              <div className="flex items-center gap-2 flex-wrap">
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setTeamSize(n)}
+                    className={`flex items-center justify-center min-w-[3rem] px-3 h-10 rounded-lg font-medium text-sm transition-all border ${
+                      teamSize === n
+                        ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500 dark:text-blue-400'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:border-slate-600'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                Select the number of team members to automatically distribute and assign the generated tasks.
+              </p>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex justify-end gap-3 shrink-0">
               <Button variant="ghost" onClick={onClose} className="text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white">
                 Cancel
               </Button>
               <Button
-                onClick={() => onConfirm(mode === 'full' ? 'full' : targetPhase)}
+                onClick={() => onConfirm(mode === 'full' ? 'full' : targetPhase, teamSize)}
                 className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
               >
                 Start Generation

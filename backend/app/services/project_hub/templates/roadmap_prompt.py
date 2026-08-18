@@ -6,7 +6,7 @@ Called separately to produce detailed, actionable planning.
 """
 
 
-def get_roadmap_prompt(idea: str, tech_stack_json: str, architecture_json: str) -> str:
+def get_roadmap_prompt(idea: str, tech_stack_json: str, architecture_json: str, team_size: int = 4) -> str:
     """
     Build the roadmap/timeline generation prompt.
 
@@ -64,7 +64,8 @@ Return ONLY a valid JSON object (no markdown code fences):
             "title": "Task title",
             "description": "Detailed description of the task",
             "required_role": "frontend|backend|design|devops|fullstack",
-            "estimated_effort": "low|medium|high"
+            "estimated_effort": "low|medium|high",
+            "assignee": "Person 1"
         }}
     ],
     "total_weeks": 8,
@@ -83,9 +84,10 @@ Guidelines:
 - Include 3-5 phases with clear milestones
 - Each week should have 3-5 concrete tasks
 - Provide a comprehensive list of actionable `project_tasks` based on the roadmap.
+- The project has a team of {team_size} people. Divide the tasks evenly among them and specify the assignee for each task in the `assignee` field (e.g., "Person 1", "Person 2", up to "Person {team_size}").
 - Assign a clear `required_role` to each task.
 - Identify an MVP milestone (minimal viable demo)
 - Include 2-4 project risks with mitigation strategies
 - Dependencies should reference phase numbers
-- Be realistic about what a solo developer or small team can achieve
+- Be realistic about what a small team can achieve
 """
