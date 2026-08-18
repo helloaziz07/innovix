@@ -557,7 +557,7 @@ export default function Landing() {
       <footer className="bg-white border-t border-slate-200 py-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
           <button onClick={() => navigate('/dashboard')} className="flex items-center cursor-pointer transition-transform hover:scale-105">
-            <img src="/lgog_wth_name.png" alt="Innovix Logo" className="h-8 object-contain" />
+            <img src="/lgog_wth_name.png" alt="Innovix Logo" className="h-20 object-contain" />
           </button>
           <p className="text-sm text-slate-600">© 2026 Innovix Inc. All rights reserved.</p>
         </div>

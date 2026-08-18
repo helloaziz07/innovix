@@ -390,7 +390,7 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
         if project_tasks and target_phase in ["full", "roadmap"]:
             task_inserts = []
             for t in project_tasks:
-                desc = t.get("description", "")
+                desc = t.get("description") or ""
                 assignee = t.get("assignee")
                 if assignee:
                     desc = f"[Assignee: {assignee}]\n\n{desc}"

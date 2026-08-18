@@ -69,7 +69,7 @@ async def run_matchmaker(project_id: str):
         # 4. Perform assignment
         updates = []
         for task in unassigned_tasks:
-            desc = task.get("description", "")
+            desc = task.get("description") or ""
             assignee_match = re.search(r'^\[Assignee:\s*(.*?)\]', desc, re.IGNORECASE)
             task_ai_assignee = assignee_match.group(1).strip().lower() if assignee_match else None
 

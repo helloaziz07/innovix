@@ -86,7 +86,7 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
       tasksByAssignee[t.assigned_to]!.push(t)
     } else if (t._fakeAssignee) {
       if (!tasksByAssignee[t._fakeAssignee]) tasksByAssignee[t._fakeAssignee] = []
-      tasksByAssignee[t._fakeAssignee].push(t)
+      tasksByAssignee[t._fakeAssignee]!.push(t)
     } else {
       if (!tasksByAssignee['unassigned']) tasksByAssignee['unassigned'] = []
       tasksByAssignee['unassigned']!.push(t)
