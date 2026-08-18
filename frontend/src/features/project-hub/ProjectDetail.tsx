@@ -603,7 +603,7 @@ export default function ProjectDetail() {
             ) : (
               <>
                 <ExportButton projectId={activeProject.id} projectTitle={activeProject.title} />
-                {activeProject.role !== 'viewer' && (
+                {activeProject.role === 'owner' && (
                   <button
                     onClick={() => setConfigModalOpen(true)}
                     disabled={isGeneratingPlan}

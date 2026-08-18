@@ -224,7 +224,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                 </div>
                 <button
                   type="submit"
-                  disabled={inviting || !inviteEmail}
+                  disabled={inviting || !inviteEmail || !inviteAlias || !inviteTechnicalRole}
                   className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}

@@ -13,16 +13,28 @@ interface Task {
   assigned_to: string | null
 }
 
+interface Member {
+  id: string
+  user_id: string
+  alias_name?: string
+  user_full_name?: string
+}
+
 export default function TaskBoard({ projectId }: { projectId: string }) {
   const [tasks, setTasks] = useState<Task[]>([])
+  const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const tasksRes = await projectsApi.getTasks(projectId)
+        const [tasksRes, membersRes] = await Promise.all([
+          projectsApi.getTasks(projectId),
+          projectsApi.getMembers(projectId)
+        ])
         setTasks(tasksRes.data || [])
+        setMembers(membersRes.data.members || [])
       } catch (err) {
         console.error("Failed to load tasks or members", err)
       } finally {
@@ -84,7 +96,7 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {roleTasks.map(task => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard key={task.id} task={task} members={members} />
                 ))}
               </div>
             </div>
@@ -101,7 +113,10 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
   )
 }
 
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task, members }: { task: Task, members: Member[] }) {
+  const assignee = members.find(m => m.user_id === task.assigned_to)
+  const memberName = assignee ? (assignee.alias_name || assignee.user_full_name?.split(' ')[0]) : null
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 5 }}
@@ -129,7 +144,7 @@ function TaskCard({ task }: { task: Task }) {
       
       <div className="flex items-center gap-2 mt-auto pt-2 border-t border-slate-100 dark:border-slate-700/50">
         <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium capitalize">
-          {task.required_role || 'General'}
+          {task.required_role ? `${task.required_role}${memberName ? ` ${memberName}` : ''}` : (memberName || 'General')}
         </span>
         <span className={`text-[10px] px-2 py-0.5 rounded-md font-medium capitalize ${
           task.estimated_effort === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' :

@@ -387,7 +387,7 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
 
         # Save extracted tasks if present
         project_tasks = plan.get("project_tasks", [])
-        if project_tasks and target_phase in ["full", "roadmap"]:
+        if project_tasks and target_phase == "full":
             task_inserts = []
             for t in project_tasks:
                 desc = t.get("description") or ""
