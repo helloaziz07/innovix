@@ -84,7 +84,7 @@ export const projectsApi = {
     }),
   // --- Team Collaboration ---
   getMembers: (id: string) => api.get(`/projects/${id}/members`),
-  inviteMember: (id: string, data: { email: string, role: string, technical_role?: string }) => 
+  inviteMember: (id: string, data: { email: string, role: string, technical_role?: string, alias_name?: string }) => 
     api.post(`/projects/${id}/invitations`, data),
   revokeInvitation: (id: string, inviteId: string) =>
     api.delete(`/projects/${id}/invitations/${inviteId}`),

@@ -13,30 +13,16 @@ interface Task {
   assigned_to: string | null
 }
 
-interface Member {
-  id: string
-  user_id: string
-  role: string
-  technical_role?: string
-  user_full_name?: string
-  user_email?: string
-}
-
 export default function TaskBoard({ projectId }: { projectId: string }) {
   const [tasks, setTasks] = useState<Task[]>([])
-  const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const [tasksRes, membersRes] = await Promise.all([
-          projectsApi.getTasks(projectId),
-          projectsApi.getMembers(projectId)
-        ])
+        const tasksRes = await projectsApi.getTasks(projectId)
         setTasks(tasksRes.data || [])
-        setMembers(membersRes.data?.members || [])
       } catch (err) {
         console.error("Failed to load tasks or members", err)
       } finally {
