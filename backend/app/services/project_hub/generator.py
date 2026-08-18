@@ -387,6 +387,7 @@ async def _persist_plan(project_id: str, plan: Dict[str, Any], target_phase: str
         logger.info(f"[ProjectHub] Plan persisted for project {project_id} with status {new_status}")
 
         # Save extracted tasks if present
+        project_tasks = plan.get("project_tasks", [])
         if target_phase == "full":
             if project_tasks:
                 task_inserts = []
