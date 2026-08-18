@@ -129,30 +129,32 @@ export default function GenerationConfigModal({ isOpen, onClose, onConfirm, hasE
               </div>
             </CardContent>
 
-            <div className="px-8 pb-6 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800">
-              <label className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3 block">
-                Team Size
-              </label>
-              <div className="flex items-center gap-2 flex-wrap">
-                {[1, 2, 3, 4, 5, 6].map(n => (
-                  <button
-                    key={n}
-                    type="button"
-                    onClick={() => setTeamSize(n)}
-                    className={`flex items-center justify-center min-w-[3rem] px-3 h-10 rounded-lg font-medium text-sm transition-all border ${
-                      teamSize === n
-                        ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500 dark:text-blue-400'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:border-slate-600'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
+            {!hasExistingPlan && mode === 'full' && (
+              <div className="px-8 pb-6 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800">
+                <label className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-3 block">
+                  Team Size
+                </label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {[1, 2, 3, 4, 5, 6].map(n => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setTeamSize(n)}
+                      className={`flex items-center justify-center min-w-[3rem] px-3 h-10 rounded-lg font-medium text-sm transition-all border ${
+                        teamSize === n
+                          ? 'border-blue-600 bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:border-blue-500 dark:text-blue-400'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-[#111827] dark:text-slate-300 dark:hover:border-slate-600'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                  Select the number of team members to automatically distribute and assign the generated tasks.
+                </p>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
-                Select the number of team members to automatically distribute and assign the generated tasks.
-              </p>
-              </div>
+            )}
             </div>
 
             <div className="p-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex justify-end gap-3 shrink-0">

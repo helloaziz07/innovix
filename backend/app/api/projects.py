@@ -946,7 +946,8 @@ async def list_members_and_invites(
             "role": m["role"],
             "created_at": m["created_at"],
             "user_full_name": prof.get("full_name"),
-            "user_avatar": prof.get("avatar_url")
+            "user_avatar": prof.get("avatar_url"),
+            "alias_name": m.get("alias_name")
         })
         
     return {
@@ -986,6 +987,7 @@ async def create_invitation(
         "email": invite.email.lower(),
         "role": invite.role,
         "technical_role": invite.technical_role,
+        "alias_name": invite.alias_name,
         "token": token
     }
     
@@ -1011,7 +1013,9 @@ async def create_invitation(
         inviter_name=inviter_name,
         project_title=project_title,
         role=invite.role,
-        invite_url=invite_url
+        invite_url=invite_url,
+        technical_role=invite.technical_role,
+        alias_name=invite.alias_name
     )
     
     return saved_invite

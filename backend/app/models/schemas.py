@@ -105,12 +105,14 @@ class ProjectMemberResponse(BaseModel):
     user_email: Optional[str] = None
     user_full_name: Optional[str] = None
     user_avatar: Optional[str] = None
+    alias_name: Optional[str] = None
 
 class ProjectInvitationCreate(BaseModel):
     """Request to create a new invitation."""
     email: str
     role: str = "viewer"
     technical_role: Optional[str] = None
+    alias_name: Optional[str] = None
 
 class ProjectInvitationResponse(BaseModel):
     """A pending invitation."""
@@ -119,6 +121,7 @@ class ProjectInvitationResponse(BaseModel):
     email: str
     role: str
     technical_role: Optional[str] = None
+    alias_name: Optional[str] = None
     token: str
     status: str
     created_at: datetime

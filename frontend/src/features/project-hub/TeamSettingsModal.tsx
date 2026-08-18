@@ -10,6 +10,7 @@ interface Member {
   user_email?: string
   user_full_name?: string
   user_avatar?: string
+  alias_name?: string
 }
 
 interface Invitation {
@@ -33,6 +34,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor')
   const [inviteTechnicalRole, setInviteTechnicalRole] = useState<string>('')
+  const [inviteAlias, setInviteAlias] = useState<string>('')
   const [inviting, setInviting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -85,11 +87,13 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
       await projectsApi.inviteMember(projectId, { 
         email: inviteEmail, 
         role: inviteRole,
-        technical_role: inviteTechnicalRole || undefined
+        technical_role: inviteTechnicalRole || undefined,
+        alias_name: inviteAlias || undefined
       })
       setSuccess(`Invitation sent to ${inviteEmail}`)
       setInviteEmail('')
       setInviteTechnicalRole('')
+      setInviteAlias('')
       fetchTeam() // Refresh list
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to send invitation')
@@ -129,7 +133,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-white dark:bg-[#0B1120] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]"
+          className="bg-white dark:bg-[#0B1120] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[85vh]"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -157,6 +161,17 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                 Invite a collaborator
               </label>
               <div className="flex flex-col sm:flex-row gap-3">
+                {/* 1. Alias */}
+                <div className="relative w-full sm:w-48 shrink-0">
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    value={inviteAlias}
+                    onChange={(e) => setInviteAlias(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  />
+                </div>
+                {/* 2. Email */}
                 <div className="relative flex-1">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
@@ -168,13 +183,17 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                     className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   />
                 </div>
-                <div className="relative w-full sm:w-36">
-                  <select
+                {/* 3. Tech Role */}
+                <div className="relative w-full sm:w-48 shrink-0">
+                  <input
+                    type="text"
+                    list="tech-roles"
+                    placeholder="Tech Role"
                     value={inviteTechnicalRole}
                     onChange={(e) => setInviteTechnicalRole(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none"
-                  >
-                    <option value="">No Tech Role</option>
+                    className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                  />
+                  <datalist id="tech-roles">
                     {aiRoles.length > 0 ? (
                       aiRoles.map(role => (
                         <option key={role} value={role}>{role}</option>
@@ -189,9 +208,10 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                         <option value="qa">QA</option>
                       </>
                     )}
-                  </select>
+                  </datalist>
                 </div>
-                <div className="relative w-full sm:w-36">
+                {/* 4. Role */}
+                <div className="relative w-full sm:w-32 shrink-0">
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as any)}
@@ -233,7 +253,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                       </div>
                       <div>
                         <p className="text-sm font-medium text-slate-900 dark:text-white">
-                          {member.user_full_name || 'Unknown User'}
+                          {member.user_full_name || 'Unknown User'} {member.alias_name ? `(${member.alias_name})` : ''}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 capitalize flex items-center gap-1">
                           {member.role === 'owner' ? <ShieldAlert className="w-3 h-3 text-blue-500"/> : null}

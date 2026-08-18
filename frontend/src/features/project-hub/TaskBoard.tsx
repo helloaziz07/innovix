@@ -57,132 +57,53 @@ export default function TaskBoard({ projectId }: { projectId: string }) {
     )
   }
 
-  // Group tasks by assignee
-  const tasksByAssignee: Record<string, Task[]> = {
-    'unassigned': []
-  }
+  // Group tasks by role
+  const tasksByRole: Record<string, Task[]> = {}
   
-  members.forEach(m => {
-    tasksByAssignee[m.user_id] = []
-  })
-
   const safeTasks = tasks.map(t => {
-    let fakeAssignee = null;
     let cleanDescription = t.description;
-    
     if (t.description) {
-      const match = t.description.match(/^\[Assignee:\s*(.*?)\]/i);
-      if (match) {
-        fakeAssignee = match[1];
-        cleanDescription = t.description.replace(/^\[Assignee:\s*(.*?)\]\s*/i, '').trim();
-      }
+      cleanDescription = t.description.replace(/^\[Assignee:\s*(.*?)\]\s*/i, '').trim();
     }
-    
-    return { ...t, description: cleanDescription, _fakeAssignee: fakeAssignee }
+    return { ...t, description: cleanDescription }
   });
 
   safeTasks.forEach(t => {
-    if (t.assigned_to && tasksByAssignee[t.assigned_to]) {
-      tasksByAssignee[t.assigned_to]!.push(t)
-    } else if (t._fakeAssignee) {
-      if (!tasksByAssignee[t._fakeAssignee]) tasksByAssignee[t._fakeAssignee] = []
-      tasksByAssignee[t._fakeAssignee]!.push(t)
-    } else {
-      if (!tasksByAssignee['unassigned']) tasksByAssignee['unassigned'] = []
-      tasksByAssignee['unassigned']!.push(t)
-    }
+    const role = t.required_role ? t.required_role.toLowerCase() : 'unassigned'
+    if (!tasksByRole[role]) tasksByRole[role] = []
+    tasksByRole[role].push(t)
   })
-
-  const getMemberName = (userId: string) => {
-    const m = members.find(m => m.user_id === userId)
-    return m?.user_full_name || m?.user_email || 'Unknown User'
-  }
-
-
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Project Tasks</h2>
-        <p className="text-sm text-slate-500">Auto-assigned based on role</p>
+        <p className="text-sm text-slate-500">Grouped by Role</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
-        {/* Unassigned Column */}
-        {(tasksByAssignee['unassigned']?.length || 0) > 0 && (
-          <div className="bg-slate-50 dark:bg-[#111827] rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center justify-between">
-              Unassigned
-              <span className="text-xs px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded-full">
-                {tasksByAssignee['unassigned']?.length || 0}
-              </span>
-            </h3>
-            <div className="space-y-3">
-              {tasksByAssignee['unassigned']?.map(task => (
-                <TaskCard key={task.id} task={task} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Member Columns */}
-        {members.map(member => {
-          const memberTasks = tasksByAssignee[member.user_id]
-          if (!memberTasks || memberTasks.length === 0) return null
+      <div className="flex flex-col gap-8 pb-6">
+        {Object.keys(tasksByRole).sort().map(role => {
+          const roleTasks = tasksByRole[role]
+          if (!roleTasks || roleTasks.length === 0) return null
 
           return (
-            <div key={member.id} className="bg-slate-50 dark:bg-[#111827] rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
-              <div className="mb-3">
-                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center justify-between">
-                  {getMemberName(member.user_id)}
-                  <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
-                    {memberTasks.length}
+            <div key={role} className="w-full bg-slate-50 dark:bg-[#111827] rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+              <div className="mb-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center justify-between capitalize">
+                  {role}
+                  <span className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-semibold">
+                    {roleTasks.length} Tasks
                   </span>
                 </h3>
-                {member.technical_role && (
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">
-                    {member.technical_role}
-                  </p>
-                )}
               </div>
-              <div className="space-y-3">
-                {memberTasks.map(task => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {roleTasks.map(task => (
                   <TaskCard key={task.id} task={task} />
                 ))}
               </div>
             </div>
           )
         })}
-
-        {/* AI Assignee Columns */}
-        {Object.keys(tasksByAssignee)
-          .filter(k => k !== 'unassigned' && !members.find(m => m.user_id === k))
-          .sort()
-          .map(assignee => {
-            const memberTasks = tasksByAssignee[assignee]
-            if (!memberTasks || memberTasks.length === 0) return null
-
-            return (
-              <div key={assignee} className="bg-slate-50 dark:bg-[#111827] rounded-2xl p-4 border border-slate-200 dark:border-slate-800">
-                <div className="mb-3">
-                  <h3 className="font-semibold text-slate-900 dark:text-white flex items-center justify-between">
-                    {assignee}
-                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
-                      {memberTasks.length}
-                    </span>
-                  </h3>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mt-1">
-                    AI Assigned
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  {memberTasks.map(task => (
-                    <TaskCard key={task.id} task={task} />
-                  ))}
-                </div>
-              </div>
-            )
-          })}
       </div>
       
       {tasks.length === 0 && (

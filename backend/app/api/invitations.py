@@ -77,7 +77,8 @@ async def accept_invitation(
         "project_id": invite["project_id"],
         "user_id": user["id"],
         "role": invite["role"],
-        "technical_role": invite.get("technical_role")
+        "technical_role": invite.get("technical_role"),
+        "alias_name": invite.get("alias_name")
     }
     
     try:

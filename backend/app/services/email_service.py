@@ -25,7 +25,7 @@ BLUE = '\033[94m'
 BOLD = '\033[1m'
 RESET = '\033[0m'
 
-async def send_project_invitation(to_email: str, inviter_name: str, project_title: str, role: str, invite_url: str):
+async def send_project_invitation(to_email: str, inviter_name: str, project_title: str, role: str, invite_url: str, technical_role: str = None, alias_name: str = None):
     """
     Mocks sending a project invitation email.
     """
@@ -39,8 +39,8 @@ async def send_project_invitation(to_email: str, inviter_name: str, project_titl
 {BOLD}{CYAN}{inviter_name}{RESET} has invited you to join the project:
 {BOLD}{MAGENTA}{project_title}{RESET}
 
-You will be joining as a(n) {BOLD}{YELLOW}{role.upper()}{RESET}.
-
+You will be joining as a(n) {BOLD}{YELLOW}{role.upper()}{RESET}{f' for the {BOLD}{YELLOW}{technical_role}{RESET} role' if technical_role else ''}.
+{f'You have been assigned the alias {BOLD}{CYAN}({alias_name}){RESET}.' if alias_name else ''}
 Click the magic link below to accept the invitation and access the project workspace:
 {BOLD}{BLUE}{invite_url}{RESET}
 
@@ -58,7 +58,8 @@ If you don't have an account yet, you will be prompted to create one.
         </p>
         
         <p style="color: #475569; font-size: 16px;">
-            You will be joining as an <strong>{role.upper()}</strong>.
+            You will be joining as an <strong>{role.upper()}</strong>{f' for the <strong>{technical_role}</strong> role' if technical_role else ''}.<br/>
+            {f'You have been assigned the alias <strong>({alias_name})</strong>.' if alias_name else ''}
         </p>
         
         <div style="margin: 32px 0;">
