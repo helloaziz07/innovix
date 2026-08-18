@@ -226,25 +226,29 @@ export default function Landing() {
       {/* Hero Section */}
       <header className="relative min-h-screen flex items-center pt-16 overflow-hidden">
         {/* Background Asset */}
-        <div 
-          className="absolute inset-0 z-0"
-          style={{ 
-            backgroundImage: 'url("/hero-bg.png")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        >
+        <div className="absolute inset-0 z-0 overflow-hidden bg-slate-50">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            onCanPlay={(e) => { e.currentTarget.playbackRate = 0.5; }}
+            className="w-full h-full object-cover opacity-90"
+          >
+            <source src="/landing-video.mp4" type="video/mp4" />
+          </video>
+          {/* Light Overlay to improve text readability */}
+          <div className="absolute inset-0 bg-white/10 pointer-events-none z-10"></div>
           {/* Gradient Fade to White at the Bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white to-transparent pointer-events-none z-20"></div>
         </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 w-full grid md:grid-cols-12 gap-8 items-center">
+        <div className="relative z-20 max-w-7xl mx-auto px-4 md:px-8 w-full grid md:grid-cols-12 gap-8 items-center">
           {/* Hero Content */}
           <div className="md:col-span-7 lg:col-span-6 flex flex-col gap-8">
-            <h1 className="text-5xl lg:text-6xl md:leading-[64px] font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-5xl lg:text-6xl md:leading-[64px] font-extrabold text-slate-900 tracking-tight drop-shadow-sm">
               Transform Ideas into <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Reality</span> with AI-Driven Precision
             </h1>
-            <p className="text-lg text-slate-600 max-w-xl">
+            <p className="text-lg text-slate-800 font-medium max-w-xl drop-shadow-sm">
               Research, plan, and execute your next breakthrough with Innovix—the intelligent assistant for creators and entrepreneurs.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 mt-4">
@@ -552,10 +556,9 @@ export default function Landing() {
       {/* Footer Simple */}
       <footer className="bg-white border-t border-slate-200 py-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-blue-600" />
-            <span className="font-medium text-sm font-bold text-slate-900">Innovix</span>
-          </div>
+          <button onClick={() => navigate('/dashboard')} className="flex items-center cursor-pointer transition-transform hover:scale-105">
+            <img src="/lgog_wth_name.png" alt="Innovix Logo" className="h-8 object-contain" />
+          </button>
           <p className="text-sm text-slate-600">© 2026 Innovix Inc. All rights reserved.</p>
         </div>
       </footer>
