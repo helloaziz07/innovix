@@ -26,7 +26,8 @@ from app.models.schemas import (
     MagicEditRequest,
     ChatRequest,
     ProjectTask,
-    ProjectTaskUpdate
+    ProjectTaskUpdate,
+    UpdateMemberRoleRequest
 )
 import secrets
 from app.services.email_service import send_project_invitation
@@ -1077,6 +1078,39 @@ async def remove_member(
     await run_matchmaker(project_id)
     
     return MessageResponse(message="Member removed successfully.")
+
+@router.patch("/{project_id}/members/{user_id}", response_model=MessageResponse)
+async def update_member_role(
+    project_id: str,
+    user_id: str,
+    data: UpdateMemberRoleRequest,
+    user: dict = Depends(get_current_user),
+):
+    """
+    Update a member's technical role in the project.
+    Only accessible by the project owner.
+    """
+    # Verify ownership
+    project_res = (
+        supabase_admin.table("projects")
+        .select("id")
+        .eq("id", project_id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    if not project_res.data:
+        raise HTTPException(status_code=403, detail="Only the project owner can update member roles.")
+        
+    res = supabase_admin.table("project_members").update({"technical_role": data.technical_role}).eq("project_id", project_id).eq("user_id", user_id).execute()
+    
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Member not found in project.")
+
+    # Run matchmaker since role was updated
+    await run_matchmaker(project_id)
+    
+    return MessageResponse(message="Member role updated successfully.")
+
 
 
 @router.post("/{project_id}/view", response_model=MessageResponse)

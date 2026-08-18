@@ -90,6 +90,8 @@ export const projectsApi = {
     api.delete(`/projects/${id}/invitations/${inviteId}`),
   removeMember: (id: string, userId: string) => 
     api.delete(`/projects/${id}/members/${userId}`),
+  updateMemberRole: (id: string, userId: string, data: { technical_role: string }) =>
+    api.patch(`/projects/${id}/members/${userId}`, data),
   magicEdit: (id: string, payload: { text: string; command: string; context?: string }) =>
     api.post(`/projects/${id}/magic-edit`, payload),
   // --- Activity Tracking ---

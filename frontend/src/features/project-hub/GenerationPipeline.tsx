@@ -125,14 +125,29 @@ export default function GenerationPipeline({
 
   // Filter steps based on targetPhase
   const visibleSteps = PIPELINE_STEPS.filter((step) => {
-    if (targetPhase === 'full' || targetPhase === 'roadmap') return true
     if (targetPhase === 'main_plan') {
-      return !['architecture', 'roadmap'].includes(step.id)
+      return ['fetching_research', 'main_plan', 'saving'].includes(step.id)
     }
     if (targetPhase === 'architecture') {
-      return step.id !== 'roadmap'
+      return ['architecture', 'saving'].includes(step.id)
     }
+    if (targetPhase === 'roadmap') {
+      return ['roadmap', 'saving'].includes(step.id)
+    }
+    // 'full' includes everything
     return true
+  }).map(step => {
+    // Customize text for partial generation to make it clearer
+    if (targetPhase === 'main_plan' && step.id === 'main_plan') {
+      return { ...step, label: 'Generating Overview', description: 'Problem validation & opportunities' }
+    }
+    if (targetPhase === 'architecture' && step.id === 'architecture') {
+      return { ...step, label: 'Designing Architecture & Tech Stack', description: 'System diagram, tech stack & patterns' }
+    }
+    if (targetPhase === 'roadmap' && step.id === 'roadmap') {
+      return { ...step, label: 'Building Roadmap', description: 'Timeline & milestones' }
+    }
+    return step
   })
 
   return (
@@ -161,7 +176,13 @@ export default function GenerationPipeline({
                   ? '⏹ Generation Cancelled'
                   : isError
                     ? '⚠️ Generation Failed'
-                    : 'Generating Your Project Plan'}
+                    : targetPhase === 'main_plan'
+                      ? 'Generating Overview'
+                      : targetPhase === 'architecture'
+                        ? 'Designing Architecture & Tech Stack'
+                        : targetPhase === 'roadmap'
+                          ? 'Building Roadmap'
+                          : 'Generating Your Project Plan'}
             </h3>
             {!isTerminal && (
               <button

@@ -105,7 +105,9 @@ function ProjectCard({ project, idx }: { project: Project, idx: number }) {
 
       {/* Unread Activity Badge */}
       {project.has_unread_changes && (
-        <div className="absolute top-4 left-4 w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse z-10" title="New Activity" />
+        <div className="absolute top-0 left-0 bg-blue-500 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-br-xl z-10 shadow-sm animate-pulse" title="New Activity">
+          New
+        </div>
       )}
 
       {/* Status + Delete */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, UserPlus, Users, Mail, Shield, ShieldAlert, Check, Loader2, Trash2 } from 'lucide-react'
+import { X, UserPlus, Users, Mail, Shield, ShieldAlert, Check, Loader2, Trash2, Edit2 } from 'lucide-react'
 import { projectsApi } from '../../lib/api'
 
 interface Member {
@@ -41,6 +41,11 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
   const [success, setSuccess] = useState('')
   const [aiRoles, setAiRoles] = useState<string[]>([])
   const [isCustomTechRole, setIsCustomTechRole] = useState(false)
+
+  // Edit Role State
+  const [editingRoleMemberId, setEditingRoleMemberId] = useState<string | null>(null)
+  const [editTechnicalRole, setEditTechnicalRole] = useState<string>('')
+  const [isEditCustomTechRole, setIsEditCustomTechRole] = useState(false)
 
   const fetchTeam = async () => {
     try {
@@ -114,6 +119,18 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
     }
   }
 
+  const handleSaveRole = async (userId: string) => {
+    if (!editTechnicalRole.trim()) return
+    try {
+      await projectsApi.updateMemberRole(projectId, userId, { technical_role: editTechnicalRole })
+      setEditingRoleMemberId(null)
+      fetchTeam()
+    } catch (err) {
+      console.error('Failed to update role', err)
+      alert('Failed to update role')
+    }
+  }
+
   const handleRevokeInvite = async (inviteId: string) => {
     if (!confirm('Are you sure you want to revoke this invitation?')) return
     try {
@@ -169,7 +186,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                     placeholder="Name"
                     value={inviteAlias}
                     onChange={(e) => setInviteAlias(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                    className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   />
                 </div>
                 {/* 2. Email */}
@@ -181,7 +198,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                     placeholder="colleague@example.com"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                    className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
                   />
                 </div>
                 {/* 3. Tech Role */}
@@ -192,7 +209,8 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                       placeholder="Custom Role"
                       value={inviteTechnicalRole}
                       onChange={(e) => setInviteTechnicalRole(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                      className="w-full px-4 py-2.5 pr-8 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none"
+                      autoFocus
                     />
                     <button type="button" onClick={() => setIsCustomTechRole(false)} className="absolute right-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                       <X className="w-3 h-3" />
@@ -210,7 +228,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                           setInviteTechnicalRole(e.target.value)
                         }
                       }}
-                      className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none capitalize"
+                      className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none capitalize"
                     >
                       <option value="" disabled>Tech Role</option>
                       {aiRoles.map(role => (
@@ -234,7 +252,7 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as any)}
-                    className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none"
+                    className="w-full pl-3 pr-8 py-2.5 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none transition-all outline-none"
                   >
                     <option value="editor">Editor</option>
                     <option value="viewer">Viewer</option>
@@ -271,23 +289,91 @@ export default function TeamSettingsModal({ projectId, isOpen, onClose }: TeamSe
                         {member.user_full_name ? member.user_full_name.charAt(0).toUpperCase() : 'U'}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-900 dark:text-white capitalize">
-                          {member.user_full_name || 'Unknown User'} {member.technical_role ? `(${member.technical_role})` : (member.alias_name ? `(${member.alias_name})` : '')}
-                        </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 capitalize flex items-center gap-1">
+                        <div className="text-sm font-medium text-slate-900 dark:text-white capitalize flex items-center gap-2">
+                          {member.user_full_name || 'Unknown User'}
+                          
+                          {editingRoleMemberId === member.user_id ? (
+                            <div className="flex items-center gap-2 ml-2">
+                              {isEditCustomTechRole ? (
+                                <div className="relative flex items-center gap-1">
+                                  <input
+                                    type="text"
+                                    placeholder="Custom Role"
+                                    value={editTechnicalRole}
+                                    onChange={(e) => setEditTechnicalRole(e.target.value)}
+                                    className="px-2 py-1 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none w-24"
+                                    autoFocus
+                                  />
+                                  <button onClick={() => setIsEditCustomTechRole(false)} className="text-slate-400 hover:text-slate-600">
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <select
+                                  value={editTechnicalRole || ''}
+                                  onChange={(e) => {
+                                    if (e.target.value === 'custom') {
+                                      setIsEditCustomTechRole(true)
+                                      setEditTechnicalRole('')
+                                    } else {
+                                      setEditTechnicalRole(e.target.value)
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none capitalize w-24"
+                                >
+                                  <option value="" disabled>Role</option>
+                                  {aiRoles.map(role => (
+                                    <option key={role} value={role}>{role}</option>
+                                  ))}
+                                  {!aiRoles.includes('frontend') && <option value="frontend">Frontend</option>}
+                                  {!aiRoles.includes('backend') && <option value="backend">Backend</option>}
+                                  {!aiRoles.includes('fullstack') && <option value="fullstack">Fullstack</option>}
+                                  {!aiRoles.includes('design') && <option value="design">Design</option>}
+                                  {!aiRoles.includes('devops') && <option value="devops">DevOps</option>}
+                                  {!aiRoles.includes('qa') && <option value="qa">QA</option>}
+                                  <option value="custom" className="font-semibold text-blue-600">Add Custom...</option>
+                                </select>
+                              )}
+                              <button onClick={() => handleSaveRole(member.user_id)} className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200 transition-colors">
+                                <Check className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => setEditingRoleMemberId(null)} className="p-1 bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-colors dark:bg-slate-800 dark:text-slate-300">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 dark:text-slate-400 font-normal">
+                              {member.technical_role ? `(${member.technical_role})` : (member.alias_name ? `(${member.alias_name})` : '')}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 capitalize flex items-center gap-1 mt-0.5">
                           {member.role === 'owner' ? <ShieldAlert className="w-3 h-3 text-blue-500"/> : null}
                           {member.role}
                         </p>
                       </div>
                     </div>
                     {member.role !== 'owner' && (
-                      <button 
-                        onClick={() => handleRemoveMember(member.user_id)}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                        title="Remove member"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={() => {
+                            setEditingRoleMemberId(member.user_id)
+                            setEditTechnicalRole(member.technical_role || '')
+                            setIsEditCustomTechRole(!['frontend', 'backend', 'fullstack', 'design', 'devops', 'qa', ...aiRoles].includes(member.technical_role || ''))
+                          }}
+                          className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Edit role"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleRemoveMember(member.user_id)}
+                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Remove member"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}

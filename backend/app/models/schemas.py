@@ -114,6 +114,9 @@ class ProjectInvitationCreate(BaseModel):
     technical_role: Optional[str] = None
     alias_name: Optional[str] = None
 
+class UpdateMemberRoleRequest(BaseModel):
+    technical_role: Optional[str] = None
+
 class ProjectInvitationResponse(BaseModel):
     """A pending invitation."""
     id: UUID
