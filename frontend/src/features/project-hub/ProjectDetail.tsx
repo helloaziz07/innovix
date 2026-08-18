@@ -827,7 +827,7 @@ export default function ProjectDetail() {
                 {activeTab === 'tasks' && (
                   <TaskBoard 
                     projectId={id!} 
-                    isProjectComplete={!!(activeProject?.project_plan?.timeline as any)?.roadmap?.length} 
+                    isProjectComplete={!!(activeProject?.project_plan?.timeline as any[])?.length} 
                   />
                 )}
               </>

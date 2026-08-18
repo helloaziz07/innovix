@@ -18,6 +18,7 @@ interface Member {
   user_id: string
   alias_name?: string
   user_full_name?: string
+  technical_role?: string
 }
 
 export default function TaskBoard({ projectId, isProjectComplete }: { projectId: string, isProjectComplete?: boolean }) {
@@ -98,11 +99,19 @@ export default function TaskBoard({ projectId, isProjectComplete }: { projectId:
           const roleTasks = tasksByRole[role]
           if (!roleTasks || roleTasks.length === 0) return null
 
+          const roleMembers = members.filter(m => m.technical_role?.toLowerCase() === role.toLowerCase())
+          const membersStr = roleMembers.length > 0 
+            ? `(${roleMembers.map(m => m.alias_name || m.user_full_name?.split(' ')[0] || 'User').join(', ')})`
+            : ''
+
           return (
             <div key={role} className="w-full bg-slate-50 dark:bg-[#111827] rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
               <div className="mb-4">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center justify-between capitalize">
-                  {role}
+                  <span className="flex items-center gap-2">
+                    {role}
+                    {membersStr && <span className="text-slate-500 dark:text-slate-400 font-medium text-sm normal-case">{membersStr}</span>}
+                  </span>
                   <span className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-semibold">
                     {roleTasks.length} Tasks
                   </span>
