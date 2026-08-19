@@ -58,6 +58,18 @@ export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
 
   useEffect(() => {
+    // Check for referral code in URL and save it
+    const params = new URLSearchParams(window.location.search)
+    const refCode = params.get('ref')
+    if (refCode) {
+      localStorage.setItem('pending_referral', refCode)
+      // Optional: clean up the URL without refreshing
+      const newUrl = window.location.pathname + window.location.hash
+      window.history.replaceState({}, document.title, newUrl)
+    }
+  }, [])
+
+  useEffect(() => {
     initialize()
   }, [initialize])
 

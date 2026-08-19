@@ -55,6 +55,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         if (response.ok) {
           const profile = await response.json()
           set({ credits: profile.credits || 0, referralCode: profile.referral_code })
+
+          // --- Auto Redeem Pending Referral ---
+          const pendingReferral = localStorage.getItem('pending_referral')
+          if (pendingReferral) {
+            // Remove immediately to prevent retries
+            localStorage.removeItem('pending_referral')
+            try {
+              await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/redeem-referral`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${data.session.access_token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ referral_code: pendingReferral })
+              })
+            } catch (e) {
+              console.error("Auto-redeem referral failed:", e)
+            }
+          }
         }
       }
     } catch (e) {

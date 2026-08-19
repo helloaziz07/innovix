@@ -13,9 +13,11 @@ export function EarnCreditsModal({ isOpen, onClose }: { isOpen: boolean, onClose
   const [success, setSuccess] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const getInviteLink = () => `${window.location.origin}/login?ref=${referralCode}`
+
   const handleCopy = () => {
     if (referralCode) {
-      navigator.clipboard.writeText(referralCode)
+      navigator.clipboard.writeText(getInviteLink())
       setIsCopied(true)
       setTimeout(() => setIsCopied(false), 2000)
     }
@@ -91,15 +93,15 @@ export function EarnCreditsModal({ isOpen, onClose }: { isOpen: boolean, onClose
                   Refer a Friend
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Share this code with a friend. When they sign up and redeem it, you BOTH get +1 credit!
+                  Share this invite link with a friend. When they sign up, you get +1 credit automatically!
                 </p>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-slate-700 dark:text-slate-300">
-                    {referralCode || 'Loading...'}
+                  <div className="flex-1 overflow-x-auto whitespace-nowrap bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-mono text-slate-700 dark:text-slate-300">
+                    {referralCode ? getInviteLink() : 'Loading...'}
                   </div>
                   <Button onClick={handleCopy} variant="outline" size="sm" className="shrink-0 gap-2">
                     {isCopied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                    {isCopied ? 'Copied' : 'Copy'}
+                    {isCopied ? 'Copied' : 'Copy Link'}
                   </Button>
                 </div>
               </div>

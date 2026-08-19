@@ -72,20 +72,32 @@ async def redeem_referral(
 ):
     """Redeem a referral code."""
     # 1. Check if user already used a referral
-    profile_res = supabase_admin.table("profiles").select("referred_by").eq("id", user["id"]).single().execute()
+    profile_res = supabase_admin.table("profiles").select("referred_by, created_at").eq("id", user["id"]).single().execute()
     if profile_res.data and profile_res.data.get("referred_by"):
         raise HTTPException(status_code=400, detail="You have already redeemed a referral code.")
         
     code = request.referral_code.strip()
     
     # 2. Find the owner of the referral code
-    referrer_res = supabase_admin.table("profiles").select("id, credits").eq("referral_code", code).execute()
+    referrer_res = supabase_admin.table("profiles").select("id, credits, created_at").eq("referral_code", code).execute()
     if not referrer_res.data:
         raise HTTPException(status_code=404, detail="Invalid referral code.")
         
     referrer = referrer_res.data[0]
     if referrer["id"] == user["id"]:
         raise HTTPException(status_code=400, detail="You cannot redeem your own referral code.")
+        
+    # 3. Prevent newer users from referring older users and mutual referrals
+    user_created_at = profile_res.data.get("created_at")
+    referrer_created_at = referrer.get("created_at")
+    
+    if user_created_at and referrer_created_at:
+        # ISO 8601 strings are lexicographically sortable
+        if referrer_created_at >= user_created_at:
+            raise HTTPException(
+                status_code=400, 
+                detail="You can only redeem referral codes from users who joined before you."
+            )
         
     # 3. Update the referrer (give them 1 credit)
     supabase_admin.table("profiles").update({
