@@ -129,7 +129,7 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-[60] flex flex-col items-end">
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -239,10 +239,10 @@ export default function ProjectSidekick({ projectId }: { projectId: string }) {
 
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 ${isOpen ? 'bg-slate-800 text-white dark:bg-slate-700' : 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
+          className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 ${isOpen ? 'bg-slate-800 text-white dark:bg-slate-700' : 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
             }`}
         >
-          {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+          {isOpen ? <X className="w-5 h-5 md:w-6 md:h-6" /> : <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />}
         </button>
       </div>
     </>

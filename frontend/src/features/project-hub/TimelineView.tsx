@@ -127,8 +127,10 @@ export default function TimelineView({ plan }: TimelineViewProps) {
           Development Timeline
         </h3>
 
-        {/* Week headers */}
-        <div className="relative mb-2 ml-[120px]">
+        <div className="overflow-x-auto pb-4 -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0 scrollbar-thin">
+          <div className="min-w-[500px] md:min-w-0 pr-4">
+            {/* Week headers */}
+            <div className="relative mb-2 ml-[80px] md:ml-[120px]">
           <div className="flex">
             {Array.from({ length: totalWeeks }, (_, i) => (
               <div
@@ -137,8 +139,9 @@ export default function TimelineView({ plan }: TimelineViewProps) {
               >
                 W{i + 1}
                 {i + 1 === mvpWeek && (
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                    <span className="text-[8px] text-amber-400 font-bold">MVP ▼</span>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 leading-none mt-1 flex flex-col items-center">
+                    <span className="text-[9px] text-amber-500 font-bold block mb-0">MVP</span>
+                    <span className="text-[8px] text-amber-500 block -mt-0.5">▼</span>
                   </div>
                 )}
               </div>
@@ -155,7 +158,7 @@ export default function TimelineView({ plan }: TimelineViewProps) {
 
             return (
               <div key={idx} className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-[120px] truncate flex-shrink-0">
+                <span className="text-xs text-slate-700 dark:text-slate-300 font-medium w-[80px] md:w-[120px] truncate flex-shrink-0">
                   Phase {phase.phase}
                 </span>
                 <div className="flex-1 relative h-8 bg-slate-50 dark:bg-slate-800/50 rounded-lg overflow-hidden">
@@ -184,6 +187,8 @@ export default function TimelineView({ plan }: TimelineViewProps) {
             )
           })}
         </div>
+        </div>
+      </div>
       </motion.div>
 
       {/* Phase Details */}
@@ -270,13 +275,14 @@ export default function TimelineView({ plan }: TimelineViewProps) {
               Weekly Task Breakdown
             </h3>
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800">
-                  <th className="text-left p-3 text-muted-foreground font-medium">Week</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Phase</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium">Focus</th>
+                  <th className="text-left p-3 text-muted-foreground font-medium w-24">Week</th>
+                  <th className="text-left p-3 text-muted-foreground font-medium w-24">Phase</th>
+                  <th className="text-left p-3 text-muted-foreground font-medium w-1/3">Focus</th>
                   <th className="text-left p-3 text-muted-foreground font-medium">Tasks</th>
                 </tr>
               </thead>
@@ -288,23 +294,23 @@ export default function TimelineView({ plan }: TimelineViewProps) {
                       week.week === mvpWeek ? 'bg-amber-500/5' : ''
                     }`}
                   >
-                    <td className="p-3 font-medium">
-                      <span className="flex items-center gap-1">
+                    <td className="p-3 font-medium align-top">
+                      <span className="flex items-center gap-1 mt-1">
                         W{week.week}
                         {week.week === mvpWeek && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/20">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 border border-amber-500/20 font-bold">
                             MVP
                           </span>
                         )}
                       </span>
                     </td>
-                    <td className="p-3 text-muted-foreground">Phase {week.phase}</td>
-                    <td className="p-3 text-muted-foreground">{week.focus_area}</td>
-                    <td className="p-3">
-                      <ul className="space-y-0.5">
+                    <td className="p-3 text-muted-foreground align-top pt-4">Phase {week.phase}</td>
+                    <td className="p-3 text-muted-foreground align-top pt-4">{week.focus_area}</td>
+                    <td className="p-3 align-top pt-4">
+                      <ul className="space-y-1">
                         {week.tasks.map((task, tIdx) => (
-                          <li key={tIdx} className="text-muted-foreground">
-                            • {task}
+                          <li key={tIdx} className="text-muted-foreground pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-slate-400">
+                            {task}
                           </li>
                         ))}
                       </ul>
@@ -313,6 +319,43 @@ export default function TimelineView({ plan }: TimelineViewProps) {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col divide-y divide-slate-200 dark:divide-slate-800">
+            {timeline.map((week, idx) => (
+              <div key={idx} className={`p-4 space-y-3 ${week.week === mvpWeek ? 'bg-amber-500/5' : ''}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-slate-800 dark:text-slate-200">W{week.week}</span>
+                    {week.week === mvpWeek && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-500 border border-amber-500/20 font-bold">
+                        MVP
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded">
+                    Phase {week.phase}
+                  </span>
+                </div>
+                
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Focus</span>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">{week.focus_area}</p>
+                </div>
+                
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">Tasks</span>
+                  <ul className="space-y-1.5">
+                    {week.tasks.map((task, tIdx) => (
+                      <li key={tIdx} className="text-xs text-muted-foreground pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-slate-400 leading-relaxed">
+                        {task}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}

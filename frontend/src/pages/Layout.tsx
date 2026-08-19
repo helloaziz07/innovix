@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   LayoutDashboard, FolderKanban,
-  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle
+  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle, Menu
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { projectsApi } from '@/lib/api'
@@ -27,7 +27,7 @@ const navItems = [
 export default function Layout() {
   const { user, signOut } = useAuthStore()
   const navigate = useNavigate()
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true) // Default to collapsed as Gemini does
   const [pinnedProjects, setPinnedProjects] = useState<any[]>([])
   const [isHelpOpen, setIsHelpOpen] = useState(false)
 
@@ -82,22 +82,42 @@ export default function Layout() {
           collapsed ? 'w-16' : 'w-64'
         )}
       >
-        {/* Logo */}
-        <div className={cn("h-16 flex items-center border-b border-border shrink-0 transition-all duration-300", collapsed ? "justify-center px-0" : "justify-between px-4")}>
-          {!collapsed && (
-            <Link to="/dashboard" className="flex items-center gap-2 overflow-hidden hover:opacity-80 transition-opacity">
-              <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded shrink-0 object-contain" />
-              <span className="text-lg font-bold text-blue-600 dark:text-blue-400 truncate">Innovix</span>
-            </Link>
-          )}
+        {/* Logo Section */}
+        <div className={cn("h-16 flex items-center border-b border-border shrink-0 transition-all duration-300 relative", collapsed ? "justify-center px-0" : "justify-between px-4")}>
+          <div className="flex items-center gap-2 overflow-hidden w-full">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn(
+                "rounded-lg transition-colors group relative flex items-center justify-center shrink-0",
+                collapsed ? "p-2 hover:bg-slate-100 dark:hover:bg-slate-800 mx-auto" : "p-1 hover:opacity-80"
+              )}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <Menu className="w-5 h-5 text-slate-500 hidden group-hover:block" />
+              <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded object-contain block group-hover:hidden" />
+              
+              {/* Tooltip on hover when collapsed */}
+              {collapsed && (
+                <div className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 bg-slate-800 dark:bg-slate-700 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none shadow-lg">
+                  Open sidebar
+                </div>
+              )}
+            </button>
+            
+            {!collapsed && (
+              <span className="text-lg font-bold text-blue-600 dark:text-blue-400 truncate tracking-tight">Innovix</span>
+            )}
+          </div>
 
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={cn("p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors shrink-0", collapsed && "mx-auto")}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-          </button>
+          {!collapsed && (
+            <button
+              onClick={() => setCollapsed(true)}
+              className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-300 dark:hover:bg-slate-800 transition-colors shrink-0"
+              title="Collapse sidebar"
+            >
+              <PanelLeftClose className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Nav Links */}
@@ -205,14 +225,14 @@ export default function Layout() {
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#111827] border-t border-border flex items-center justify-around p-3 z-50 safe-area-pb">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#111827] border-t border-border grid grid-cols-3 p-3 z-50 safe-area-pb">
         {navItems.map((navItem) => (
           <NavLink
             key={navItem.to}
             to={navItem.to}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center gap-1 text-xs font-medium transition-colors',
+                'flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors',
                 isActive
                   ? 'text-blue-600 dark:text-blue-400'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -225,7 +245,7 @@ export default function Layout() {
         ))}
         <button
           onClick={() => setIsHelpOpen(true)}
-          className="flex flex-col items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+          className="flex flex-col items-center justify-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <HelpCircle className="w-5 h-5" />
           <span>Help</span>
