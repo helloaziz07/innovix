@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   LayoutDashboard, FolderKanban,
-  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle, Menu
+  LogOut, Pin, PanelLeftClose, HelpCircle, Menu
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { projectsApi } from '@/lib/api'
