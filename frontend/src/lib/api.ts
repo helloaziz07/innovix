@@ -169,6 +169,8 @@ export const authApi = {
   getProfile: () => api.get('/auth/me'),
   updateProfile: (data: Record<string, unknown>) =>
     api.patch('/auth/me', data),
+  redeemReferral: (code: string) => 
+    api.post('/auth/redeem-referral', { referral_code: code }),
 }
 
 // ============================================

@@ -349,7 +349,12 @@ export default function ProjectDetail() {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || `Server error: ${response.status}`)
+        let errorMsg = errorText
+        try {
+          const json = JSON.parse(errorText)
+          errorMsg = json.detail || json.message || errorText
+        } catch(e) {}
+        throw new Error(errorMsg || `Server error: ${response.status}`)
       }
 
       const reader = response.body?.getReader()
@@ -391,6 +396,7 @@ export default function ProjectDetail() {
         const updated = await projectsApi.get(id)
         setActiveProject(updated.data)
         updateProject(id, updated.data)
+        useAuthStore.getState().fetchProfile()
       }
     } catch (err: unknown) {
       if ((err as Error).name === 'AbortError') {

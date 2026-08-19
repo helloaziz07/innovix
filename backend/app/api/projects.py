@@ -32,6 +32,7 @@ from app.models.schemas import (
 import secrets
 from app.services.email_service import send_project_invitation
 from app.services.task_assignment import run_matchmaker
+from app.services.credit_service import check_and_deduct_credit
 from app.services.project_hub.generator import generate_project_plan, GenerationCancelled, generate_project_tasks
 from app.services.project_hub.export_service import (
     export_to_markdown,
@@ -604,6 +605,15 @@ async def generate_plan_stream(
 
         async def run_generation():
             try:
+                # 1. Check and deduct credits before generating
+                try:
+                    check_and_deduct_credit(user["id"])
+                except HTTPException as e:
+                    await queue.put({"stage": "error", "message": e.detail, "progress": 0})
+                    await queue.put(None)
+                    return
+                
+                # 2. Run Generation
                 plan = await generate_project_plan(
                     project_id=project_id,
                     user_id=user["id"],

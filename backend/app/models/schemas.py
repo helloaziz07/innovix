@@ -20,7 +20,14 @@ class UserProfile(BaseModel):
     full_name: Optional[str] = None
     avatar_url: Optional[str] = None
     preferences: dict = Field(default_factory=dict)
+    credits: int = 1
+    last_replenished_at: Optional[datetime] = None
+    referral_code: Optional[str] = None
+    referred_by: Optional[str] = None
     created_at: Optional[datetime] = None
+
+class ReferralRedeemRequest(BaseModel):
+    referral_code: str
 
 
 class UserProfileUpdate(BaseModel):

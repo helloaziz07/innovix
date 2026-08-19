@@ -10,9 +10,10 @@ import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
+import { EarnCreditsModal } from '@/components/EarnCreditsModal'
 import {
   LayoutDashboard, FolderKanban,
-  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle, X
+  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle, X, Zap
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
@@ -26,11 +27,12 @@ const navItems = [
 ]
 
 export default function Layout() {
-  const { user, signOut } = useAuthStore()
+  const { user, signOut, credits } = useAuthStore()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(true) // Default to collapsed as Gemini does
   const [pinnedProjects, setPinnedProjects] = useState<any[]>([])
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [isCreditsOpen, setIsCreditsOpen] = useState(false)
   const [isPinnedOpen, setIsPinnedOpen] = useState(false)
 
   const fetchPinnedProjects = async () => {
@@ -68,6 +70,13 @@ export default function Layout() {
           <span className="text-xl font-bold text-blue-600 dark:text-blue-400 tracking-tight">Innovix</span>
         </Link>
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsCreditsOpen(true)}
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-full text-xs font-bold"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {credits}
+          </button>
           <ThemeToggle collapsed={true} />
           {user && (
             <button onClick={handleSignOut} className="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">
@@ -185,7 +194,7 @@ export default function Layout() {
               <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm font-bold shrink-0">
                 {user.user_metadata?.full_name?.[0] || user.email?.[0]?.toUpperCase() || '?'}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                   {user.user_metadata?.full_name || 'User'}
                 </p>
@@ -195,6 +204,17 @@ export default function Layout() {
               </div>
             </div>
           )}
+
+          {/* Credits Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10"
+            onClick={() => setIsCreditsOpen(true)}
+          >
+            <Zap className="w-4 h-4 shrink-0 fill-current" />
+            {!collapsed && `Credits: ${credits}`}
+          </Button>
 
           {/* Help Button */}
           <Button
@@ -221,6 +241,7 @@ export default function Layout() {
       </aside>
 
       <HelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <EarnCreditsModal isOpen={isCreditsOpen} onClose={() => setIsCreditsOpen(false)} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-20 md:pb-0 relative z-0">

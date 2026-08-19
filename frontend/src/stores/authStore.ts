@@ -18,9 +18,12 @@ interface AuthState {
   session: Session | null
   isLoading: boolean
   isAuthenticated: boolean
+  credits: number
+  referralCode: string | null
 
   // Actions
   initialize: () => Promise<void>
+  fetchProfile: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithGithub: () => Promise<void>
   signInWithEmail: (email: string, password: string, captchaToken?: string) => Promise<{ error?: string }>
@@ -30,11 +33,34 @@ interface AuthState {
   signOut: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   session: null,
   isLoading: true,
   isAuthenticated: false,
+  credits: 1,
+  referralCode: null,
+
+  fetchProfile: async () => {
+    try {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        // We use fetch since api.ts might have circular dependency or just use supabase
+        // Actually, let's just fetch it using API
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${data.session.access_token}`
+          }
+        })
+        if (response.ok) {
+          const profile = await response.json()
+          set({ credits: profile.credits || 0, referralCode: profile.referral_code })
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch profile", e)
+    }
+  },
 
   initialize: async () => {
     try {
@@ -46,6 +72,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: !!session,
         isLoading: false,
       })
+      if (session) {
+        get().fetchProfile()
+      }
 
       // Listen for auth changes
       supabase.auth.onAuthStateChange((_event, session) => {
@@ -55,6 +84,9 @@ export const useAuthStore = create<AuthState>((set) => ({
           isAuthenticated: !!session,
           isLoading: false,
         })
+        if (session) {
+          get().fetchProfile()
+        }
       })
     } catch {
       set({ isLoading: false })
