@@ -227,28 +227,65 @@ export default function Landing() {
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[60] bg-white flex flex-col pt-6 px-6"
-          >
-            <div className="flex justify-between items-center mb-8">
-              <div className="flex items-center gap-2">
-                <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded object-contain" />
-                <span className="text-xl font-bold text-slate-900 tracking-tight">Innovix</span>
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm md:hidden"
+            />
+            {/* Slide-in Drawer */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 z-[70] w-4/5 max-w-sm bg-white/95 backdrop-blur-xl border-l border-white/20 shadow-2xl flex flex-col pt-6 px-6 md:hidden"
+            >
+              <div className="flex justify-between items-center mb-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 p-0.5 shadow-lg shadow-blue-500/20">
+                    <img src="/logo.jpg" alt="Innovix Logo" className="w-full h-full rounded-[10px] object-cover bg-white" />
+                  </div>
+                  <span className="text-xl font-bold text-slate-900 tracking-tight">Innovix</span>
+                </div>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-full">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-6 text-lg font-medium">
-              <a href="#features" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-700 hover:text-blue-600">Features</a>
-              <div className="w-full h-px bg-slate-200"></div>
-              <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} className="text-left text-blue-600 font-bold">Sign In</button>
-              <button onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-md w-full text-center">Get Started</button>
-            </div>
-          </motion.div>
+              
+              <div className="flex flex-col gap-1">
+                <a 
+                  href="#features" 
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                  className="flex items-center px-4 py-3 text-lg font-semibold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all"
+                >
+                  Features
+                </a>
+                <button 
+                  onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} 
+                  className="flex items-center px-4 py-3 text-lg font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-all text-left"
+                >
+                  Sign In
+                </button>
+              </div>
+              
+              <div className="mt-auto pb-8 pt-4">
+                <button 
+                  onClick={() => { setIsMobileMenuOpen(false); navigate('/login'); }} 
+                  className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-6 py-4 rounded-xl shadow-lg shadow-blue-500/25 transition-all text-lg text-center"
+                >
+                  Get Started Free
+                </button>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 

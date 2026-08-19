@@ -72,9 +72,14 @@ Return ONLY a valid JSON object (no markdown code fences):
     "mvp_ready_by_week": 4,
     "risks": [
         {{
-            "risk": "Risk description",
+            "risk": "Highly detailed, professional description of the specific risk",
             "impact": "high/medium/low",
-            "mitigation": "How to mitigate"
+            "mitigation": [
+                "Highly detailed, actionable mitigation point 1",
+                "Highly detailed, actionable mitigation point 2",
+                "Highly detailed, actionable mitigation point 3",
+                "Highly detailed, actionable mitigation point 4 (minimum 4 points required)"
+            ]
         }}
     ]
 }}
@@ -87,7 +92,7 @@ Guidelines:
 - The project has a team of {team_size} people. Divide the tasks evenly among them and specify the assignee for each task in the `assignee` field (e.g., "Person 1", "Person 2", up to "Person {team_size}").
 - Assign a clear `required_role` to each task.
 - Identify an MVP milestone (minimal viable demo)
-- Include 2-4 project risks with mitigation strategies
+- Generate a comprehensive, dynamic list of project risks based on the exact scope and complexity of the project (MINIMUM 3 risks). For EACH risk, you MUST provide a minimum of 4 highly detailed mitigation points.
 - Dependencies should reference phase numbers
 - Be realistic about what a small team can achieve
 """

@@ -46,7 +46,7 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
     "problem_validation": {{
         "is_worth_solving": true/false,
         "market_size": "Description of market size and potential",
-        "business_perspective": "Provide a highly detailed, structured business analysis focusing specifically on REVENUE and PROFITABILITY. Explain EXACTLY how the core features of this project will generate revenue and help the user become profitable. Use bullet points with clear headings (e.g., 'Revenue Generation Strategy', 'Path to Profitability', 'Monetization Models'). Provide deep, actionable details. ONLY provide a Business POV if the idea can actually make money. If there is absolutely no business perspective or monetization potential, output EXACTLY: 'No scope of Business Perspective'.",
+        "business_perspective": "Provide a highly detailed, structured business analysis focusing specifically on REVENUE and PROFITABILITY. Explain EXACTLY which features in this project will generate revenue and how (e.g., selling, SaaS, premium, subscriptions, etc.). Use bullet points with clear headings. Provide deep, actionable details. ONLY provide a Business POV if the idea can actually make money. If there is absolutely no business perspective or monetization potential, output EXACTLY: 'No scope of Business Perspective'.",
         "target_users": ["User type 1", "User type 2", ...],
         "pain_points": ["Pain point 1", "Pain point 2", ...],
         "summary": "2-3 sentence validation summary"
@@ -55,7 +55,8 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
         {{
             "name": "Solution name",
             "description": "What it does",
-            "url": "URL if available",
+            "url": "REAL website URL if available",
+            "similar_features_implemented": ["Feature 1 they have", "Feature 2 they have"],
             "pros": ["Pro 1", "Pro 2"],
             "cons": ["Con 1", "Con 2"],
             "pricing": "Free / Paid / Freemium"
@@ -64,7 +65,8 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
     "innovation_opportunities": [
         {{
             "area": "Area of innovation",
-            "description": "What's missing and how to differentiate",
+            "description": "What's missing and how to differentiate (based on thorough examination of existing solutions)",
+            "standout_factor": "Why this specific innovation makes the project stand out and more valuable",
             "impact": "high/medium/low",
             "feasibility": "high/medium/low"
         }}
@@ -93,15 +95,29 @@ Return ONLY a valid JSON object (no markdown code fences) with this exact struct
         "tagline": "One-line description",
         "readme_sections": ["Overview", "Features", "Tech Stack", "Installation", "Usage", "Contributing", "License"],
         "proposal_outline": "3-5 paragraph project proposal text"
-    }}
+    }},
+    "risks": [
+        {{
+            "risk": "Highly detailed, professional description of the specific risk",
+            "impact": "high/medium/low",
+            "mitigation": [
+                "Highly detailed, actionable mitigation point 1",
+                "Highly detailed, actionable mitigation point 2",
+                "Highly detailed, actionable mitigation point 3",
+                "Highly detailed, actionable mitigation point 4 (minimum 4 points required)"
+            ]
+        }}
+    ]
 }}
 
 Important guidelines:
 - Be specific and technical — this is for a developer/student
-- Include at least 3 existing solutions (or note if the area is truly novel)
+- Include at least 3 legitimate existing solutions based on thorough web search context. You must identify exactly what similar features they have already implemented.
+- For innovations, deeply analyze the existing solutions to suggest truly unique features that help the project stand out.
 - Recommend 5-10 tech stack items across layers
 - Suggest at least 3 relevant APIs/datasets
 - Include 3-5 relevant GitHub repositories
+- Generate a comprehensive, dynamic list of project risks based on the exact scope and complexity of the project (MINIMUM 3 risks). For EACH risk, you MUST provide a minimum of 4 highly detailed mitigation points.
 - The documentation section should have a real, usable proposal outline
-- All URLs should be real/plausible (not made up)
+- All URLs MUST be real, legitimate links (not made up).
 """

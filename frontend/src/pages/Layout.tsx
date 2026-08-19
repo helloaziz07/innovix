@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button'
 import ThemeToggle from '@/components/ThemeToggle'
 import {
   LayoutDashboard, FolderKanban,
-  LogOut, Pin, PanelLeftClose, HelpCircle, Menu
+  LogOut, Pin, PanelLeftClose, PanelLeftOpen, HelpCircle, X
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { projectsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,7 @@ export default function Layout() {
   const [collapsed, setCollapsed] = useState(true) // Default to collapsed as Gemini does
   const [pinnedProjects, setPinnedProjects] = useState<any[]>([])
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [isPinnedOpen, setIsPinnedOpen] = useState(false)
 
   const fetchPinnedProjects = async () => {
     if (!user) return
@@ -86,15 +88,16 @@ export default function Layout() {
         <div className={cn("h-16 flex items-center border-b border-border shrink-0 transition-all duration-300 relative", collapsed ? "justify-center px-0" : "justify-between px-4")}>
           <div className="flex items-center gap-2 overflow-hidden w-full">
             <button
-              onClick={() => setCollapsed(!collapsed)}
+              onClick={() => setCollapsed(false)}
+              disabled={!collapsed}
               className={cn(
-                "rounded-lg transition-colors group relative flex items-center justify-center shrink-0",
-                collapsed ? "p-2 hover:bg-slate-100 dark:hover:bg-slate-800 mx-auto" : "p-1 hover:opacity-80"
+                "rounded-lg transition-colors relative flex items-center justify-center shrink-0",
+                collapsed ? "group p-2 hover:bg-slate-100 dark:hover:bg-slate-800 mx-auto" : "p-1 cursor-default"
               )}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-label={collapsed ? "Expand sidebar" : "Innovix Logo"}
             >
-              <Menu className="w-5 h-5 text-slate-500 hidden group-hover:block" />
-              <img src="/logo.jpg" alt="Innovix Logo" className="w-8 h-8 rounded object-contain block group-hover:hidden" />
+              <PanelLeftOpen className={cn("w-5 h-5 text-slate-500 hidden", collapsed && "group-hover:block")} />
+              <img src="/logo.jpg" alt="Innovix Logo" className={cn("w-8 h-8 rounded object-contain block", collapsed && "group-hover:hidden")} />
               
               {/* Tooltip on hover when collapsed */}
               {collapsed && (
@@ -224,8 +227,62 @@ export default function Layout() {
         <Outlet />
       </main>
 
+      {/* Mobile Pinned Drawer */}
+      <AnimatePresence>
+        {isPinnedOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsPinnedOpen(false)}
+              className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] md:hidden"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#111827] rounded-t-2xl z-[70] p-4 pb-6 shadow-2xl md:hidden border-t border-slate-200 dark:border-slate-800"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Pin className="w-4 h-4 text-blue-600 dark:text-blue-400 rotate-45" />
+                  Pinned Projects
+                </h3>
+                <button
+                  onClick={() => setIsPinnedOpen(false)}
+                  className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 pr-1">
+                {pinnedProjects.length > 0 ? (
+                  pinnedProjects.map(proj => (
+                    <NavLink
+                      key={proj.id}
+                      to={`/projects/${proj.id}`}
+                      onClick={() => setIsPinnedOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-700 transition-colors"
+                    >
+                      <Pin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 rotate-45" />
+                      <span className="font-medium text-sm text-slate-900 dark:text-slate-200 truncate">{proj.title}</span>
+                    </NavLink>
+                  ))
+                ) : (
+                  <div className="text-center p-6 text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                    No pinned projects yet
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#111827] border-t border-border grid grid-cols-3 p-3 z-50 safe-area-pb">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-[#111827] border-t border-border grid grid-cols-4 p-3 z-50 safe-area-pb">
         {navItems.map((navItem) => (
           <NavLink
             key={navItem.to}
@@ -243,6 +300,18 @@ export default function Layout() {
             <span>{navItem.label}</span>
           </NavLink>
         ))}
+        <button
+          onClick={() => setIsPinnedOpen(true)}
+          className={cn(
+            'flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors',
+            isPinnedOpen
+              ? 'text-blue-600 dark:text-blue-400'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+          )}
+        >
+          <Pin className="w-5 h-5 rotate-45" />
+          <span>Pinned</span>
+        </button>
         <button
           onClick={() => setIsHelpOpen(true)}
           className="flex flex-col items-center justify-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"

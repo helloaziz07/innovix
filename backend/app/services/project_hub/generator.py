@@ -124,7 +124,7 @@ async def generate_project_plan(
             "timeline": roadmap.get("timeline", []),
             "total_weeks": roadmap.get("total_weeks", 8),
             "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
-            "risks": roadmap.get("risks", []),
+            "risks": roadmap.get("risks") or main_plan.get("risks", []),
         }
         await _persist_plan(project_id, full_plan, target_phase)
         await _emit("complete", "Project plan generated successfully!", 100)
@@ -155,7 +155,7 @@ async def generate_project_plan(
             "timeline": roadmap.get("timeline", []),
             "total_weeks": roadmap.get("total_weeks", 8),
             "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
-            "risks": roadmap.get("risks", []),
+            "risks": roadmap.get("risks") or main_plan.get("risks", []),
         }
         await _persist_plan(project_id, full_plan, target_phase)
         await _emit("complete", "Project plan generated successfully!", 100)
@@ -184,7 +184,7 @@ async def generate_project_plan(
         "timeline": roadmap.get("timeline", []),
         "total_weeks": roadmap.get("total_weeks", 8),
         "mvp_ready_by_week": roadmap.get("mvp_ready_by_week", 4),
-        "risks": roadmap.get("risks", []),
+        "risks": roadmap.get("risks") or main_plan.get("risks", []),
         "project_tasks": roadmap.get("project_tasks", []),
     }
 

@@ -384,6 +384,16 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground mb-2">{String(sol.description)}</p>
+                {(sol.similar_features_implemented as string[] | undefined)?.length ? (
+                  <div className="mb-2">
+                    <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mb-1 block">Similar Features:</span>
+                    <ul className="space-y-0.5">
+                      {(sol.similar_features_implemented as string[]).map((feat, i) => (
+                        <li key={i} className="text-xs text-muted-foreground">• {feat}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-green-400 flex items-center gap-1 mb-1">
@@ -436,6 +446,14 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">{String(inn.description)}</p>
+                  {inn.standout_factor && (
+                    <div className="mt-2 p-2 bg-blue-50/50 dark:bg-blue-500/5 rounded border border-blue-100 dark:border-blue-500/10">
+                      <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 mb-0.5 block flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Standout Factor
+                      </span>
+                      <p className="text-xs text-slate-600 dark:text-slate-300">{String(inn.standout_factor)}</p>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -534,9 +552,20 @@ export default function PlanViewer({ plan, onNarrate, isNarrating, onUpdate, rea
                     {(risk.impact as string)?.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  <strong>Mitigation:</strong> {risk.mitigation as string}
-                </p>
+                <div className="text-xs text-muted-foreground mt-2">
+                  <strong className="block mb-1">Mitigations:</strong>
+                  {Array.isArray(risk.mitigation) ? (
+                    <ul className="space-y-1 pl-1">
+                      {risk.mitigation.map((point: string, i: number) => (
+                        <li key={i} className="flex items-start gap-1.5 text-slate-600 dark:text-slate-300">
+                          <span className="text-blue-500 mt-0.5">•</span> {point}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>{risk.mitigation as string}</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
