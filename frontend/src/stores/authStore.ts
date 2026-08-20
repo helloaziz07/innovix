@@ -11,6 +11,7 @@
 
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
+import { getDeviceId } from '@/lib/fingerprint'
 import type { User, Session } from '@supabase/supabase-js'
 
 interface AuthState {
@@ -62,13 +63,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             // Remove immediately to prevent retries
             localStorage.removeItem('pending_referral')
             try {
+              const device_id = await getDeviceId()
               await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/redeem-referral`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${data.session.access_token}`,
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ referral_code: pendingReferral })
+                body: JSON.stringify({ referral_code: pendingReferral, device_id })
               })
             } catch (e) {
               console.error("Auto-redeem referral failed:", e)

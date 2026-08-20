@@ -77,6 +77,15 @@ async def redeem_referral(
         raise HTTPException(status_code=400, detail="You have already redeemed a referral code.")
         
     code = request.referral_code.strip()
+    device_id = request.device_id.strip()
+    
+    # 2. Check Device Fingerprint (Fraud Prevention)
+    device_check = supabase_admin.table("profiles").select("id, referred_by").eq("device_id", device_id).execute()
+    if device_check.data:
+        for p in device_check.data:
+            if p["id"] != user["id"] and p.get("referred_by") is not None:
+                raise HTTPException(status_code=400, detail="This device has already been used to redeem a referral code.")
+
     
     # 2. Find the owner of the referral code
     referrer_res = supabase_admin.table("profiles").select("id, credits, created_at").eq("referral_code", code).execute()
@@ -106,7 +115,8 @@ async def redeem_referral(
     
     # 4. Update the current user (mark as referred)
     supabase_admin.table("profiles").update({
-        "referred_by": referrer["id"]
+        "referred_by": referrer["id"],
+        "device_id": device_id
     }).eq("id", user["id"]).execute()
     
     return MessageResponse(message="Referral code applied successfully!")

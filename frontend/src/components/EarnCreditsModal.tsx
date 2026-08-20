@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Sparkles, Copy, Check, Gift } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { authApi } from '@/lib/api'
+import { getDeviceId } from '@/lib/fingerprint'
 import { Button } from '@/components/ui/button'
 
 export function EarnCreditsModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -30,7 +31,8 @@ export function EarnCreditsModal({ isOpen, onClose }: { isOpen: boolean, onClose
     setError('')
     setSuccess('')
     try {
-      await authApi.redeemReferral(redeemCode)
+      const deviceId = await getDeviceId()
+      await authApi.redeemReferral(redeemCode, deviceId)
       setSuccess('Referral code applied successfully!')
       fetchProfile()
       setRedeemCode('')

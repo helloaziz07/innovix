@@ -28,6 +28,7 @@ class UserProfile(BaseModel):
 
 class ReferralRedeemRequest(BaseModel):
     referral_code: str
+    device_id: str
 
 
 class UserProfileUpdate(BaseModel):
